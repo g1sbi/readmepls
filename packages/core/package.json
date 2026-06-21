@@ -1,0 +1,11 @@
+{
+  "name": "@readmepls/core",
+  "version": "0.0.0",
+  "type": "module",
+  "main": "src/index.ts",
+  "dependencies": {
+    "@readmepls/types": "workspace:*",
+    "pocketbase": "^0.21.0",
+    "zod": "^3.23.0"
+  }
+}

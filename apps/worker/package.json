@@ -1,0 +1,15 @@
+{
+  "name": "@readmepls/worker",
+  "version": "0.0.0",
+  "type": "module",
+  "dependencies": {
+    "@readmepls/types": "workspace:*",
+    "@readmepls/core": "workspace:*",
+    "@mozilla/readability": "^0.5.0",
+    "jsdom": "^25.0.0",
+    "pocketbase": "^0.21.0",
+    "@anthropic-ai/sdk": "^0.30.0",
+    "zod": "^3.23.0"
+  },
+  "devDependencies": { "@types/jsdom": "^21.1.0" }
+}
