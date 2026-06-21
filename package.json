@@ -5,7 +5,7 @@
   "scripts": {
     "test": "vitest run",
     "test:watch": "vitest",
-    "typecheck": "tsc -b --pretty",
+    "typecheck": "tsc -p tsconfig.json --pretty",
     "lint": "prettier --check . && eslint ."
   },
   "devDependencies": {

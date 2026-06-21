@@ -1,0 +1,13 @@
+{
+  "extends": "./tsconfig.base.json",
+  // Type-check only: packages are consumed as TS source (no build step), so we
+  // disable composite/emit and resolve cross-package imports via workspace
+  // symlinks. apps/web is a SvelteKit project and type-checks via svelte-check
+  // (its $lib alias + generated types are not available to plain tsc here).
+  "compilerOptions": {
+    "composite": false,
+    "declaration": false,
+    "noEmit": true
+  },
+  "include": ["packages/types/src", "packages/core/src", "apps/worker/src"]
+}
