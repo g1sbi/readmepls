@@ -11,3 +11,4 @@ pocketbase/*.zip
 pocketbase/CHANGELOG.md
 pocketbase/LICENSE.md
 *.log
+.worktrees/
