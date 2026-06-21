@@ -23,6 +23,8 @@ migrate(
         { name: "fetched_at", type: "text" },
         { name: "extract_status", type: "text", required: true },
         { name: "failure_reason", type: "text" },
+        { name: "created", type: "autodate", onCreate: true, onUpdate: false },
+        { name: "updated", type: "autodate", onCreate: true, onUpdate: true },
       ],
       indexes: [
         "CREATE UNIQUE INDEX idx_content_canonical ON content (canonical_url)",
@@ -47,6 +49,8 @@ migrate(
         { name: "status", type: "text", required: true },
         { name: "progress", type: "number" },
         { name: "is_private", type: "bool" },
+        { name: "created", type: "autodate", onCreate: true, onUpdate: false },
+        { name: "updated", type: "autodate", onCreate: true, onUpdate: true },
       ],
       indexes: [
         "CREATE INDEX idx_articles_user ON articles (user)",
@@ -73,6 +77,8 @@ migrate(
         { name: "content", type: "text" },
         { name: "locked_at", type: "text" },
         { name: "locked_by", type: "text" },
+        { name: "created", type: "autodate", onCreate: true, onUpdate: false },
+        { name: "updated", type: "autodate", onCreate: true, onUpdate: true },
       ],
       indexes: [
         "CREATE UNIQUE INDEX idx_jobs_url ON jobs (canonical_url)",
@@ -93,6 +99,8 @@ migrate(
         { name: "user", type: "relation", required: true, collectionId: app.findCollectionByNameOrId("users").id, maxSelect: 1 },
         { name: "name", type: "text", required: true },
         { name: "slug", type: "text", required: true },
+        { name: "created", type: "autodate", onCreate: true, onUpdate: false },
+        { name: "updated", type: "autodate", onCreate: true, onUpdate: true },
       ],
       indexes: [
         "CREATE UNIQUE INDEX idx_tags_user_slug ON tags (user, slug)",
@@ -114,6 +122,8 @@ migrate(
         { name: "tag", type: "relation", required: true, collectionId: tags.id, maxSelect: 1 },
         { name: "source", type: "text", required: true },
         { name: "confidence", type: "number" },
+        { name: "created", type: "autodate", onCreate: true, onUpdate: false },
+        { name: "updated", type: "autodate", onCreate: true, onUpdate: true },
       ],
       listRule: "article.user = @request.auth.id",
       viewRule: "article.user = @request.auth.id",
