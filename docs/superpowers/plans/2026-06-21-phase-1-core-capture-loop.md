@@ -73,6 +73,60 @@ pocketbase/
 
 ---
 
+## Setup (prerequisites — do before Task 0)
+
+Verified host state at planning time: Node v26 present; `pnpm` absent (`corepack`
+v0.34 present); `gh` v2.92 present but not authenticated; arch `x86_64` Linux; no
+PocketBase binary yet.
+
+- [ ] **Step 1: Activate pnpm via corepack**
+
+Run:
+```bash
+corepack enable pnpm
+corepack prepare pnpm@latest --activate
+pnpm -v
+```
+Expected: prints a pnpm version (e.g. `9.x`).
+
+- [ ] **Step 2: Download the PocketBase binary (linux_amd64)**
+
+Resolves the latest v0.x release and places the binary at `pocketbase/pocketbase`.
+The migration in Task 6 uses the JSVM `new Collection({...})` + `app.save()` API,
+which requires PocketBase **v0.22 or newer** — do not pin below that.
+
+Run:
+```bash
+mkdir -p pocketbase
+TAG=$(gh release list --repo pocketbase/pocketbase --limit 20 \
+  | awk '{print $1}' | grep -E '^v0\.(2[2-9]|[3-9][0-9])' | sort -V | tail -1)
+test -n "$TAG" || { echo "no v0.22+ release found"; exit 1; }
+gh release download "$TAG" --repo pocketbase/pocketbase \
+  --pattern "*linux_amd64.zip" --dir pocketbase --clobber
+unzip -o pocketbase/*linux_amd64.zip -d pocketbase
+chmod +x pocketbase/pocketbase
+./pocketbase/pocketbase --version
+```
+Expected: prints `pocketbase version vX.Y.Z`.
+
+> If `gh` is not authenticated yet (see "GitHub repo" pause below), replace the
+> `gh release download` line with a direct `curl -L` to the release asset URL.
+
+- [ ] **Step 3: Ignore the PocketBase binary + zip in git**
+
+The repo `.gitignore` already ignores `pb_data/`. Add the binary + zip so they are
+not committed:
+```bash
+printf '%s\n' 'pocketbase/pocketbase' 'pocketbase/*.zip' 'pocketbase/CHANGELOG.md' 'pocketbase/LICENSE.md' >> .gitignore
+git add .gitignore
+git commit -m "chore: ignore PocketBase binary artifacts"
+```
+
+> Note: `pocketbase/pb_migrations/` IS tracked (schema is source of truth). Only the
+> downloaded binary and archive are ignored.
+
+---
+
 ## Task 0: Monorepo scaffold + tooling
 
 **Files:**

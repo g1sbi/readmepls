@@ -6,4 +6,8 @@ dist/
 build/
 .svelte-kit/
 pb_data/
+pocketbase/pocketbase
+pocketbase/*.zip
+pocketbase/CHANGELOG.md
+pocketbase/LICENSE.md
 *.log
