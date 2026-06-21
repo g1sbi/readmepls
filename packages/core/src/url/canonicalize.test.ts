@@ -25,6 +25,23 @@ describe("canonicalizeUrl", () => {
     expect(() => canonicalizeUrl("not a url")).toThrow();
   });
 
+  it("rejects non-http(s) schemes", () => {
+    expect(() => canonicalizeUrl("file:///etc/passwd")).toThrow();
+    expect(() => canonicalizeUrl("gopher://example.com/")).toThrow();
+    expect(() => canonicalizeUrl("ftp://example.com/x")).toThrow();
+    expect(() => canonicalizeUrl("javascript:alert(1)")).toThrow();
+    expect(() => canonicalizeUrl("data:text/html,x")).toThrow();
+  });
+
+  it("accepts http and https", () => {
+    expect(canonicalizeUrl("http://example.com/x")).toBe(
+      "http://example.com/x"
+    );
+    expect(canonicalizeUrl("https://example.com/x")).toBe(
+      "https://example.com/x"
+    );
+  });
+
   it("strips default ports", () => {
     expect(canonicalizeUrl("https://example.com:443/post")).toBe(
       "https://example.com/post"

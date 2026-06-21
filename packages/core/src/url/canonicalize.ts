@@ -9,6 +9,11 @@ const TRACKING = new Set([
 
 export function canonicalizeUrl(input: string): string {
   const u = new URL(input); // throws on invalid
+  // Only fetchable web schemes. Blocks file:/gopher:/data:/javascript: etc,
+  // which are SSRF/local-file vectors once the worker fetches this URL.
+  if (u.protocol !== "http:" && u.protocol !== "https:") {
+    throw new Error(`unsupported scheme: ${u.protocol}`);
+  }
   u.hostname = u.hostname.toLowerCase();
   u.hash = "";
   if (
