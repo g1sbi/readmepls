@@ -24,6 +24,18 @@ importers:
         specifier: ^2.1.0
         version: 2.1.9(@types/node@22.20.0)
 
+  packages/core:
+    dependencies:
+      '@readmepls/types':
+        specifier: workspace:*
+        version: link:../types
+      pocketbase:
+        specifier: ^0.21.0
+        version: 0.21.5
+      zod:
+        specifier: ^3.23.0
+        version: 3.25.76
+
   packages/types:
     dependencies:
       zod:
@@ -692,6 +704,9 @@ packages:
 
   picocolors@1.1.1:
     resolution: {integrity: sha512-xceH2snhtb5M9liqDsmEw56le376mTZkEX/jEb/RxNFyegNul7eNslCXP9FDj/Lcu0X8KEyMceP2ntpaHrDEVA==}
+
+  pocketbase@0.21.5:
+    resolution: {integrity: sha512-bnI/uinnQps+ElSlzxkc4yvwuSFfKcoszDtXH/4QT2FhGq2mJVUvDlxn+rjRXVntUjPfmMG5LEPZ1eGqV6ssog==}
 
   postcss@8.5.15:
     resolution: {integrity: sha512-FfR8sjd4em2T6fb3I2MwAJU7HWVMr9zba+enmQeeWFfCbm+UOC/0X4DS8XtpUTMwWMGbjKYP7xjfNekzyGmB3A==}
@@ -1413,6 +1428,8 @@ snapshots:
   pathval@2.0.1: {}
 
   picocolors@1.1.1: {}
+
+  pocketbase@0.21.5: {}
 
   postcss@8.5.15:
     dependencies:
