@@ -1,3 +1,4 @@
+![readmepls](assets/banner.png)
 # readmepls
 
 Introducing: `readmepls`, your one-stop app to store, read, highlight, annotate and categorize your favorite articles.
