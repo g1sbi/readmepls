@@ -1,0 +1,88 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <style>
+      @font-face {
+        font-family: "Fredoka";
+        src: local("Fredoka");
+        font-weight: 300 700;
+      }
+      * { margin: 0; padding: 0; box-sizing: border-box; }
+      html, body { width: 1280px; height: 640px; }
+      .banner {
+        position: relative;
+        width: 1280px;
+        height: 640px;
+        overflow: hidden;
+        background:
+          radial-gradient(120% 140% at 18% 12%, #F7F3EA 0%, #F1ECDF 55%, #EAE3D2 100%);
+        font-family: "Fredoka", system-ui, sans-serif;
+        display: flex;
+        align-items: center;
+        gap: 78px;
+        padding: 0 96px;
+      }
+      /* faint paper grain */
+      .banner::before {
+        content: "";
+        position: absolute; inset: 0;
+        background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='120' height='120'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2'/></filter><rect width='100%25' height='100%25' filter='url(%23n)' opacity='0.5'/></svg>");
+        opacity: 0.04;
+        mix-blend-mode: multiply;
+      }
+      /* big faint dog-ear echo, top-right */
+      .fold {
+        position: absolute; top: -60px; right: -60px;
+        width: 260px; height: 260px;
+        background: linear-gradient(135deg, #E4DCC8 0%, #E4DCC8 50%, transparent 50%);
+        transform: rotate(0deg);
+        opacity: 0.55;
+        border-bottom-left-radius: 40px;
+      }
+      .icon {
+        width: 312px; height: 312px;
+        flex: 0 0 auto;
+        transform: rotate(-4deg);
+        filter: drop-shadow(0 26px 40px rgba(54, 44, 22, 0.28));
+        border-radius: 64px;
+        z-index: 2;
+      }
+      .copy { z-index: 2; }
+      .title {
+        font-weight: 600;
+        font-size: 140px;
+        line-height: 0.9;
+        letter-spacing: -5px;
+        color: #211E17;
+      }
+      .title .pls { color: #C24A38; }
+      .tagline {
+        margin-top: 26px;
+        font-weight: 500;
+        font-size: 37px;
+        letter-spacing: -0.5px;
+        color: #6E6453;
+      }
+      .meta {
+        margin-top: 40px;
+        font-weight: 600;
+        font-size: 17px;
+        letter-spacing: 4px;
+        color: #AC9F86;
+        text-transform: uppercase;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="banner">
+      <div class="fold"></div>
+      <img class="icon" src="hero.png" alt="readmepls" />
+      <div class="copy">
+        <div class="title">readme<span class="pls">pls</span></div>
+        <div class="tagline">save any link. actually read it. pls.</div>
+        <div class="meta">open source · self-hostable · readmepls.com</div>
+      </div>
+    </div>
+  </body>
+</html>
