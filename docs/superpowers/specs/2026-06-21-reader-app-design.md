@@ -137,7 +137,8 @@ once and reused.
 Capture lookup:
 ```
 canonicalize(url) → look up content by canonical_url
-  HIT  → create articles row pointing at existing content. No job, no worker,
+  HIT  → create articles row pointing at existing content, and seed the user's
+         article_tags from content.ai_tags_json (source=ai). No job, no worker,
          no AI cost. Capture is instant.
   MISS → create content(status=pending) + one job (deduped by canonical_url).
          Worker fills content once; all future users reuse it.
