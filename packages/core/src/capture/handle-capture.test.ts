@@ -24,6 +24,8 @@ describe("handleCapture", () => {
       .collection("jobs")
       .getFirstListItem(`canonical_url = "https://example.com/fresh"`);
     expect(job.status).toBe("queued");
+    const article = await h.pb.collection("articles").getOne(r.body.articleId!);
+    expect(article.canonical_url).toBe("https://example.com/fresh");
   });
 
   it("links existing content instantly on cache hit", async () => {

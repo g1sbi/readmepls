@@ -31,6 +31,7 @@ export async function handleCapture(
       user: userId,
       content: existing.id,
       url: rawUrl,
+      canonical_url: canonical,
       status: "unread",
       progress: 0,
       is_private: false,
@@ -61,6 +62,7 @@ export async function handleCapture(
   const article = await pb.collection("articles").create({
     user: userId,
     url: rawUrl,
+    canonical_url: canonical,
     status: "unread",
     progress: 0,
     is_private: false,
