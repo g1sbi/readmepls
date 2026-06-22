@@ -2,7 +2,11 @@
   "name": "@readmepls/web",
   "version": "0.0.0",
   "type": "module",
-  "scripts": { "dev": "vite dev", "build": "vite build" },
+  "scripts": {
+    "dev": "vite dev",
+    "build": "vite build",
+    "check": "svelte-check --tsconfig ./tsconfig.json"
+  },
   "dependencies": {
     "@readmepls/types": "workspace:*",
     "@readmepls/core": "workspace:*",
@@ -12,7 +16,12 @@
   "devDependencies": {
     "@sveltejs/adapter-node": "^5.2.0",
     "@sveltejs/kit": "^2.5.0",
+    "@sveltejs/vite-plugin-svelte": "^4.0.0",
+    "@testing-library/jest-dom": "^6.5.0",
+    "@testing-library/svelte": "^5.2.0",
+    "jsdom": "^25.0.0",
     "svelte": "^5.0.0",
+    "svelte-check": "^4.0.0",
     "vite": "^6.0.0"
   }
 }
