@@ -1,0 +1,51 @@
+/* ============================================================================
+ * readmepls — @font-face declarations
+ *
+ * The font family stacks themselves live in tokens.css (--font-display etc.).
+ * This file only loads the files. woff2 served from /static/fonts.
+ * latin subset only for now (add latin-ext when we localize).
+ *
+ *   Fredoka      — display & UI        (variable 300–700)
+ *   Newsreader   — long-form reading   (variable 400–600, roman + italic)
+ *   IBM Plex Mono — code               (400 + 600)
+ * ========================================================================== */
+
+@font-face {
+  font-family: "Fredoka";
+  src: url("/fonts/fredoka-variable.woff2") format("woff2");
+  font-weight: 300 700;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: "Newsreader";
+  src: url("/fonts/newsreader-variable.woff2") format("woff2");
+  font-weight: 400 600;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: "Newsreader";
+  src: url("/fonts/newsreader-italic-variable.woff2") format("woff2");
+  font-weight: 400 600;
+  font-style: italic;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: "IBM Plex Mono";
+  src: url("/fonts/ibm-plex-mono-400.woff2") format("woff2");
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: "IBM Plex Mono";
+  src: url("/fonts/ibm-plex-mono-600.woff2") format("woff2");
+  font-weight: 600;
+  font-style: normal;
+  font-display: swap;
+}
