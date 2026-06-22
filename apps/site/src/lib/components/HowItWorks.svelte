@@ -1,12 +1,13 @@
 <script lang="ts">
   import { STEPS } from "$lib/site";
+  import { reveal } from "$lib/actions/reveal";
 </script>
 
 <section class="how">
-  <h2>How it works</h2>
+  <h2 use:reveal>How it works</h2>
   <ol class="steps">
-    {#each STEPS as step (step.n)}
-      <li class="step">
+    {#each STEPS as step, i (step.n)}
+      <li class="step" use:reveal={{ delay: 80 + i * 110 }}>
         <span class="num">{step.n}</span>
         <h3>{step.title}</h3>
         <p>{step.body}</p>

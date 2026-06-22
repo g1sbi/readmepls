@@ -4,7 +4,9 @@
 
 <section class="hero">
   <div class="fold" aria-hidden="true"></div>
-  <img class="logo" src="/hero.png" alt="readmepls logo" width="160" height="160" />
+  <div class="logo-wrap">
+    <img class="logo" src="/hero.png" alt="readmepls" width="160" height="160" />
+  </div>
   <h1 class="wordmark">readme<span class="pls">pls</span></h1>
   <p class="tagline">{TAGLINE}</p>
   <div class="cta">
@@ -24,6 +26,8 @@
     gap: 1.25rem;
     padding: clamp(4rem, 12vh, 9rem) 1.5rem 3rem;
   }
+
+  /* dog-ear corner peels open on load */
   .fold {
     position: absolute;
     top: -1rem;
@@ -33,17 +37,31 @@
     background: linear-gradient(135deg, var(--fold) 0%, var(--fold) 50%, transparent 50%);
     opacity: 0.55;
     border-bottom-left-radius: 28px;
+    transform-origin: top right;
+    animation: peel 0.7s cubic-bezier(0.34, 1.56, 0.64, 1) 0.2s both;
+  }
+
+  .logo-wrap {
+    animation: drop-in 0.7s cubic-bezier(0.34, 1.56, 0.64, 1) both;
   }
   .logo {
+    display: block;
     border-radius: 32px;
     transform: rotate(-4deg);
     filter: drop-shadow(0 18px 28px rgba(54, 44, 22, 0.28));
+    transition: transform 0.2s ease;
   }
+  /* paper flutter on hover */
+  .logo-wrap:hover .logo {
+    animation: flutter 0.5s ease;
+  }
+
   .wordmark {
     font-weight: 600;
     font-size: clamp(3.5rem, 12vw, 7rem);
     line-height: 0.9;
     letter-spacing: -0.04em;
+    animation: rise 0.6s ease 0.15s both;
   }
   .pls {
     color: var(--accent);
@@ -52,6 +70,7 @@
     font-weight: 500;
     font-size: clamp(1.1rem, 3.5vw, 1.6rem);
     color: var(--muted);
+    animation: rise 0.6s ease 0.28s both;
   }
   .cta {
     display: flex;
@@ -59,25 +78,81 @@
     gap: 0.75rem;
     justify-content: center;
     margin-top: 0.5rem;
+    animation: rise 0.6s ease 0.4s both;
   }
+
   .btn {
     text-decoration: none;
     font-weight: 600;
     font-size: 1.05rem;
     padding: 0.7rem 1.5rem;
     border-radius: 999px;
-    transition: transform 0.12s ease;
+    transition:
+      transform 0.18s cubic-bezier(0.34, 1.56, 0.64, 1),
+      box-shadow 0.18s ease;
   }
   .btn:hover {
-    transform: translateY(-2px);
+    transform: translateY(-3px) scale(1.03);
+  }
+  .btn:active {
+    transform: translateY(-1px) scale(0.98);
   }
   .btn.primary {
     background: var(--accent);
     color: var(--surface-0);
     box-shadow: 0 10px 20px rgba(194, 74, 56, 0.28);
   }
+  .btn.primary:hover {
+    box-shadow: 0 16px 28px rgba(194, 74, 56, 0.34);
+  }
   .btn.ghost {
     color: var(--ink);
     border: 2px solid var(--fold);
+  }
+
+  @keyframes drop-in {
+    0% {
+      opacity: 0;
+      transform: translateY(-30px) scale(0.85);
+    }
+    100% {
+      opacity: 1;
+      transform: translateY(0) scale(1);
+    }
+  }
+  @keyframes rise {
+    0% {
+      opacity: 0;
+      transform: translateY(18px);
+    }
+    100% {
+      opacity: 1;
+      transform: none;
+    }
+  }
+  @keyframes peel {
+    0% {
+      opacity: 0;
+      transform: scale(0.2) rotate(-35deg);
+    }
+    100% {
+      opacity: 0.55;
+      transform: none;
+    }
+  }
+  @keyframes flutter {
+    0%,
+    100% {
+      transform: rotate(-4deg);
+    }
+    25% {
+      transform: rotate(2deg);
+    }
+    50% {
+      transform: rotate(-7deg);
+    }
+    75% {
+      transform: rotate(1deg);
+    }
   }
 </style>
