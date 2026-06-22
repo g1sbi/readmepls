@@ -28,6 +28,10 @@ before implementing a feature.
   `superpowers:systematic-debugging` before proposing a fix.
 - **Small commits, Conventional Commits.** `feat:`, `fix:`, `docs:`, `test:`,
   `refactor:`, `chore:`. One logical change per commit.
+- **Squash before merging.** A feature branch lands as squashed commits — one
+  clean, logical Conventional Commit per change (no `wip`, `fix typo`, or
+  review-fixup noise in history). Granular commits during development are fine;
+  collapse them before merging to `main`.
 - **Never push or open a PR unless asked.** Commit locally is fine; pushing is not.
 - **Never commit secrets.** Keys live in env only; keep `.env.example` current.
 
