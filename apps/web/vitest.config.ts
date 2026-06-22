@@ -1,9 +1,17 @@
 import { defineConfig } from "vitest/config";
 import { svelte } from "@sveltejs/vite-plugin-svelte";
 import { svelteTesting } from "@testing-library/svelte/vite";
+import { fileURLToPath } from "node:url";
 
+// SvelteKit's plugin supplies the `$lib` alias at build time; the standalone
+// component-test setup doesn't load it, so wire the alias here too.
 export default defineConfig({
   plugins: [svelte({ hot: false }), svelteTesting()],
+  resolve: {
+    alias: {
+      $lib: fileURLToPath(new URL("./src/lib", import.meta.url)),
+    },
+  },
   test: {
     environment: "jsdom",
     include: ["src/**/*.{test,spec}.{js,ts}"],
