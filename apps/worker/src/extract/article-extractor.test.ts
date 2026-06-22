@@ -17,6 +17,7 @@ describe("ArticleExtractor", () => {
     expect(() => ExtractResult.parse(res)).not.toThrow();
     expect(res.status).toBe("ok");
     expect(res.sourceType).toBe("article");
+    expect(res.contentHtml).not.toContain("<script");
   });
 
   it("extracts title, author, and readable text", () => {

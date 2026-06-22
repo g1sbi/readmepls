@@ -2,6 +2,7 @@ import { JSDOM } from "jsdom";
 import { Readability } from "@mozilla/readability";
 import type { ExtractResult } from "@readmepls/types";
 import type { Extractor } from "./extractor.js";
+import { sanitizeContentHtml } from "./sanitize.js";
 
 const WORDS_PER_MIN = 220;
 
@@ -48,7 +49,7 @@ export class ArticleExtractor implements Extractor {
       author: parsed.byline || author,
       siteName: parsed.siteName || siteName,
       lang: parsed.lang || lang,
-      contentHtml: parsed.content ?? "",
+      contentHtml: sanitizeContentHtml(parsed.content ?? ""),
       contentText: text,
       excerpt: parsed.excerpt || text.slice(0, 280),
       wordCount,
