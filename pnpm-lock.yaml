@@ -119,6 +119,9 @@ importers:
       '@types/sanitize-html':
         specifier: ^2.13.0
         version: 2.16.1
+      vite-node:
+        specifier: ^2.1.9
+        version: 2.1.9(@types/node@22.20.0)
 
   packages/core:
     dependencies:
