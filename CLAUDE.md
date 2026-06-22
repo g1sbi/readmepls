@@ -10,6 +10,35 @@ AI auto-tag → read with highlights, search, collections. Hosted SaaS + self-ho
 Design spec: `docs/superpowers/specs/2026-06-21-reader-app-design.md` — read it
 before implementing a feature.
 
+## Roadmap (phases)
+
+Each phase has its own spec + plan in `docs/superpowers/`. Build in order.
+
+- **Phase 1** — Core capture loop (backend: canonicalize → dedupe → extract →
+  AI-tag → store). **Done.**
+- **Phase 2** — Reader shell + typography (auth, library, reader, prefs) +
+  Phase-1 gap closures. **Structural only — no visual design.**
+- **Phase 3** — Frontend design language & visual polish (landing page, motifs,
+  themes, animations, polish). Dedicated phase; uses `frontend-design`.
+- **Phase 4** — Highlights/notes, full-text search, tags/collections UI.
+- **Phase 5** — X/Twitter + YouTube extractors, paywall fallback.
+- **Phase 6** — Connector seam + Markdown export; Notion/Obsidian stubs.
+- **Phase 7** — SaaS tier-gating UI, Docker Compose deploy, self-host packaging.
+
+Keep concerns unmixed: structure/behavior phases do not do visual design, and the
+design phase does not add features.
+
+## Design language
+
+- **Source of truth:** `assets/_banner.html` — palette (warm paper tones, ink
+  `#211E17`, terracotta accent `#C24A38`), Fredoka display font, paper/dog-ear/grain
+  motifs, lowercase playful voice.
+- **Tokens live in one file** (`apps/web/src/lib/styles/tokens.css`): colors, fonts,
+  radii, shadows. **Never hardcode a color or font name in a component** — reference
+  a token. This keeps the design phase able to retheme without touching components.
+- **Reusable components.** Shared UI primitives in `$lib/components/ui/`; feature
+  components compose them. No duplicated markup or CSS.
+
 ## Stack
 
 - **Frontend:** SvelteKit (reader UI + thin server/BFF routes).
