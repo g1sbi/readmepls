@@ -67,9 +67,15 @@ publish host ports.
 ### Service: worker
 
 - Node/TypeScript poller. No HTTP surface.
+- **Pre-req gap:** the worker package currently exports only `processJob` — it has
+  no runnable entrypoint, no `build`/`start` script. The plan adds a thin
+  `apps/worker/src/main.ts` that wires existing pure pieces (`createSafeFetchHtml`,
+  `ArticleExtractor`, `ClaudeProvider`, `classifySource`, `claimNextJob`,
+  `processJob`), authenticates to PB as the worker superuser, and polls in a loop.
+  No new domain logic — composition only (thin IO shell).
 - Multi-stage build (see Build Strategy). Runs as non-root.
 - Env: `ANTHROPIC_API_KEY`, `AI_MODEL`, `PB_URL`, `PB_WORKER_EMAIL`,
-  `PB_WORKER_PASSWORD`.
+  `PB_WORKER_PASSWORD`, `WORKER_POLL_MS`.
 - Liveness: `restart: unless-stopped`. A heartbeat/health surface is explicitly
   **out of scope** here and noted as future work.
 - `depends_on: pocketbase (service_healthy)`.
@@ -107,7 +113,8 @@ via `env_file` / `${VAR}` interpolation.
 | `ANTHROPIC_API_KEY` | AI provider key (server-side only) | *(required)* |
 | `AI_MODEL` | Default model | `claude-haiku-4-5` |
 | `PB_ADMIN_EMAIL` / `PB_ADMIN_PASSWORD` | Superuser bootstrap | *(required)* |
-| `PB_WORKER_EMAIL` / `PB_WORKER_PASSWORD` | Dedicated worker service credential (NOT superuser) | *(required)* |
+| `PB_WORKER_EMAIL` / `PB_WORKER_PASSWORD` | Dedicated worker superuser (separate from human admin) | *(required)* |
+| `WORKER_POLL_MS` | Worker job-poll interval | `2000` |
 | `PUBLIC_PB_URL` | Browser-facing PB URL | `http://localhost:8090` |
 | `PB_URL` | Internal PB URL | `http://pocketbase:8090` |
 | `ORIGIN` | SvelteKit origin (CSRF) | `http://localhost:3000` |
@@ -121,16 +128,23 @@ baked into images.
 ## Worker service credential (security)
 
 CLAUDE.md security boundary: the `content` table is writable **only** by the
-worker's service credential, and worker jobs must be idempotent. The worker
-therefore must **not** authenticate as the PocketBase superuser.
+worker's service credential, and worker jobs must be idempotent.
 
-Plan: on first boot, an idempotent bootstrap provisions a **dedicated service
-account** from `PB_WORKER_EMAIL` / `PB_WORKER_PASSWORD`. The existing API rules
-(in `pocketbase/pb_migrations/1718900000_init.js`) scope `content` writes to that
-account. The exact provisioning mechanism — a migration that seeds the account
-from env vs. an entrypoint upsert step — is decided at implementation time and
-**must align with the rules already defined in that migration**. Re-running the
-bootstrap must be a no-op (idempotent).
+The existing migration (`pocketbase/pb_migrations/1718900000_init.js`) sets
+`content.createRule = null` and **all** `jobs` rules to `null`. In PocketBase a
+`null` rule means **superuser-only** — there is no non-superuser path to claim
+jobs or write `content` without rewriting the Phase-1 rules (out of scope, covered
+by Phase-1 security tests). So the worker authenticates as a **superuser**.
+
+To respect least-privilege within that constraint, the worker uses a **dedicated
+superuser distinct from the human admin**: credentials `PB_WORKER_EMAIL` /
+`PB_WORKER_PASSWORD`, separate and independently revocable from `PB_ADMIN_*`.
+PocketBase supports multiple superusers. The worker authenticates via the
+`_superusers` collection (`pb.collection("_superusers").authWithPassword(...)`).
+
+Both superusers are provisioned idempotently at PocketBase container startup via
+`pocketbase superuser upsert <email> <password>` in an entrypoint script (no-op on
+re-run). No migration change is needed; this aligns with the existing null rules.
 
 ## compose.yml
 
@@ -186,9 +200,11 @@ A README "Self-hosting" section:
 
 ## Files to create
 
+- `apps/worker/src/main.ts` (+ `start`/`build` scripts in `apps/worker/package.json`)
+- `pocketbase/docker-entrypoint.sh` (idempotent superuser upsert + serve)
+- `pocketbase/Dockerfile`
 - `apps/web/Dockerfile`
 - `apps/worker/Dockerfile`
-- `pocketbase/Dockerfile`
 - `.dockerignore` (root)
 - `compose.yml` (root)
 - `.env.example` (root)
