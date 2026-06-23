@@ -68,6 +68,13 @@ design phase does not add features.
 
 - **TypeScript strict.** No `any` without a written reason. Shared types live in a
   single `types` package consumed by both `web` and `worker`.
+- **Workspace packages ship TS source, not built JS.** `@readmepls/core` and
+  `@readmepls/types` have `main: src/index.ts` and no build step — dev/test rely on
+  vite/tsc transforming them. So any bare-Node entrypoint that imports them must
+  **bundle** (Node 22 refuses to type-strip files under `node_modules`, crash-looping
+  otherwise). The worker bundles `main.ts` with esbuild — inlining workspace deps,
+  externalizing npm deps. Do not repoint `core`/`types` `main` at `dist`; it breaks
+  the edit-src/run-test loop the whole repo relies on.
 - **Validate at boundaries with Zod.** API input, extractor output, AI output, and
   data read back from PocketBase are all parsed/validated before use. Do not trust
   external shapes.
