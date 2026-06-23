@@ -2,7 +2,7 @@ name: readmepls
 
 services:
   pocketbase:
-    image: ghcr.io/OWNER/readmepls-pocketbase:latest
+    image: ghcr.io/${IMAGE_OWNER:-owner}/readmepls-pocketbase:latest
     build:
       context: .
       dockerfile: pocketbase/Dockerfile
@@ -20,7 +20,7 @@ services:
       retries: 5
 
   web:
-    image: ghcr.io/OWNER/readmepls-web:latest
+    image: ghcr.io/${IMAGE_OWNER:-owner}/readmepls-web:latest
     build:
       context: .
       dockerfile: apps/web/Dockerfile
@@ -35,7 +35,7 @@ services:
         condition: service_healthy
 
   worker:
-    image: ghcr.io/OWNER/readmepls-worker:latest
+    image: ghcr.io/${IMAGE_OWNER:-owner}/readmepls-worker:latest
     build:
       context: .
       dockerfile: apps/worker/Dockerfile
@@ -43,6 +43,9 @@ services:
     env_file: .env
     environment:
       PB_URL: http://pocketbase:8090
+      # Empty by default (real provider). The smoke test exports AI_PROVIDER=mock
+      # so the worker completes jobs offline; overrides the .env value.
+      AI_PROVIDER: ${AI_PROVIDER:-}
     depends_on:
       pocketbase:
         condition: service_healthy
