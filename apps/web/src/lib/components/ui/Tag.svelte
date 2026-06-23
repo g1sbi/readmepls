@@ -8,10 +8,11 @@
 <style>
   .tag {
     display: inline-block;
-    font-family: var(--font-ui);
-    color: var(--muted);
-    border: 1px solid var(--fold);
-    border-radius: var(--radius-sm);
-    padding: 0.1rem 0.4rem;
+    font-family: var(--font-display);
+    font-size: 0.8rem;
+    color: var(--color-text-muted);
+    border: 1px solid var(--color-fold);
+    border-radius: var(--radius-pill);
+    padding: 0.1rem 0.55rem;
   }
 </style>

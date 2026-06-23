@@ -30,4 +30,9 @@ describe("ui primitives", () => {
     render(Spinner, { label: "Loading" });
     expect(screen.getByLabelText("Loading")).toBeInTheDocument();
   });
+
+  it("Button exposes its variant for styling", () => {
+    render(Button, { children: text("Go"), variant: "accent" });
+    expect(screen.getByRole("button", { name: "Go" })).toHaveAttribute("data-variant", "accent");
+  });
 });

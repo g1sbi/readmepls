@@ -7,9 +7,9 @@
 
 <style>
   .card {
-    background: var(--paper-2);
-    border-radius: var(--radius-md);
-    box-shadow: var(--shadow-card);
-    padding: 1rem;
+    background: var(--color-surface-raised);
+    border-radius: var(--radius-lg);
+    box-shadow: var(--shadow-md);
+    padding: 1.1rem 1.2rem;
   }
 </style>
