@@ -4,14 +4,16 @@
   import { browserPb } from "$lib/pb.js";
   import { withReaderDefaults } from "@readmepls/core";
   import type { ReaderPrefs } from "@readmepls/types";
+  import type { ArticleRecord } from "$lib/article/record.js";
+  import type { RecordModel } from "pocketbase";
   import { readerCssVars } from "$lib/reader/css-vars.js";
   import ReaderControls from "$lib/components/ReaderControls.svelte";
   import Button from "$lib/components/ui/Button.svelte";
   import Spinner from "$lib/components/ui/Spinner.svelte";
 
   const pb = browserPb();
-  let article = $state<any>(null);
-  let content = $state<any>(null);
+  let article = $state<ArticleRecord | null>(null);
+  let content = $state<RecordModel | null>(null);
   let prefs = $state<ReaderPrefs>(withReaderDefaults());
 
   let progress = $state(0);
@@ -41,15 +43,16 @@
     const id = $page.params.id;
     if (!id) return;
     article = await pb.collection("articles").getOne(id, { expand: "content" });
-    content = article.expand?.content ?? null;
+    // article is always non-null here — getOne throws on not-found
+    content = article!.expand?.content ?? null;
 
     const uid = pb.authStore.model?.id;
     if (uid) {
       const me = await pb.collection("users").getOne(uid);
       prefs = withReaderDefaults(me.reader_prefs ?? undefined);
     }
-    if (article.status === "unread") {
-      await pb.collection("articles").update(article.id, { status: "reading" });
+    if (article!.status === "unread") {
+      await pb.collection("articles").update(article!.id, { status: "reading" });
     }
     window.addEventListener("scroll", onScroll, { passive: true });
   });

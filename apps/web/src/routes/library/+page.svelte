@@ -2,16 +2,17 @@
   import { onMount, onDestroy } from "svelte";
   import { goto } from "$app/navigation";
   import { browserPb } from "$lib/pb.js";
+  import type { ArticleRecord } from "$lib/article/record.js";
   import ArticleCard from "$lib/components/ArticleCard.svelte";
 
   const pb = browserPb();
-  let articles = $state<any[]>([]);
+  let articles = $state<ArticleRecord[]>([]);
   let loading = $state(true);
   let unsub: (() => void) | undefined;
 
   async function load() {
     const list = await pb.collection("articles").getList(1, 100, { sort: "-created", expand: "content" });
-    articles = list.items;
+    articles = list.items as ArticleRecord[];
     loading = false;
   }
 

@@ -3,17 +3,18 @@
   import { goto } from "$app/navigation";
   import { browserPb } from "$lib/pb.js";
   import { splitHomeFeed } from "$lib/article/home-feed.js";
+  import type { ArticleRecord } from "$lib/article/record.js";
   import CaptureBar from "$lib/components/CaptureBar.svelte";
   import ArticleCard from "$lib/components/ArticleCard.svelte";
 
   const pb = browserPb();
-  let articles = $state<any[]>([]);
+  let articles = $state<ArticleRecord[]>([]);
   let unsub: (() => void) | undefined;
   const feed = $derived(splitHomeFeed(articles));
 
   async function load() {
     const list = await pb.collection("articles").getList(1, 50, { sort: "-created", expand: "content" });
-    articles = list.items;
+    articles = list.items as ArticleRecord[];
   }
   async function retry(id: string) {
     await fetch("/api/retry", {
