@@ -76,12 +76,12 @@
 
 <style>
   .reader {
-    background: var(--bg);
-    color: var(--fg);
-    font-family: var(--reader-font);
-    font-size: var(--reader-size);
-    line-height: var(--reader-line-height);
-    max-width: var(--reader-width);
+    background: var(--reading-bg);
+    color: var(--reading-text);
+    font-family: var(--reading-font);
+    font-size: var(--reading-size);
+    line-height: var(--reading-leading);
+    max-width: var(--reading-measure);
     margin: 0 auto;
   }
 </style>

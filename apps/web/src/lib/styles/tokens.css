@@ -163,6 +163,9 @@
    * the reader column reads them. Defaults below = comfortable default.
    * ====================================================================== */
   --reading-font:    var(--font-reading);
+  /* humanist reading sans — the serif/sans toggle's sans option.
+     NOT --font-display (Fredoka is display-only, never body). */
+  --reading-font-sans: "Inter", "Segoe UI", system-ui, -apple-system, sans-serif;
   --reading-size:    1.1875rem; /* ~19px */
   --reading-leading: 1.7;
   --reading-measure: 68ch;      /* max line length */
