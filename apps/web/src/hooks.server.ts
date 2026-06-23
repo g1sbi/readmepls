@@ -14,7 +14,7 @@ export const handle: Handle = async ({ event, resolve }) => {
   }
 
   event.locals.pb = pb;
-  event.locals.userId = pb.authStore.record?.id ?? null;
+  event.locals.userId = pb.authStore.model?.id ?? null;
 
   const target = routeGuard(event.url.pathname, event.locals.userId);
   if (target) throw redirect(303, target);

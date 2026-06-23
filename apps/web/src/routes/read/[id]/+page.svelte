@@ -1,5 +1,5 @@
 <script lang="ts">
-  import { onMount } from "svelte";
+  import { onMount, onDestroy } from "svelte";
   import { page } from "$app/stores";
   import { browserPb } from "$lib/pb.js";
   import { withReaderDefaults } from "@readmepls/core";
@@ -19,7 +19,7 @@
     prefs = next;
     clearTimeout(saveTimer);
     saveTimer = setTimeout(() => {
-      const uid = pb.authStore.record?.id;
+      const uid = pb.authStore.model?.id;
       if (uid) pb.collection("users").update(uid, { reader_prefs: next });
     }, 500);
   }
@@ -36,10 +36,11 @@
 
   onMount(async () => {
     const id = $page.params.id;
+    if (!id) return;
     article = await pb.collection("articles").getOne(id, { expand: "content" });
     content = article.expand?.content ?? null;
 
-    const uid = pb.authStore.record?.id;
+    const uid = pb.authStore.model?.id;
     if (uid) {
       const me = await pb.collection("users").getOne(uid);
       prefs = withReaderDefaults(me.reader_prefs ?? undefined);
@@ -48,7 +49,11 @@
       await pb.collection("articles").update(article.id, { status: "reading" });
     }
     window.addEventListener("scroll", onScroll, { passive: true });
-    return () => window.removeEventListener("scroll", onScroll);
+  });
+
+  // An async onMount can't register a cleanup; tear down the listener here.
+  onDestroy(() => {
+    if (typeof window !== "undefined") window.removeEventListener("scroll", onScroll);
   });
 
   async function archive() {
