@@ -1,7 +1,7 @@
 <script lang="ts">
   import "$lib/styles/fonts.css";
   import "$lib/styles/tokens.css";
-  import { onMount } from "svelte";
+  import { onMount, setContext } from "svelte";
   import { goto } from "$app/navigation";
   import { page } from "$app/stores";
   import { browserPb } from "$lib/pb.js";
@@ -11,6 +11,13 @@
   let { children } = $props();
   const pb = browserPb();
   let theme = $state<Theme>("light");
+
+  // Expose the global theme model to descendants so the reader page can keep
+  // its article in sync with the chrome rather than maintaining a parallel state.
+  setContext("theme", {
+    get current() { return theme; },
+    set: (t: Theme) => setTheme(t),
+  });
 
   // Chrome (TopBar + paper bg) is hidden on the standalone login screen.
   const chrome = $derived($page.url.pathname !== "/login");

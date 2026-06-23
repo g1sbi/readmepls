@@ -1,15 +1,20 @@
 <script lang="ts">
-  import { onMount, onDestroy } from "svelte";
+  import { onMount, onDestroy, getContext } from "svelte";
   import { page } from "$app/stores";
   import { browserPb } from "$lib/pb.js";
   import { withReaderDefaults } from "@readmepls/core";
   import type { ReaderPrefs } from "@readmepls/types";
+  import type { Theme } from "$lib/theme/theme.js";
   import type { ArticleRecord } from "$lib/article/record.js";
   import type { RecordModel } from "pocketbase";
   import { readerCssVars } from "$lib/reader/css-vars.js";
   import ReaderControls from "$lib/components/ReaderControls.svelte";
   import Button from "$lib/components/ui/Button.svelte";
   import Spinner from "$lib/components/ui/Spinner.svelte";
+
+  // Global theme context provided by +layout.svelte. May be undefined when
+  // the reader is rendered in isolation (e.g. unit tests without the layout).
+  const themeCtx = getContext<{ current: Theme; set: (t: Theme) => void } | undefined>("theme");
 
   const pb = browserPb();
   let article = $state<ArticleRecord | null>(null);
@@ -20,6 +25,11 @@
 
   let saveTimer: ReturnType<typeof setTimeout> | undefined;
   function savePrefs(next: ReaderPrefs) {
+    // If theme changed, drive it through the global model (localStorage + <html>
+    // data-theme + reader_prefs.theme) so the chrome and article agree.
+    if (next.theme !== prefs.theme && themeCtx) {
+      themeCtx.set(next.theme);
+    }
     prefs = next;
     clearTimeout(saveTimer);
     saveTimer = setTimeout(() => {
@@ -27,6 +37,10 @@
       if (uid) pb.collection("users").update(uid, { reader_prefs: next });
     }, 500);
   }
+
+  // Derive the active theme: prefer the live global context (keeps article in
+  // sync when TopBar changes theme) and fall back to local prefs for isolation.
+  const activeTheme = $derived(themeCtx ? themeCtx.current : prefs.theme);
 
   let progressTimer: ReturnType<typeof setTimeout> | undefined;
   function onScroll() {
@@ -68,7 +82,8 @@
 </script>
 
 <div class="progress" style="--p: {progress}" aria-hidden="true"></div>
-<div class="reader-shell">
+<!-- reader vars live on the shell so the width pref governs the shell, not just the article -->
+<div class="reader-shell" style={readerCssVars(prefs)}>
   <div class="bar">
     <a class="back" href="/library">← library</a>
     <ReaderControls {prefs} onChange={savePrefs} />
@@ -78,7 +93,8 @@
   {#if !content}
     <Spinner label="Loading article" />
   {:else}
-    <article data-theme={prefs.theme} style={readerCssVars(prefs)} class="reader">
+    <!-- data-theme uses the live global context so TopBar changes retone the article (FIX 1) -->
+    <article data-theme={activeTheme} class="reader">
       <h1>{content.title}</h1>
       <!-- content_html is sanitized in the worker (Task 2) before storage -->
       {@html content.content_html}
@@ -88,7 +104,9 @@
 
 <style>
   .progress { position: fixed; top: 0; left: 0; height: 3px; width: calc(var(--p) * 100%); background: var(--color-accent); z-index: 10; transition: width var(--dur-fast) var(--ease-out); }
-  .reader-shell { max-width: 68ch; margin: 0 auto; }
+  /* --reading-measure is set inline on .reader-shell so the column width
+     follows the pref (narrow/normal/wide) end-to-end (FIX 2). */
+  .reader-shell { max-width: var(--reading-measure); margin: 0 auto; }
   .bar { display: flex; align-items: center; gap: 0.75rem; margin-bottom: 1rem; }
   .bar .back { font-family: var(--font-display); color: var(--color-text-muted); text-decoration: none; }
   .bar .back:hover { color: var(--color-text); }

@@ -6,6 +6,7 @@
   import type { ArticleRecord } from "$lib/article/record.js";
   import CaptureBar from "$lib/components/CaptureBar.svelte";
   import ArticleCard from "$lib/components/ArticleCard.svelte";
+  import CardGrid from "$lib/components/ui/CardGrid.svelte";
 
   const pb = browserPb();
   let articles = $state<ArticleRecord[]>([]);
@@ -39,22 +40,22 @@
 {#if feed.active.length}
   <section class="block">
     <h2>working on it</h2>
-    <div class="grid">
+    <CardGrid>
       {#each feed.active as a (a.id)}
         <ArticleCard article={a} onRetry={retry} onOpen={(id) => goto(`/read/${id}`)} />
       {/each}
-    </div>
+    </CardGrid>
   </section>
 {/if}
 
 {#if feed.recent.length}
   <section class="block">
     <h2>recently saved</h2>
-    <div class="grid">
+    <CardGrid>
       {#each feed.recent as a (a.id)}
         <ArticleCard article={a} onOpen={(id) => goto(`/read/${id}`)} />
       {/each}
-    </div>
+    </CardGrid>
     <a class="more" href="/library">see all in your library →</a>
   </section>
 {/if}
@@ -65,7 +66,6 @@
   .hero h1 span { color: var(--color-accent); }
   .block { margin-top: 2.5rem; }
   .block h2 { font-family: var(--font-display); font-size: 1.1rem; color: var(--color-text-muted); margin: 0 0 0.9rem; }
-  .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(240px, 1fr)); gap: 1rem; }
   .more { display: inline-block; margin-top: 1rem; font-family: var(--font-display); color: var(--color-accent); text-decoration: none; }
   .more:hover { color: var(--color-accent-hover); }
 </style>

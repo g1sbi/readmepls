@@ -10,6 +10,7 @@
     onRetry,
     onOpen,
   }: {
+    // any: PocketBase SDK returns expand records as loosely-typed RecordModel; narrowing here would duplicate the full content schema.
     article: { id: string; url: string; expand?: { content?: any } };
     onRetry?: (id: string) => void;
     onOpen?: (id: string) => void;

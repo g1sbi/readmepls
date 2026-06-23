@@ -4,6 +4,7 @@
   import { browserPb } from "$lib/pb.js";
   import type { ArticleRecord } from "$lib/article/record.js";
   import ArticleCard from "$lib/components/ArticleCard.svelte";
+  import CardGrid from "$lib/components/ui/CardGrid.svelte";
 
   const pb = browserPb();
   let articles = $state<ArticleRecord[]>([]);
@@ -26,26 +27,25 @@
 <h1>your library</h1>
 
 {#if loading}
-  <div class="grid">
+  <CardGrid>
     {#each Array(6) as _}
       <div class="skeleton" aria-hidden="true"></div>
     {/each}
-  </div>
+  </CardGrid>
 {:else if articles.length === 0}
   <div class="empty">
     <p>nothing saved yet. paste a link on the <a href="/">extract page</a> ☝</p>
   </div>
 {:else}
-  <div class="grid">
+  <CardGrid>
     {#each articles as a (a.id)}
       <ArticleCard article={a} onOpen={(id) => goto(`/read/${id}`)} />
     {/each}
-  </div>
+  </CardGrid>
 {/if}
 
 <style>
   h1 { font-family: var(--font-display); color: var(--color-text); font-size: 1.6rem; margin: 0 0 1.25rem; }
-  .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(240px, 1fr)); gap: 1rem; }
   .skeleton { height: 9rem; border-radius: var(--radius-lg); background: var(--color-surface-sunken); animation: pulse var(--dur-slow) var(--ease-out) infinite alternate; }
   @keyframes pulse { to { opacity: 0.5; } }
   @media (prefers-reduced-motion: reduce) { .skeleton { animation: none; } }
