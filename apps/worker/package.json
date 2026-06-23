@@ -2,6 +2,10 @@
   "name": "@readmepls/worker",
   "version": "0.0.0",
   "type": "module",
+  "scripts": {
+    "build": "esbuild src/main.ts --bundle --platform=node --format=esm --target=node22 --outfile=dist/main.js --external:pocketbase --external:@anthropic-ai/sdk --external:jsdom --external:@mozilla/readability --external:zod",
+    "start": "node dist/main.js"
+  },
   "dependencies": {
     "@readmepls/types": "workspace:*",
     "@readmepls/core": "workspace:*",
@@ -11,5 +15,5 @@
     "@anthropic-ai/sdk": "^0.30.0",
     "zod": "^3.23.0"
   },
-  "devDependencies": { "@types/jsdom": "^21.1.0" }
+  "devDependencies": { "@types/jsdom": "^21.1.0", "esbuild": "^0.24.0" }
 }
