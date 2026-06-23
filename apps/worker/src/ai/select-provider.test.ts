@@ -5,7 +5,7 @@ import type { AIProvider } from "./provider.js";
 
 describe("selectAiProvider", () => {
   it("returns MockAIProvider for AI_PROVIDER=mock without building the real provider", () => {
-    const makeClaude = vi.fn<[], AIProvider>();
+    const makeClaude = vi.fn<() => AIProvider>();
     const ai = selectAiProvider({ AI_PROVIDER: "mock" }, makeClaude);
     expect(ai).toBeInstanceOf(MockAIProvider);
     expect(makeClaude).not.toHaveBeenCalled();

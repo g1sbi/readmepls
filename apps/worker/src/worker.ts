@@ -51,6 +51,20 @@ export async function processJob(
       failure_reason: null,
     });
 
+    // Link every content-less article that captured this URL to the freshly
+    // extracted content. Public extractions are shared, so these become readable.
+    const toLink = await pb.collection("articles").getFullList({
+      filter: pb.filter("canonical_url = {:url} && content = ''", {
+        url: job.canonical_url,
+      }),
+    });
+    for (const a of toLink) {
+      await pb.collection("articles").update(a.id, {
+        content: content.id,
+        is_private: false,
+      });
+    }
+
     await pb.collection("jobs").update(jobId, {
       status: "done",
       content: content.id,

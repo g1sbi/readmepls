@@ -1,8 +1,20 @@
 import { defineConfig } from "vitest/config";
+import { svelte } from "@sveltejs/vite-plugin-svelte";
+import { svelteTesting } from "@testing-library/svelte/vite";
+import { fileURLToPath } from "node:url";
 
-// The web app has no unit tests in Phase 1 — capture logic is tested in
-// @readmepls/core. This config keeps vitest from loading vite.config.ts (and the
-// SvelteKit plugin, which needs a full SK project) during the workspace run.
+// SvelteKit's plugin supplies the `$lib` alias at build time; the standalone
+// component-test setup doesn't load it, so wire the alias here too.
 export default defineConfig({
-  test: { include: [] },
+  plugins: [svelte({ hot: false }), svelteTesting()],
+  resolve: {
+    alias: {
+      $lib: fileURLToPath(new URL("./src/lib", import.meta.url)),
+    },
+  },
+  test: {
+    environment: "jsdom",
+    include: ["src/**/*.{test,spec}.{js,ts}"],
+    setupFiles: ["./vitest-setup.ts"],
+  },
 });

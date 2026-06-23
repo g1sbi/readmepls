@@ -49,6 +49,32 @@ own reverse proxy (Caddy, Traefik, or nginx) terminating TLS and forwarding to t
 **Smoke test:** `pnpm smoke` boots the full stack, seeds one job, and asserts the
 worker processes it end-to-end (uses a mock AI provider, so no API key is needed).
 
+## Running locally (without Docker)
+
+Three processes against one PocketBase superuser shared by the worker and the
+web service client.
+
+```bash
+# 1. PocketBase (applies migrations on start)
+cd pocketbase && ./pocketbase superuser upsert worker@local password12345
+./pocketbase serve --http=127.0.0.1:8090
+
+# 2. Worker (new terminal, from repo root) — build once, then run
+pnpm --filter @readmepls/worker build
+PB_URL=http://127.0.0.1:8090 \
+PB_WORKER_EMAIL=worker@local PB_WORKER_PASSWORD=password12345 \
+ANTHROPIC_API_KEY=sk-... \
+pnpm --filter @readmepls/worker start
+
+# 3. Web (new terminal, from repo root) — service client uses PB_ADMIN_*
+PB_URL=http://127.0.0.1:8090 \
+PB_ADMIN_EMAIL=worker@local PB_ADMIN_PASSWORD=password12345 \
+pnpm --filter @readmepls/web dev
+```
+
+Open http://localhost:5173, sign up, paste a link, watch it go ready, and read it.
+Without `ANTHROPIC_API_KEY` the worker uses a mock tagger (dev only).
+
 ## License
 
 [GNU AGPL-3.0-or-later](LICENSE). You may use, modify, and self-host freely; if you
