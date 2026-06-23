@@ -5,6 +5,7 @@ import Anthropic from "@anthropic-ai/sdk";
 import { classifySource } from "@readmepls/core";
 import { ArticleExtractor } from "./extract/article-extractor.js";
 import { ClaudeProvider } from "./ai/claude-provider.js";
+import { selectAiProvider } from "./ai/select-provider.js";
 import { createSafeFetchHtml } from "./fetch/safe-fetch.js";
 import { runLoopOnce } from "./run-loop.js";
 import type { ProcessDeps } from "./worker.js";
@@ -29,16 +30,22 @@ async function main(): Promise<void> {
     .collection("_superusers")
     .authWithPassword(requireEnv("PB_WORKER_EMAIL"), requireEnv("PB_WORKER_PASSWORD"));
 
-  const anthropic = new Anthropic({ apiKey: requireEnv("ANTHROPIC_API_KEY") });
   const fetchHtml = createSafeFetchHtml({
     lookup: async (host) => (await dnsLookup(host, { all: true })).map((a) => a.address),
     fetchFn: (url) => fetch(url, { redirect: "manual" }),
   });
 
+  // The Anthropic client is built lazily inside the factory so mock mode
+  // (smoke test) needs no ANTHROPIC_API_KEY.
+  const ai = selectAiProvider(process.env, () => {
+    const anthropic = new Anthropic({ apiKey: requireEnv("ANTHROPIC_API_KEY") });
+    return new ClaudeProvider(anthropic, model);
+  });
+
   const deps: ProcessDeps = {
     fetchHtml,
     extractor: new ArticleExtractor(),
-    ai: new ClaudeProvider(anthropic, model),
+    ai,
     classify: classifySource,
   };
 
