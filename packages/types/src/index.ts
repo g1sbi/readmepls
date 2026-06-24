@@ -5,3 +5,6 @@ export * from "./content.js";
 export * from "./job.js";
 export * from "./article.js";
 export * from "./reader.js";
+export * from "./highlight.js";
+export * from "./collection.js";
+export * from "./search.js";
