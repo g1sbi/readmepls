@@ -7,3 +7,4 @@ export * from "./reader/prefs.js";
 export * from "./slug.js";
 export * as anchoring from "./highlight/anchor.js";
 export { rangeOver } from "./highlight/anchor.js";
+export * from "./search/query.js";
