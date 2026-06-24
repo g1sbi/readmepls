@@ -5,6 +5,7 @@ vi.mock("$lib/pb.js", () => ({
   browserPb: () => ({
     collection: () => ({
       getList: vi.fn().mockResolvedValue({ items: [] }),
+      getFullList: vi.fn().mockResolvedValue([]),
       subscribe: vi.fn().mockResolvedValue(() => {}),
     }),
   }),
