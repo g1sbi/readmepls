@@ -2,6 +2,8 @@
   import { onMount, onDestroy } from "svelte";
   import { goto } from "$app/navigation";
   import { browserPb } from "$lib/pb.js";
+  import { slugify } from "@readmepls/core";
+  import { ClientResponseError } from "pocketbase";
   import type { ArticleRecord } from "$lib/article/record.js";
   import ArticleCard from "$lib/components/ArticleCard.svelte";
   import CardGrid from "$lib/components/ui/CardGrid.svelte";
@@ -16,6 +18,13 @@
   let tags = $state<{ id: string; name: string }[]>([]);
   let selectedTag = $state<string | null>(null);
   let taggedArticleIds = $state<Set<string>>(new Set());
+
+  // Collections state
+  let collections = $state<{ id: string; name: string; slug: string }[]>([]);
+  let newCollectionName = $state("");
+  let renameTarget = $state<string | null>(null);
+  let renameDraft = $state("");
+  let collectionError = $state("");
 
   let visible = $derived(
     selectedTag === null ? articles : articles.filter((a) => taggedArticleIds.has(a.id)),
@@ -32,6 +41,11 @@
     tags = raw.map((t) => ({ id: t.id, name: t.name as string }));
   }
 
+  async function loadCollections() {
+    const raw = await pb.collection("collections").getFullList({ sort: "name" });
+    collections = raw.map((c) => ({ id: c.id, name: c.name as string, slug: c.slug as string }));
+  }
+
   async function selectTag(tagId: string | null) {
     selectedTag = tagId;
     if (tagId === null) {
@@ -45,8 +59,55 @@
     taggedArticleIds = new Set(links.map((l) => l.article as string));
   }
 
+  async function createCollection(e: SubmitEvent) {
+    e.preventDefault();
+    const name = newCollectionName.trim();
+    if (!name) return;
+    const uid = pb.authStore.model?.id;
+    if (!uid) return;
+    const slug = slugify(name);
+    collectionError = "";
+    try {
+      await pb.collection("collections").create({
+        user: uid, name, slug, parent: "", order: 0,
+      });
+      newCollectionName = "";
+      collectionError = "";
+      await loadCollections();
+    } catch (err) {
+      if (!(err instanceof ClientResponseError)) throw err;
+      // Duplicate (user, slug) unique index → 400
+      collectionError = "a collection with that name already exists";
+    }
+  }
+
+  function startRename(id: string, currentName: string) {
+    renameTarget = id;
+    renameDraft = currentName;
+  }
+
+  async function submitRename(e: SubmitEvent) {
+    e.preventDefault();
+    if (!renameTarget) return;
+    const name = renameDraft.trim();
+    if (!name) return;
+    // Use pb.filter binding for id — never raw interpolation
+    await pb.collection("collections").update(renameTarget, {
+      name, slug: slugify(name),
+    });
+    renameTarget = null;
+    renameDraft = "";
+    await loadCollections();
+  }
+
+  async function deleteCollection(id: string) {
+    // collection_items cascade per Task 3 migration (cascadeDelete: true)
+    await pb.collection("collections").delete(id);
+    await loadCollections();
+  }
+
   onMount(async () => {
-    await Promise.all([load(), loadTags()]);
+    await Promise.all([load(), loadTags(), loadCollections()]);
     unsub = await pb.collection("articles").subscribe("*", () => load(), { expand: "content" });
   });
   onDestroy(() => unsub?.());
@@ -95,6 +156,45 @@
   </CardGrid>
 {/if}
 
+<section class="collections-section">
+  <h2 class="collections-heading">collections</h2>
+  {#if collections.length > 0}
+    <nav class="collections-rail" aria-label="Collections">
+      {#each collections as col (col.id)}
+        <div class="collection-item">
+          {#if renameTarget === col.id}
+            <form class="rename-form" onsubmit={submitRename}>
+              <input
+                aria-label="rename collection"
+                bind:value={renameDraft}
+                class="rename-input"
+              />
+              <button type="submit" class="action-btn">save</button>
+              <button type="button" class="action-btn" onclick={() => (renameTarget = null)}>cancel</button>
+            </form>
+          {:else}
+            <a class="collection-chip" href="/collections/{col.slug}">{col.name}</a>
+            <button class="action-btn" onclick={() => startRename(col.id, col.name)} aria-label="rename {col.name}">rename</button>
+            <button class="action-btn danger" onclick={() => deleteCollection(col.id)} aria-label="delete {col.name}">delete</button>
+          {/if}
+        </div>
+      {/each}
+    </nav>
+  {/if}
+  <form class="new-collection-form" onsubmit={createCollection}>
+    <input
+      aria-label="new collection name"
+      placeholder="new collection…"
+      bind:value={newCollectionName}
+      class="new-collection-input"
+    />
+    <button type="submit" class="action-btn">create</button>
+  </form>
+  {#if collectionError}
+    <p class="collection-error" role="alert">{collectionError}</p>
+  {/if}
+</section>
+
 <style>
   h1 { font-family: var(--font-display); color: var(--color-text); font-size: 1.6rem; margin: 0 0 1.25rem; }
   .skeleton { height: 9rem; border-radius: var(--radius-lg); background: var(--color-surface-sunken); animation: pulse var(--dur-slow) var(--ease-out) infinite alternate; }
@@ -135,4 +235,29 @@
     border-color: var(--color-accent);
     color: var(--color-surface);
   }
+
+  .collections-section { margin-top: 2rem; }
+  .collections-heading { font-family: var(--font-display); color: var(--color-text); font-size: 1.1rem; margin: 0 0 0.75rem; }
+  .collections-rail { display: flex; flex-direction: column; gap: 0.4rem; margin: 0 0 0.75rem; }
+  .collection-item { display: flex; align-items: center; gap: 0.5rem; flex-wrap: wrap; }
+  .collection-chip {
+    font-family: var(--font-display); color: var(--color-text);
+    background: var(--color-surface-sunken); border-radius: var(--radius-pill);
+    padding: 0.2rem 0.75rem; text-decoration: none; font-size: var(--text-sm);
+    border: 1px solid var(--color-border); transition: border-color 0.15s;
+  }
+  .collection-chip:hover { border-color: var(--color-accent); color: var(--color-accent); }
+  .action-btn {
+    background: none; border: none; cursor: pointer; font: inherit; font-size: var(--text-sm);
+    color: var(--color-text-muted); padding: 0.1rem 0.4rem;
+  }
+  .action-btn:hover { color: var(--color-text); }
+  .action-btn.danger:hover { color: var(--color-accent); }
+  .rename-form { display: flex; align-items: center; gap: 0.4rem; }
+  .rename-input, .new-collection-input {
+    border: none; border-bottom: 1px solid var(--color-border);
+    background: transparent; font: inherit; font-size: var(--text-sm); color: var(--color-text);
+  }
+  .new-collection-form { display: flex; align-items: center; gap: 0.5rem; }
+  .collection-error { margin: 0.3rem 0 0; font-size: var(--text-sm); color: var(--color-accent); }
 </style>

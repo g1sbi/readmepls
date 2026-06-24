@@ -12,6 +12,7 @@
   import { markRange, unmarkAll } from "$lib/highlight/render";
   import ReaderControls from "$lib/components/ReaderControls.svelte";
   import TagEditor from "$lib/components/TagEditor.svelte";
+  import AddToCollection from "$lib/components/AddToCollection.svelte";
   import Button from "$lib/components/ui/Button.svelte";
   import Spinner from "$lib/components/ui/Spinner.svelte";
   import HighlightPopover from "$lib/components/HighlightPopover.svelte";
@@ -37,6 +38,9 @@
 
   // Manual tag state — only manual-sourced tags are shown/edited here; AI tags remain read-only
   let manualTags = $state<{ id: string; name: string; linkId: string }[]>([]);
+
+  // Collection state
+  let collections = $state<{ id: string; name: string }[]>([]);
 
   async function loadHighlights(articleId: string) {
     const raw = await pb.collection("highlights").getFullList({
@@ -186,6 +190,7 @@
     await Promise.resolve();
     await loadHighlights(id);
     await loadTags(id);
+    await loadCollections();
     window.addEventListener("scroll", onScroll, { passive: true });
   });
 
@@ -196,6 +201,28 @@
 
   async function archive() {
     if (article) await pb.collection("articles").update(article.id, { status: "archived" });
+  }
+
+  async function loadCollections() {
+    // Use pb.filter binding to prevent injection
+    collections = (await pb.collection("collections").getFullList({ sort: "name" }))
+      .map((c) => ({ id: c.id, name: c.name as string }));
+  }
+
+  async function addToCollection(collectionId: string) {
+    await pb.collection("collection_items").create({
+      collection: collectionId, article: $page.params.id, order: 0,
+    });
+  }
+
+  async function createCollection(name: string) {
+    const uid = pb.authStore.model?.id;
+    if (!uid) return;
+    const c = await pb.collection("collections").create({
+      user: uid, name, slug: slugify(name), parent: "", order: 0,
+    });
+    await addToCollection(c.id);
+    await loadCollections();
   }
 </script>
 
@@ -223,6 +250,9 @@
     </article>
     <div class="tag-section">
       <TagEditor tags={manualTags.map(t => ({ id: t.id, name: t.name }))} onadd={addTag} onremove={removeTag} />
+    </div>
+    <div class="collection-section">
+      <AddToCollection {collections} onadd={addToCollection} oncreate={createCollection} />
     </div>
   {/if}
 </div>
@@ -256,5 +286,6 @@
   .reader :global(blockquote) { border-left: 3px solid var(--color-accent); margin: 1rem 0; padding-left: 1rem; color: var(--color-text-muted); }
   .reader :global(img) { max-width: 100%; height: auto; border-radius: var(--radius-md); }
   .tag-section { max-width: var(--reading-measure); margin: var(--space-4) auto 0; padding: 0 1.5rem; }
+  .collection-section { max-width: var(--reading-measure); margin: var(--space-4) auto 0; padding: 0 1.5rem; }
   @media (prefers-reduced-motion: reduce) { .progress { transition: none; } }
 </style>

@@ -147,3 +147,51 @@ describe("article_tags isolation", () => {
     expect(list.length).toBe(0);
   });
 });
+
+describe("collection_items scoping", () => {
+  it("a user cannot read another user's collection items", async () => {
+    const emailE = `e${Date.now()}@test.local`;
+    const ue = await h.pb.collection("users").create({
+      email: emailE, password: "password12345", passwordConfirm: "password12345",
+      tier: "free", monthly_quota_used: 0,
+    });
+    const { articleId } = await makeArticleWithContent(h.pb, ue.id, "coliso", "body");
+    const col = await h.pb.collection("collections").create({
+      user: ue.id, name: "Private", slug: `private-${Date.now()}`, parent: "", order: 0,
+    });
+    await h.pb.collection("collection_items").create({ collection: col.id, article: articleId, order: 0 });
+
+    const emailF = `f${Date.now()}@test.local`;
+    await h.pb.collection("users").create({
+      email: emailF, password: "password12345", passwordConfirm: "password12345",
+      tier: "free", monthly_quota_used: 0,
+    });
+    const cf = await authedClient(h.url, emailF);
+    const items = await cf.collection("collection_items").getFullList();
+    expect(items.length).toBe(0);
+  });
+
+  it("deleting a collection cascades to its items", async () => {
+    const emailG = `g${Date.now()}@test.local`;
+    const ug = await h.pb.collection("users").create({
+      email: emailG, password: "password12345", passwordConfirm: "password12345",
+      tier: "free", monthly_quota_used: 0,
+    });
+    const { articleId } = await makeArticleWithContent(h.pb, ug.id, "cascadeiso", "cascade body");
+    const col = await h.pb.collection("collections").create({
+      user: ug.id, name: "ToDelete", slug: `todelete-${Date.now()}`, parent: "", order: 0,
+    });
+    const item = await h.pb.collection("collection_items").create({
+      collection: col.id, article: articleId, order: 0,
+    });
+
+    // Delete the collection — cascadeDelete: true should remove the item too
+    await h.pb.collection("collections").delete(col.id);
+
+    // Verify the collection_item is gone (admin client so no auth scoping masks result)
+    const remaining = await h.pb.collection("collection_items").getFullList({
+      filter: h.pb.filter("id = {:id}", { id: item.id }),
+    });
+    expect(remaining.length).toBe(0);
+  });
+});
