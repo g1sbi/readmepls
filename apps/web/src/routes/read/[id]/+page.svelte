@@ -2,15 +2,18 @@
   import { onMount, onDestroy, getContext } from "svelte";
   import { page } from "$app/stores";
   import { browserPb } from "$lib/pb.js";
-  import { withReaderDefaults } from "@readmepls/core";
-  import type { ReaderPrefs } from "@readmepls/types";
+  import { withReaderDefaults, anchoring, rangeOver } from "@readmepls/core";
+  import { Highlight, type ReaderPrefs, type HighlightColor } from "@readmepls/types";
   import type { Theme } from "$lib/theme/theme.js";
   import type { ArticleRecord } from "$lib/article/record.js";
   import type { RecordModel } from "pocketbase";
   import { readerCssVars } from "$lib/reader/css-vars.js";
+  import { markRange, unmarkAll } from "$lib/highlight/render";
   import ReaderControls from "$lib/components/ReaderControls.svelte";
   import Button from "$lib/components/ui/Button.svelte";
   import Spinner from "$lib/components/ui/Spinner.svelte";
+  import HighlightPopover from "$lib/components/HighlightPopover.svelte";
+  import HighlightsSidebar from "$lib/components/HighlightsSidebar.svelte";
 
   // Global theme context provided by +layout.svelte. May be undefined when
   // the reader is rendered in isolation (e.g. unit tests without the layout).
@@ -22,6 +25,72 @@
   let prefs = $state<ReaderPrefs>(withReaderDefaults());
 
   let progress = $state(0);
+
+  // Highlight state
+  // eslint-disable-next-line prefer-const — reassigned by bind:this, not Svelte reactivity
+  let bodyEl = $state<HTMLElement>(null!);
+  let highlights = $state<Highlight[]>([]);
+  let orphans = $state<string[]>([]);
+  let popover = $state<{ x: number; y: number; range: Range } | null>(null);
+
+  async function loadHighlights(articleId: string) {
+    const raw = await pb.collection("highlights").getFullList({
+      filter: pb.filter('article = {:id}', { id: articleId }), sort: "created",
+    });
+    highlights = raw.map((r) => Highlight.parse({
+      id: r.id, user: r.user, article: r.article, text: r.text,
+      prefix: r.prefix ?? "", suffix: r.suffix ?? "",
+      startOffset: r.start_offset ?? 0, endOffset: r.end_offset ?? 0,
+      color: r.color, note: r.note ?? "", created: r.created,
+    }));
+    await renderMarks();
+  }
+
+  async function renderMarks() {
+    unmarkAll(bodyEl);
+    const missing: string[] = [];
+    for (const h of highlights) {
+      const range = await anchoring.anchor(rangeOver(bodyEl), h);
+      if (range) markRange(range, h.color, h.id);
+      else missing.push(h.id);
+    }
+    orphans = missing;
+  }
+
+  function onMouseUp() {
+    const sel = window.getSelection();
+    if (!sel || sel.isCollapsed || !bodyEl.contains(sel.anchorNode)) { popover = null; return; }
+    const range = sel.getRangeAt(0);
+    const rect = range.getBoundingClientRect();
+    popover = { x: rect.left + window.scrollX, y: rect.bottom + window.scrollY + 4, range };
+  }
+
+  async function createHighlight(color: HighlightColor, note: string) {
+    if (!popover) return;
+    try {
+      const sel = await anchoring.describe(rangeOver(bodyEl), popover.range);
+      await pb.collection("highlights").create({
+        user: pb.authStore.model?.id, article: $page.params.id,
+        text: sel.text, prefix: sel.prefix, suffix: sel.suffix,
+        start_offset: sel.startOffset, end_offset: sel.endOffset,
+        color, note,
+      });
+      popover = null;
+      window.getSelection()?.removeAllRanges();
+      await loadHighlights($page.params.id!);
+    } catch {
+      popover = null; // bad selection — silently abort (see spec §10)
+    }
+  }
+
+  function jumpTo(id: string) {
+    bodyEl.querySelector(`mark[data-hl-id="${id}"]`)?.scrollIntoView({ behavior: "smooth", block: "center" });
+  }
+
+  async function deleteHighlight(id: string) {
+    await pb.collection("highlights").delete(id);
+    await loadHighlights($page.params.id!);
+  }
 
   let saveTimer: ReturnType<typeof setTimeout> | undefined;
   function savePrefs(next: ReaderPrefs) {
@@ -68,6 +137,9 @@
     if (article!.status === "unread") {
       await pb.collection("articles").update(article!.id, { status: "reading" });
     }
+    // Load highlights after article HTML is in the DOM (next tick).
+    await Promise.resolve();
+    await loadHighlights(id);
     window.addEventListener("scroll", onScroll, { passive: true });
   });
 
@@ -94,13 +166,25 @@
     <Spinner label="Loading article" />
   {:else}
     <!-- data-theme uses the live global context so TopBar changes retone the article (FIX 1) -->
-    <article data-theme={activeTheme} class="reader">
+    <!-- Svelte emits an a11y warning for onmouseup on a non-interactive <article>; accepted for text-selection in the reader. -->
+    <article data-theme={activeTheme} class="reader" onmouseup={onMouseUp}>
       <h1>{content.title}</h1>
       <!-- content_html is sanitized in the worker (Task 2) before storage -->
-      {@html content.content_html}
+      <!-- bind:this anchors the highlight anchoring scope to the article body -->
+      <div bind:this={bodyEl}>
+        {@html content.content_html}
+      </div>
     </article>
   {/if}
 </div>
+
+{#if popover}
+  <HighlightPopover x={popover.x} y={popover.y} onpick={createHighlight} oncancel={() => (popover = null)} />
+{/if}
+
+{#if content}
+  <HighlightsSidebar {highlights} {orphans} onjump={jumpTo} ondelete={deleteHighlight} />
+{/if}
 
 <style>
   .progress { position: fixed; top: 0; left: 0; height: 3px; width: calc(var(--p) * 100%); background: var(--color-accent); z-index: 10; transition: width var(--dur-fast) var(--ease-out); }
