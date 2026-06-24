@@ -1,6 +1,8 @@
 <script lang="ts">
+  import { goto } from "$app/navigation";
   import { THEMES, type Theme } from "$lib/theme/theme.js";
   let { theme, onTheme, onSignOut }: { theme: Theme; onTheme: (t: Theme) => void; onSignOut: () => void } = $props();
+  let q = $state("");
 </script>
 
 <header class="topbar">
@@ -9,6 +11,9 @@
     <a href="/">extract</a>
     <a href="/library">library</a>
   </nav>
+  <form class="search" onsubmit={(e) => { e.preventDefault(); if (q.trim()) goto(`/search?q=${encodeURIComponent(q)}`); }}>
+    <input bind:value={q} placeholder="search…" aria-label="search library" />
+  </form>
   <div class="right">
     <div class="themes" role="group" aria-label="theme">
       {#each THEMES as t}
@@ -42,4 +47,18 @@
   .themes button:focus-visible, .signout:focus-visible { outline: 2px solid var(--color-ring); outline-offset: 2px; }
   .signout { font-family: var(--font-display); font-size: 0.85rem; background: none; border: none; color: var(--color-text-muted); cursor: pointer; }
   .signout:hover { color: var(--color-text); }
+  .search { display: flex; flex: 1; max-width: 20rem; }
+  .search input {
+    width: 100%;
+    font-family: var(--font-display);
+    font-size: var(--text-sm);
+    padding: 0.3rem 0.65rem;
+    background: var(--color-surface-sunken);
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-pill);
+    color: var(--color-text);
+    outline: none;
+  }
+  .search input::placeholder { color: var(--color-text-subtle); }
+  .search input:focus { border-color: var(--color-ring); box-shadow: 0 0 0 2px var(--color-accent-wash); }
 </style>
