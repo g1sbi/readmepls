@@ -5,3 +5,5 @@ export * from "./capture/handle-capture.js";
 export * from "./pb/client.js";
 export * from "./reader/prefs.js";
 export * from "./slug.js";
+export * as anchoring from "./highlight/anchor.js";
+export { rangeOver } from "./highlight/anchor.js";

@@ -4,6 +4,8 @@
   "type": "module",
   "main": "src/index.ts",
   "dependencies": {
+    "@apache-annotator/dom": "^0.2.0",
+    "@apache-annotator/selector": "^0.2.0",
     "@readmepls/types": "workspace:*",
     "pocketbase": "^0.21.0",
     "zod": "^3.23.0"
