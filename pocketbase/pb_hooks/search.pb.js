@@ -3,6 +3,29 @@
 // the authenticated user's articles so results never leak across tenants.
 
 routerAdd("GET", "/api/search", (e) => {
+  // Escape article-supplied HTML in the FTS snippet while preserving our own
+  // <mark> highlight tags (stored XSS fix). Strategy:
+  //   1. Replace <mark>/<\/mark> with STX/ETX sentinels (\x02/\x03).
+  //      These are JS string escapes — they never touch SQLite — and survive
+  //      the HTML-escaping step below untouched (no &, <, > to escape).
+  //   2. HTML-escape the full snippet so any markup from article content_text
+  //      (e.g. <script>…</script>) becomes &lt;script&gt;…&lt;/script&gt;.
+  //   3. Replace the sentinels back with real <mark>/<\/mark> tags.
+  // NOTE: escapeHtml must be defined inside the handler — Goja does not expose
+  // top-level hook-file functions to routerAdd callbacks.
+  function safeSnippet(raw) {
+    return String(raw)
+      .replace(/<mark>/g, "\x02")
+      .replace(/<\/mark>/g, "\x03")
+      .replace(/&/g, "&amp;")
+      .replace(/</g, "&lt;")
+      .replace(/>/g, "&gt;")
+      .replace(/"/g, "&quot;")
+      .replace(/'/g, "&#39;")
+      .replace(/\x02/g, "<mark>")
+      .replace(/\x03/g, "</mark>");
+  }
+
   const raw = e.request.url.query().get("q") || "";
 
   // Same transform as @readmepls/core toFtsQuery: lowercase alphanumeric terms,
@@ -37,7 +60,7 @@ routerAdd("GET", "/api/search", (e) => {
   const mapped = rows.map((r) => ({
     articleId: r.articleId,
     title: r.title,
-    snippet: r.snippet,
+    snippet: safeSnippet(r.snippet),
     rank: Number(r.rank),
   }));
   return e.json(200, { results: mapped });

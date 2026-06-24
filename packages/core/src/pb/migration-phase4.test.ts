@@ -84,6 +84,28 @@ describe("phase-4 search route", () => {
     const res = await ca.send("/api/search?q=", { method: "GET" });
     expect(res.results).toEqual([]);
   });
+
+  it("escapes HTML in snippets to prevent stored XSS", async () => {
+    // Article content contains a literal <script> tag adjacent to a unique
+    // search term. The route must escape it; only our <mark> highlight tag
+    // should survive as real markup.
+    const xssEmail = `xss${Date.now()}@test.local`;
+    const xssOwnerId = await makeUser(h.pb, xssEmail);
+    const cxssOwner = await authedClient(h.url, xssEmail);
+    await makeArticleWithContent(
+      h.pb, xssOwnerId, `xssart${Date.now()}`,
+      "monarchbutterfly <script>alert(1)</script> nest here"
+    );
+    const res = await cxssOwner.send("/api/search?q=monarchbutterfly", { method: "GET" });
+    expect(res.results.length).toBeGreaterThan(0);
+    const snippet: string = res.results[0].snippet;
+    // Raw script tag must not appear — would execute in {@html} rendering
+    expect(snippet).not.toContain("<script>");
+    // The escaped form must be present
+    expect(snippet).toContain("&lt;script&gt;");
+    // Our highlight mark tag must still be present
+    expect(snippet).toContain("<mark>");
+  });
 });
 
 describe("highlights tenant isolation", () => {
