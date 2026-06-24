@@ -53,6 +53,7 @@
   --marker-sky:    #cfe0e6;
   --marker-mint:   #cfe3cf;
 
+
   /* ---- 1. PRIMITIVES — type -------------------------------------------- */
   --font-display: "Fredoka", ui-rounded, "Segoe UI", system-ui, sans-serif;
   --font-reading: "Newsreader", Georgia, "Times New Roman", serif;
@@ -154,6 +155,11 @@
   --color-warning: var(--amber-500);
   --color-danger:  var(--clay-500);
   --color-info:    var(--dusk-500);
+
+  /* highlight colors (keys match the highlights.color enum) */
+  --hl-terracotta: rgba(194, 74, 56, 0.28);
+  --hl-amber:      rgba(214, 158, 46, 0.32);
+  --hl-sage:       rgba(122, 145, 106, 0.30);
 
   /* dog-ear fold (decorative motif) */
   --color-fold:    var(--paper-400);
