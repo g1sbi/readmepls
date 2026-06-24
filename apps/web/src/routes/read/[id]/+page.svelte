@@ -2,14 +2,16 @@
   import { onMount, onDestroy, getContext } from "svelte";
   import { page } from "$app/stores";
   import { browserPb } from "$lib/pb.js";
-  import { withReaderDefaults, anchoring, rangeOver } from "@readmepls/core";
+  import { withReaderDefaults, anchoring, rangeOver, slugify } from "@readmepls/core";
   import { Highlight, type ReaderPrefs, type HighlightColor } from "@readmepls/types";
   import type { Theme } from "$lib/theme/theme.js";
   import type { ArticleRecord } from "$lib/article/record.js";
   import type { RecordModel } from "pocketbase";
+  import { ClientResponseError } from "pocketbase";
   import { readerCssVars } from "$lib/reader/css-vars.js";
   import { markRange, unmarkAll } from "$lib/highlight/render";
   import ReaderControls from "$lib/components/ReaderControls.svelte";
+  import TagEditor from "$lib/components/TagEditor.svelte";
   import Button from "$lib/components/ui/Button.svelte";
   import Spinner from "$lib/components/ui/Spinner.svelte";
   import HighlightPopover from "$lib/components/HighlightPopover.svelte";
@@ -33,6 +35,9 @@
   let orphans = $state<string[]>([]);
   let popover = $state<{ x: number; y: number; range: Range } | null>(null);
 
+  // Manual tag state — only manual-sourced tags are shown/edited here; AI tags remain read-only
+  let manualTags = $state<{ id: string; name: string; linkId: string }[]>([]);
+
   async function loadHighlights(articleId: string) {
     const raw = await pb.collection("highlights").getFullList({
       filter: pb.filter('article = {:id}', { id: articleId }), sort: "created",
@@ -44,6 +49,46 @@
       color: r.color, note: r.note ?? "", created: r.created,
     }));
     await renderMarks();
+  }
+
+  async function loadTags(articleId: string) {
+    const links = await pb.collection("article_tags").getFullList({
+      filter: pb.filter('article = {:id} && source = {:src}', { id: articleId, src: "manual" }),
+      expand: "tag",
+    });
+    manualTags = links.map((l) => ({
+      id: l.expand!.tag.id,
+      name: l.expand!.tag.name,
+      linkId: l.id,
+    }));
+  }
+
+  async function addTag(name: string) {
+    const uid = pb.authStore.model?.id;
+    if (!uid) return;
+    const slug = slugify(name);
+    if (!slug) return;
+    let tag: RecordModel;
+    try {
+      tag = await pb.collection("tags").getFirstListItem(
+        pb.filter('slug = {:slug}', { slug }),
+      );
+    } catch (e) {
+      if (!(e instanceof ClientResponseError && e.status === 404)) throw e;
+      tag = await pb.collection("tags").create({ user: uid, name, slug });
+    }
+    await pb.collection("article_tags").create({
+      article: $page.params.id, tag: tag.id, source: "manual", confidence: 1,
+    });
+    await loadTags($page.params.id!);
+  }
+
+  async function removeTag(tagId: string) {
+    const link = manualTags.find((t) => t.id === tagId);
+    if (link) {
+      await pb.collection("article_tags").delete(link.linkId);
+      await loadTags($page.params.id!);
+    }
   }
 
   async function renderMarks() {
@@ -137,9 +182,10 @@
     if (article!.status === "unread") {
       await pb.collection("articles").update(article!.id, { status: "reading" });
     }
-    // Load highlights after article HTML is in the DOM (next tick).
+    // Load highlights and manual tags after article HTML is in the DOM (next tick).
     await Promise.resolve();
     await loadHighlights(id);
+    await loadTags(id);
     window.addEventListener("scroll", onScroll, { passive: true });
   });
 
@@ -175,6 +221,9 @@
         {@html content.content_html}
       </div>
     </article>
+    <div class="tag-section">
+      <TagEditor tags={manualTags.map(t => ({ id: t.id, name: t.name }))} onadd={addTag} onremove={removeTag} />
+    </div>
   {/if}
 </div>
 
@@ -206,5 +255,6 @@
   .reader :global(pre) { background: var(--color-surface-sunken); padding: 1rem; border-radius: var(--radius-md); overflow-x: auto; }
   .reader :global(blockquote) { border-left: 3px solid var(--color-accent); margin: 1rem 0; padding-left: 1rem; color: var(--color-text-muted); }
   .reader :global(img) { max-width: 100%; height: auto; border-radius: var(--radius-md); }
+  .tag-section { max-width: var(--reading-measure); margin: var(--space-4) auto 0; padding: 0 1.5rem; }
   @media (prefers-reduced-motion: reduce) { .progress { transition: none; } }
 </style>

@@ -102,3 +102,26 @@ describe("highlights tenant isolation", () => {
     expect(list.length).toBe(0);
   });
 });
+
+describe("article_tags isolation", () => {
+  it("a user cannot list another user's manual tags", async () => {
+    const emailC = `c${Date.now()}@test.local`;
+    const uc = await h.pb.collection("users").create({
+      email: emailC, password: "password12345", passwordConfirm: "password12345",
+      tier: "free", monthly_quota_used: 0,
+    });
+    const { articleId } = await makeArticleWithContent(h.pb, uc.id, "tagiso", "tagged body");
+    const tag = await h.pb.collection("tags").create({ user: uc.id, name: "secret", slug: "secret" });
+    await h.pb.collection("article_tags").create({ article: articleId, tag: tag.id, source: "manual", confidence: 1 });
+
+    // a different authed user must see none of C's article_tags
+    const emailD = `d${Date.now()}@test.local`;
+    await h.pb.collection("users").create({
+      email: emailD, password: "password12345", passwordConfirm: "password12345",
+      tier: "free", monthly_quota_used: 0,
+    });
+    const cd = await authedClient(h.url, emailD);
+    const list = await cd.collection("article_tags").getFullList();
+    expect(list.length).toBe(0);
+  });
+});
