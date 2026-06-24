@@ -31,7 +31,7 @@ export async function startEphemeralPb(): Promise<PbHandle> {
 
   const proc = spawn(
     PB_BIN,
-    ["serve", `--http=127.0.0.1:${port}`, `--dir=${dir}`, "--migrationsDir=pocketbase/pb_migrations"],
+    ["serve", `--http=127.0.0.1:${port}`, `--dir=${dir}`, "--migrationsDir=pocketbase/pb_migrations", "--hooksDir=pocketbase/pb_hooks"],
     { stdio: "ignore" }
   );
 

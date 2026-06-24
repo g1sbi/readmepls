@@ -1,5 +1,6 @@
 import { describe, it, expect, beforeAll, afterAll } from "vitest";
 import { startEphemeralPb, makeTestUser, type PbHandle } from "./test-harness.js";
+import PocketBase from "pocketbase";
 
 let h: PbHandle;
 let userId: string;
@@ -20,6 +21,20 @@ async function makeArticleWithContent(pb: PbHandle["pb"], user: string, title: s
     status: "unread", progress: 0, is_private: false,
   });
   return { contentId: content.id, articleId: article.id };
+}
+
+async function makeUser(pb: PbHandle["pb"], email: string): Promise<string> {
+  const u = await pb.collection("users").create({
+    email, password: "password12345", passwordConfirm: "password12345",
+    tier: "free", monthly_quota_used: 0,
+  });
+  return u.id;
+}
+
+async function authedClient(url: string, email: string): Promise<PocketBase> {
+  const c = new PocketBase(url);
+  await c.collection("users").authWithPassword(email, "password12345");
+  return c;
 }
 
 describe("phase-4 migration", () => {
@@ -44,4 +59,46 @@ describe("phase-4 migration", () => {
     expect(item.collection).toBe(col.id);
   });
 
+});
+
+describe("phase-4 search route", () => {
+  const emailA = `a${Date.now()}@test.local`;
+  let ca: PocketBase;
+
+  beforeAll(async () => {
+    const aId = await makeUser(h.pb, emailA);
+    const bId = await makeUser(h.pb, `b${Date.now()}@test.local`);
+    await makeArticleWithContent(h.pb, aId, "ka", "a rare kingfisher by the river");
+    await makeArticleWithContent(h.pb, bId, "kb", "another kingfisher sighting");
+    ca = await authedClient(h.url, emailA);
+  });
+
+  it("returns only the caller's matching articles", async () => {
+    const res = await ca.send("/api/search?q=kingfisher", { method: "GET" });
+    expect(res.results.length).toBe(1);
+    expect(res.results[0].snippet).toMatch(/kingfisher/i);
+    expect(typeof res.results[0].rank).toBe("number");
+  });
+
+  it("returns empty results for a blank query", async () => {
+    const res = await ca.send("/api/search?q=", { method: "GET" });
+    expect(res.results).toEqual([]);
+  });
+});
+
+describe("highlights tenant isolation", () => {
+  it("a user cannot list another user's highlights", async () => {
+    const ownerEmail = `hg${Date.now()}@test.local`;
+    const ownerId = await makeUser(h.pb, ownerEmail);
+    const { articleId } = await makeArticleWithContent(h.pb, ownerId, "hgiso", "highlighted body");
+    await h.pb.collection("highlights").create({
+      user: ownerId, article: articleId, text: "secret", prefix: "", suffix: "",
+      start_offset: 0, end_offset: 6, color: "sage", note: "",
+    });
+    const intruder = await authedClient(h.url, await (async () => {
+      const e = `hi${Date.now()}@test.local`; await makeUser(h.pb, e); return e;
+    })());
+    const list = await intruder.collection("highlights").getFullList();
+    expect(list.length).toBe(0);
+  });
 });
