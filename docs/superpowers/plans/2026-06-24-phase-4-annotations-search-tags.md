@@ -237,7 +237,7 @@ describe("slugify", () => {
 
 - [ ] **Step 2: Run test, verify it fails**
 
-Run: `pnpm --filter @readmepls/core test slug`
+Run: `pnpm test slug`
 Expected: FAIL — cannot find module `./slug.js`.
 
 - [ ] **Step 3: Implement** — `packages/core/src/slug.ts`
@@ -261,7 +261,7 @@ export * from "./slug.js";
 
 - [ ] **Step 5: Run tests, verify pass**
 
-Run: `pnpm --filter @readmepls/core test slug`
+Run: `pnpm test slug`
 Expected: PASS.
 
 - [ ] **Step 6: Commit**
@@ -337,7 +337,7 @@ describe("phase-4 migration", () => {
 
 - [ ] **Step 2: Run test, verify it fails**
 
-Run: `pnpm --filter @readmepls/core test migration-phase4`
+Run: `pnpm test migration-phase4`
 Expected: FAIL — `collection "highlights" not found` (migration absent).
 
 - [ ] **Step 3: Implement the migration** — `pocketbase/pb_migrations/1719100000_phase4.js`
@@ -453,7 +453,7 @@ migrate(
 
 - [ ] **Step 4: Run test, verify pass**
 
-Run: `pnpm --filter @readmepls/core test migration-phase4`
+Run: `pnpm test migration-phase4`
 Expected: PASS.
 
 - [ ] **Step 5: Commit**
@@ -558,7 +558,7 @@ describe("highlight anchoring", () => {
 
 - [ ] **Step 3: Run test, verify it fails**
 
-Run: `pnpm --filter @readmepls/core test anchor`
+Run: `pnpm test anchor`
 Expected: FAIL — cannot find module `./anchor.js`.
 
 - [ ] **Step 4: Implement** — `packages/core/src/highlight/anchor.ts`
@@ -617,7 +617,7 @@ export { rangeOver } from "./highlight/anchor.js";
 
 - [ ] **Step 6: Run tests, verify pass**
 
-Run: `pnpm --filter @readmepls/core test anchor`
+Run: `pnpm test anchor`
 Expected: PASS (all three cases).
 
 - [ ] **Step 7: Commit**
@@ -670,7 +670,7 @@ describe("HighlightPopover", () => {
 
 - [ ] **Step 3: Run test, verify it fails**
 
-Run: `pnpm --filter @readmepls/web test HighlightPopover`
+Run: `pnpm test HighlightPopover`
 Expected: FAIL — cannot find `HighlightPopover.svelte`.
 
 - [ ] **Step 4: Implement** — `apps/web/src/lib/components/HighlightPopover.svelte`
@@ -771,7 +771,7 @@ export function unmarkAll(root: HTMLElement): void {
 
 - [ ] **Step 6: Run tests, verify pass**
 
-Run: `pnpm --filter @readmepls/web test HighlightPopover`
+Run: `pnpm test HighlightPopover`
 Expected: PASS.
 
 - [ ] **Step 7: Commit**
@@ -831,7 +831,7 @@ describe("HighlightsSidebar", () => {
 
 - [ ] **Step 2: Run test, verify it fails**
 
-Run: `pnpm --filter @readmepls/web test HighlightsSidebar`
+Run: `pnpm test HighlightsSidebar`
 Expected: FAIL — cannot find component.
 
 - [ ] **Step 3: Implement** — `apps/web/src/lib/components/HighlightsSidebar.svelte`
@@ -886,7 +886,7 @@ Expected: FAIL — cannot find component.
 
 - [ ] **Step 4: Run component tests, verify pass**
 
-Run: `pnpm --filter @readmepls/web test HighlightsSidebar`
+Run: `pnpm test HighlightsSidebar`
 Expected: PASS.
 
 - [ ] **Step 5: Wire into the reader** — modify `apps/web/src/routes/read/[id]/+page.svelte`. Read the file first to match its existing structure (article container ref, prefs). Add this script logic (adapt variable names to the file's conventions; the article body container is referenced as `bodyEl`):
@@ -1035,7 +1035,7 @@ describe("toFtsQuery", () => {
 
 - [ ] **Step 2: Run test, verify it fails**
 
-Run: `pnpm --filter @readmepls/core test query`
+Run: `pnpm test query`
 Expected: FAIL — cannot find module `./query.js`.
 
 - [ ] **Step 3: Implement** — `packages/core/src/search/query.ts`
@@ -1057,7 +1057,7 @@ export * from "./search/query.js";
 
 - [ ] **Step 5: Run tests, verify pass**
 
-Run: `pnpm --filter @readmepls/core test query`
+Run: `pnpm test query`
 Expected: PASS.
 
 - [ ] **Step 6: Commit**
@@ -1144,7 +1144,7 @@ describe("highlights tenant isolation", () => {
 
 - [ ] **Step 2: Run test, verify it fails**
 
-Run: `pnpm --filter @readmepls/core test migration-phase4`
+Run: `pnpm test migration-phase4`
 Expected: FAIL — `/api/search` returns 404 (route not registered).
 
 - [ ] **Step 3: Implement the route** — `pocketbase/pb_hooks/search.pb.js`
@@ -1189,7 +1189,7 @@ routerAdd("GET", "/api/search", (e) => {
 
 - [ ] **Step 4: Run test, verify pass**
 
-Run: `pnpm --filter @readmepls/core test migration-phase4`
+Run: `pnpm test migration-phase4`
 Expected: PASS — caller sees exactly one result; blank query returns `[]`.
 
 - [ ] **Step 5: Commit**
@@ -1340,7 +1340,7 @@ describe("TagEditor", () => {
 
 - [ ] **Step 2: Run test, verify it fails**
 
-Run: `pnpm --filter @readmepls/web test TagEditor`
+Run: `pnpm test TagEditor`
 Expected: FAIL — cannot find component.
 
 - [ ] **Step 3: Implement** — `apps/web/src/lib/components/TagEditor.svelte`
@@ -1389,7 +1389,7 @@ Expected: FAIL — cannot find component.
 
 - [ ] **Step 4: Run component tests, verify pass**
 
-Run: `pnpm --filter @readmepls/web test TagEditor`
+Run: `pnpm test TagEditor`
 Expected: PASS.
 
 - [ ] **Step 5: Wire persistence into the reader** — in `read/[id]/+page.svelte`, add manual-tag handlers:
@@ -1462,7 +1462,7 @@ describe("article_tags isolation", () => {
 
 - [ ] **Step 7: Run tests, verify pass**
 
-Run: `pnpm --filter @readmepls/web test TagEditor && pnpm --filter @readmepls/core test migration-phase4`
+Run: `pnpm test TagEditor && pnpm test migration-phase4`
 Expected: PASS.
 
 - [ ] **Step 8: Commit**
@@ -1536,7 +1536,7 @@ describe("library tag filter", () => {
 
 - [ ] **Step 2: Run test, verify it fails**
 
-Run: `pnpm --filter @readmepls/web test tag-filter`
+Run: `pnpm test tag-filter`
 Expected: FAIL — no tag chip rendered / no filtering.
 
 - [ ] **Step 3: Implement** — in `library/+page.svelte`, load the user's tags and a selected-tag filter:
@@ -1567,7 +1567,7 @@ Markup: render a tag rail with an "all" reset plus a chip per tag (`onclick={() 
 
 - [ ] **Step 4: Run tests + checks, verify pass**
 
-Run: `pnpm --filter @readmepls/web test library && pnpm --filter @readmepls/web check`
+Run: `pnpm test library && pnpm --filter @readmepls/web check`
 Expected: PASS (both `page.test.ts` empty-state and `tag-filter.test.ts`), no new check errors.
 
 - [ ] **Step 5: Commit**
@@ -1623,7 +1623,7 @@ describe("collection_items scoping", () => {
 
 - [ ] **Step 2: Run test, verify it fails or passes** — this asserts the Task 3 rule already works.
 
-Run: `pnpm --filter @readmepls/core test migration-phase4`
+Run: `pnpm test migration-phase4`
 Expected: PASS (rule from Task 3). If it FAILS, fix the `collection_items` rule in the migration (`collection.user = @request.auth.id`) before continuing.
 
 - [ ] **Step 3: Write the AddToCollection failing test** — `apps/web/src/lib/components/AddToCollection.test.ts`
@@ -1654,7 +1654,7 @@ describe("AddToCollection", () => {
 
 - [ ] **Step 4: Run test, verify it fails**
 
-Run: `pnpm --filter @readmepls/web test AddToCollection`
+Run: `pnpm test AddToCollection`
 Expected: FAIL — cannot find component.
 
 - [ ] **Step 5: Implement** — `apps/web/src/lib/components/AddToCollection.svelte`
@@ -1694,7 +1694,7 @@ Expected: FAIL — cannot find component.
 
 - [ ] **Step 6: Run component test, verify pass**
 
-Run: `pnpm --filter @readmepls/web test AddToCollection`
+Run: `pnpm test AddToCollection`
 Expected: PASS.
 
 - [ ] **Step 7: Wire persistence into the reader** — in `read/[id]/+page.svelte`:
@@ -1769,7 +1769,7 @@ Markup: `<AddToCollection {collections} onadd={addToCollection} oncreate={create
 
 - [ ] **Step 10: Run full suites + checks**
 
-Run: `pnpm --filter @readmepls/web test && pnpm --filter @readmepls/web check && pnpm --filter @readmepls/core test`
+Run: `pnpm test && pnpm --filter @readmepls/web check && pnpm --filter @readmepls/core test`
 Expected: PASS, no check errors.
 
 - [ ] **Step 11: Commit**
@@ -1785,7 +1785,7 @@ git commit -m "feat(web): collections CRUD, add-to-collection, and collection vi
 
 - [ ] **Run the whole test suite**
 
-Run: `pnpm -r test`
+Run: `pnpm test`
 Expected: all packages PASS.
 
 - [ ] **Run type/svelte checks**
