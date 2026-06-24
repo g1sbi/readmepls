@@ -171,6 +171,41 @@ describe("collection_items scoping", () => {
     expect(items.length).toBe(0);
   });
 
+  it("deleting an article cascades to its highlights and collection_items", async () => {
+    const emailH = `h${Date.now()}@test.local`;
+    const uh = await h.pb.collection("users").create({
+      email: emailH, password: "password12345", passwordConfirm: "password12345",
+      tier: "free", monthly_quota_used: 0,
+    });
+    const { articleId } = await makeArticleWithContent(h.pb, uh.id, `artcascade-${Date.now()}`, "to be deleted");
+    const col = await h.pb.collection("collections").create({
+      user: uh.id, name: "ArtCascade", slug: `artcascade-${Date.now()}`, parent: "", order: 0,
+    });
+    const hl = await h.pb.collection("highlights").create({
+      user: uh.id, article: articleId, text: "cascade text", prefix: "", suffix: "",
+      start_offset: 0, end_offset: 4, color: "amber", note: "",
+    });
+    const item = await h.pb.collection("collection_items").create({
+      collection: col.id, article: articleId, order: 0,
+    });
+
+    // Delete the article — cascadeDelete: true on highlights.article and
+    // collection_items.article should remove both dependent rows automatically.
+    await h.pb.collection("articles").delete(articleId);
+
+    // Verify the highlight is gone
+    const remainingHighlights = await h.pb.collection("highlights").getFullList({
+      filter: h.pb.filter("id = {:id}", { id: hl.id }),
+    });
+    expect(remainingHighlights.length).toBe(0);
+
+    // Verify the collection_item is gone
+    const remainingItems = await h.pb.collection("collection_items").getFullList({
+      filter: h.pb.filter("id = {:id}", { id: item.id }),
+    });
+    expect(remainingItems.length).toBe(0);
+  });
+
   it("deleting a collection cascades to its items", async () => {
     const emailG = `g${Date.now()}@test.local`;
     const ug = await h.pb.collection("users").create({

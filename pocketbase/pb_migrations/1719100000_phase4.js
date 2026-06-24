@@ -10,7 +10,7 @@ migrate(
       name: "highlights",
       fields: [
         { name: "user", type: "relation", required: true, collectionId: users.id, maxSelect: 1 },
-        { name: "article", type: "relation", required: true, collectionId: articles.id, maxSelect: 1 },
+        { name: "article", type: "relation", required: true, collectionId: articles.id, maxSelect: 1, cascadeDelete: true },
         { name: "text", type: "text", required: true },
         { name: "prefix", type: "text" },
         { name: "suffix", type: "text" },
@@ -58,7 +58,7 @@ migrate(
       name: "collection_items",
       fields: [
         { name: "collection", type: "relation", required: true, collectionId: collections.id, maxSelect: 1, cascadeDelete: true },
-        { name: "article", type: "relation", required: true, collectionId: articles.id, maxSelect: 1 },
+        { name: "article", type: "relation", required: true, collectionId: articles.id, maxSelect: 1, cascadeDelete: true },
         { name: "order", type: "number" },
         { name: "created", type: "autodate", onCreate: true, onUpdate: false },
       ],

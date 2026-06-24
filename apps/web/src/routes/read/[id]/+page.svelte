@@ -1,5 +1,5 @@
 <script lang="ts">
-  import { onMount, onDestroy, getContext } from "svelte";
+  import { onMount, onDestroy, getContext, tick } from "svelte";
   import { page } from "$app/stores";
   import { browserPb } from "$lib/pb.js";
   import { withReaderDefaults, anchoring, rangeOver, slugify } from "@readmepls/core";
@@ -187,7 +187,7 @@
       await pb.collection("articles").update(article!.id, { status: "reading" });
     }
     // Load highlights and manual tags after article HTML is in the DOM (next tick).
-    await Promise.resolve();
+    await tick();
     await loadHighlights(id);
     await loadTags(id);
     await loadCollections();
