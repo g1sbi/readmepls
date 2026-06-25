@@ -1,10 +1,7 @@
 import type { ExtractResult, SourceType } from "@readmepls/types";
+import type { YtDlpOutput } from "@readmepls/core";
 
-// Placeholder until Task 4 defines the real yt-dlp shapes in @readmepls/core.
-export interface YtDlpOutput {
-  meta: unknown;
-  captions: unknown;
-}
+export type { YtDlpOutput };
 
 /** Injected IO seams. Extractors own their fetching; tests pass fakes. */
 export interface ExtractIO {

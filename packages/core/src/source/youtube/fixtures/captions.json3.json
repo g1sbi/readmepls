@@ -1,0 +1,8 @@
+{
+  "events": [
+    { "tStartMs": 0, "segs": [{ "utf8": "hello and " }, { "utf8": "welcome" }] },
+    { "tStartMs": 3200, "segs": [{ "utf8": "today we talk about extraction" }] },
+    { "tStartMs": 7000, "segs": [{ "utf8": "\n" }] },
+    { "tStartMs": 7400, "segs": [{ "utf8": "let's begin" }] }
+  ]
+}

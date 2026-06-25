@@ -11,3 +11,5 @@ export * from "./search/query.js";
 export * from "./source/extract-result.js";
 export * from "./source/x/tweet-id.js";
 export * from "./source/x/syndication.js";
+export * from "./source/youtube/video-id.js";
+export * from "./source/youtube/transcript.js";
