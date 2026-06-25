@@ -5,6 +5,8 @@ import Anthropic from "@anthropic-ai/sdk";
 import { classifySource } from "@readmepls/core";
 import { ArticleExtractor } from "./extract/article-extractor.js";
 import { XExtractor } from "./extract/x-extractor.js";
+import { YoutubeExtractor } from "./extract/youtube-extractor.js";
+import { defaultRunYtDlp } from "./extract/yt-dlp.js";
 import { ClaudeProvider } from "./ai/claude-provider.js";
 import { selectAiProvider } from "./ai/select-provider.js";
 import { createSafeFetchHtml } from "./fetch/safe-fetch.js";
@@ -51,12 +53,14 @@ async function main(): Promise<void> {
   const io: ExtractIO = {
     fetchHtml,
     fetchJson,
-    runYtDlp: async () => {
-      throw new Error("yt-dlp not wired yet");
-    },
+    runYtDlp: defaultRunYtDlp(fetchHtml),
   };
 
-  const registry = new ExtractorRegistry([new ArticleExtractor(), new XExtractor()]);
+  const registry = new ExtractorRegistry([
+    new ArticleExtractor(),
+    new XExtractor(),
+    new YoutubeExtractor(),
+  ]);
 
   const deps: ProcessDeps = {
     io,
