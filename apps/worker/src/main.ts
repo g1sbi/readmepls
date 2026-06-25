@@ -4,6 +4,7 @@ import PocketBase from "pocketbase";
 import Anthropic from "@anthropic-ai/sdk";
 import { classifySource } from "@readmepls/core";
 import { ArticleExtractor } from "./extract/article-extractor.js";
+import { XExtractor } from "./extract/x-extractor.js";
 import { ClaudeProvider } from "./ai/claude-provider.js";
 import { selectAiProvider } from "./ai/select-provider.js";
 import { createSafeFetchHtml } from "./fetch/safe-fetch.js";
@@ -55,7 +56,7 @@ async function main(): Promise<void> {
     },
   };
 
-  const registry = new ExtractorRegistry([new ArticleExtractor()]);
+  const registry = new ExtractorRegistry([new ArticleExtractor(), new XExtractor()]);
 
   const deps: ProcessDeps = {
     io,
