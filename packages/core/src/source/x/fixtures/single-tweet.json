@@ -1,0 +1,6 @@
+{
+  "__typename": "Tweet",
+  "text": "just setting up my twttr",
+  "user": { "name": "jack", "screen_name": "jack" },
+  "photos": [{ "url": "https://pbs.twimg.com/media/abc.jpg" }]
+}

@@ -1,0 +1,9 @@
+{
+  "__typename": "Tweet",
+  "text": "a thought about extraction",
+  "user": { "name": "Ada L", "screen_name": "ada" },
+  "quoted_tweet": {
+    "text": "the original claim",
+    "user": { "name": "Babbage", "screen_name": "charles" }
+  }
+}

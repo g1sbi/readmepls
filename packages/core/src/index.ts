@@ -8,3 +8,6 @@ export * from "./slug.js";
 export * as anchoring from "./highlight/anchor.js";
 export { rangeOver } from "./highlight/anchor.js";
 export * from "./search/query.js";
+export * from "./source/extract-result.js";
+export * from "./source/x/tweet-id.js";
+export * from "./source/x/syndication.js";
