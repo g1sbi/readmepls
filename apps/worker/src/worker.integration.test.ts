@@ -6,6 +6,8 @@ import { classifySource } from "@readmepls/core";
 import { processJob } from "./worker.js";
 import { ArticleExtractor } from "./extract/article-extractor.js";
 import { MockAIProvider } from "./ai/mock-provider.js";
+import { ExtractorRegistry } from "./extract/registry.js";
+import type { ExtractIO } from "./extract/extractor.js";
 
 const html = readFileSync(
   fileURLToPath(new URL("./extract/fixtures/simple-article.html", import.meta.url)),
@@ -17,6 +19,15 @@ beforeAll(async () => {
   h = await startEphemeralPb();
 }, 30000);
 afterAll(() => h?.stop());
+
+const registry = new ExtractorRegistry([new ArticleExtractor()]);
+function ioWith(htmlBody: string): ExtractIO {
+  return {
+    fetchHtml: async () => htmlBody,
+    fetchJson: async () => { throw new Error("fetchJson not used in this test"); },
+    runYtDlp: async () => { throw new Error("runYtDlp not used in this test"); },
+  };
+}
 
 describe("processJob", () => {
   it("extracts, tags, writes content, and marks job done", async () => {
@@ -31,8 +42,8 @@ describe("processJob", () => {
     });
 
     await processJob(h.pb, job.id, {
-      fetchHtml: async () => html,
-      extractor: new ArticleExtractor(),
+      io: ioWith(html),
+      registry,
       ai: new MockAIProvider({ tags: ["hello"], summary: "A test." }),
       classify: classifySource,
     });
@@ -57,8 +68,8 @@ describe("processJob", () => {
     });
 
     await processJob(h.pb, job.id, {
-      fetchHtml: async () => "<html></html>",
-      extractor: new ArticleExtractor(),
+      io: ioWith("<html></html>"),
+      registry,
       ai: new MockAIProvider(),
       classify: classifySource,
     });

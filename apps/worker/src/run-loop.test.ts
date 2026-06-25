@@ -6,6 +6,8 @@ import { handleCapture, classifySource } from "@readmepls/core";
 import { ArticleExtractor } from "./extract/article-extractor.js";
 import { MockAIProvider } from "./ai/mock-provider.js";
 import { runLoopOnce } from "./run-loop.js";
+import { ExtractorRegistry } from "./extract/registry.js";
+import type { ExtractIO } from "./extract/extractor.js";
 
 const html = readFileSync(
   fileURLToPath(new URL("./extract/fixtures/simple-article.html", import.meta.url)),
@@ -20,9 +22,14 @@ beforeAll(async () => {
 }, 30000);
 afterAll(() => h?.stop());
 
-const deps = {
+const io: ExtractIO = {
   fetchHtml: async () => html,
-  extractor: new ArticleExtractor(),
+  fetchJson: async () => { throw new Error("unused"); },
+  runYtDlp: async () => { throw new Error("unused"); },
+};
+const deps = {
+  io,
+  registry: new ExtractorRegistry([new ArticleExtractor()]),
   ai: new MockAIProvider({ tags: ["hello"], summary: "A test." }),
   classify: classifySource,
 };

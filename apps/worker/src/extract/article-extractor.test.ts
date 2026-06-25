@@ -2,6 +2,8 @@ import { describe, it, expect } from "vitest";
 import { readFileSync } from "node:fs";
 import { fileURLToPath } from "node:url";
 import { ArticleExtractor } from "./article-extractor.js";
+import { parseArticleHtml } from "./parse-article.js";
+import type { ExtractIO } from "./extractor.js";
 import { ExtractResult } from "@readmepls/types";
 
 const html = readFileSync(
@@ -9,11 +11,17 @@ const html = readFileSync(
   "utf8"
 );
 
-describe("ArticleExtractor", () => {
-  const extractor = new ArticleExtractor();
+function ioWith(body: string): ExtractIO {
+  return {
+    fetchHtml: async () => body,
+    fetchJson: async () => { throw new Error("unused"); },
+    runYtDlp: async () => { throw new Error("unused"); },
+  };
+}
 
+describe("parseArticleHtml", () => {
   it("returns a schema-valid ok result", () => {
-    const res = extractor.extract("https://example.com/post", html);
+    const res = parseArticleHtml("https://example.com/post", html);
     expect(() => ExtractResult.parse(res)).not.toThrow();
     expect(res.status).toBe("ok");
     expect(res.sourceType).toBe("article");
@@ -21,7 +29,7 @@ describe("ArticleExtractor", () => {
   });
 
   it("extracts title, author, and readable text", () => {
-    const res = extractor.extract("https://example.com/post", html);
+    const res = parseArticleHtml("https://example.com/post", html);
     expect(res.title).toBe("Hello World Article");
     expect(res.author).toBe("Jane Doe");
     expect(res.contentText).toContain("first paragraph");
@@ -30,8 +38,16 @@ describe("ArticleExtractor", () => {
   });
 
   it("returns failed status when no article content is found", () => {
-    const res = extractor.extract("https://example.com/x", "<html></html>");
+    const res = parseArticleHtml("https://example.com/x", "<html></html>");
     expect(res.status).toBe("failed");
     expect(res.failureReason).not.toBeNull();
+  });
+});
+
+describe("ArticleExtractor", () => {
+  it("fetches via io and parses", async () => {
+    const res = await new ArticleExtractor().extract("https://example.com/post", ioWith(html));
+    expect(res.status).toBe("ok");
+    expect(res.title).toBe("Hello World Article");
   });
 });

@@ -8,6 +8,8 @@ import { ClaudeProvider } from "./ai/claude-provider.js";
 import { selectAiProvider } from "./ai/select-provider.js";
 import { createSafeFetchHtml } from "./fetch/safe-fetch.js";
 import { runLoopOnce } from "./run-loop.js";
+import { ExtractorRegistry } from "./extract/registry.js";
+import type { ExtractIO } from "./extract/extractor.js";
 import type { ProcessDeps } from "./worker.js";
 
 function requireEnv(name: string): string {
@@ -42,9 +44,22 @@ async function main(): Promise<void> {
     return new ClaudeProvider(anthropic, model);
   });
 
-  const deps: ProcessDeps = {
+  const fetchJson = async (url: string): Promise<unknown> =>
+    JSON.parse(await fetchHtml(url));
+
+  const io: ExtractIO = {
     fetchHtml,
-    extractor: new ArticleExtractor(),
+    fetchJson,
+    runYtDlp: async () => {
+      throw new Error("yt-dlp not wired yet");
+    },
+  };
+
+  const registry = new ExtractorRegistry([new ArticleExtractor()]);
+
+  const deps: ProcessDeps = {
+    io,
+    registry,
     ai,
     classify: classifySource,
   };
