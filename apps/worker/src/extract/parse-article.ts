@@ -17,6 +17,11 @@ export function parseArticleHtml(url: string, html: string): ExtractResult {
   const lang = doc.documentElement.getAttribute("lang") || null;
   const hero =
     doc.querySelector('meta[property="og:image"]')?.getAttribute("content") ?? null;
+  const publishedAt =
+    doc.querySelector('meta[property="article:published_time"]')?.getAttribute("content") ??
+    doc.querySelector('meta[name="date"]')?.getAttribute("content") ??
+    doc.querySelector("time[datetime]")?.getAttribute("datetime") ??
+    null;
 
   const parsed = new Readability(doc).parse();
 
@@ -34,7 +39,7 @@ export function parseArticleHtml(url: string, html: string): ExtractResult {
       wordCount: 0,
       readTime: 0,
       heroImage: hero,
-      publishedAt: null,
+      publishedAt,
       failureReason: "no readable content",
     };
   }
@@ -54,7 +59,7 @@ export function parseArticleHtml(url: string, html: string): ExtractResult {
     wordCount,
     readTime: Math.max(1, Math.round(wordCount / WORDS_PER_MIN)),
     heroImage: hero,
-    publishedAt: null,
+    publishedAt,
     failureReason: null,
   };
 }
