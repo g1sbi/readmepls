@@ -17,6 +17,7 @@ export const Content = z.object({
   word_count: z.number().int().nonnegative(),
   read_time: z.number().int().nonnegative(),
   hero_image: z.string().nullable(),
+  published_at: z.string().nullable(),
   ai_tags_json: z.array(z.string()),
   fetched_at: z.string(),
   extract_status: ExtractStatus,

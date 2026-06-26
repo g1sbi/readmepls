@@ -17,6 +17,7 @@ export const ExtractResult = z.object({
   wordCount: z.number().int().nonnegative(),
   readTime: z.number().int().nonnegative(),
   heroImage: z.string().nullable(),
+  publishedAt: z.string().nullable(),
   failureReason: z.string().nullable(),
 });
 export type ExtractResult = z.infer<typeof ExtractResult>;

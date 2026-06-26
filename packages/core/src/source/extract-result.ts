@@ -24,6 +24,7 @@ export function failedResult(source: SourceType, reason: string): ExtractResult 
     wordCount: 0,
     readTime: 0,
     heroImage: null,
+    publishedAt: null,
     failureReason: reason,
   };
 }

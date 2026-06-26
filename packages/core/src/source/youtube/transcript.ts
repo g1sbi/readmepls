@@ -85,6 +85,7 @@ export function parseYtTranscript(
       excerpt: text.slice(0, 280),
       wordCount,
       readTime: Math.max(1, Math.round(wordCount / WORDS_PER_MIN)),
+      publishedAt: null,
       failureReason: "no transcript",
     };
   }
@@ -112,6 +113,7 @@ export function parseYtTranscript(
     excerpt: (meta.description ?? contentText).slice(0, 280),
     wordCount,
     readTime: Math.max(1, Math.round(wordCount / WORDS_PER_MIN)),
+    publishedAt: null,
     failureReason: null,
   };
 }

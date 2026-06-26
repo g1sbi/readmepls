@@ -8,7 +8,7 @@ function result(over: Partial<ExtractResult>): ExtractResult {
   return {
     status: "ok", sourceType: "article", title: "t", author: null, siteName: null,
     lang: null, contentHtml: "", contentText: "", excerpt: "", wordCount: 1000,
-    readTime: 5, heroImage: null, failureReason: null, ...over,
+    readTime: 5, heroImage: null, publishedAt: null, failureReason: null, ...over,
   };
 }
 

@@ -34,6 +34,7 @@ export function parseArticleHtml(url: string, html: string): ExtractResult {
       wordCount: 0,
       readTime: 0,
       heroImage: hero,
+      publishedAt: null,
       failureReason: "no readable content",
     };
   }
@@ -53,6 +54,7 @@ export function parseArticleHtml(url: string, html: string): ExtractResult {
     wordCount,
     readTime: Math.max(1, Math.round(wordCount / WORDS_PER_MIN)),
     heroImage: hero,
+    publishedAt: null,
     failureReason: null,
   };
 }

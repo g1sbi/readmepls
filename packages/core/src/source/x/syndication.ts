@@ -59,6 +59,7 @@ export function parseSyndicationThread(raw: unknown): ExtractResult {
     wordCount,
     readTime: Math.max(1, Math.round(wordCount / WORDS_PER_MIN)),
     heroImage: t.photos?.[0]?.url ?? null,
+    publishedAt: null,
     failureReason: null,
   };
 }
