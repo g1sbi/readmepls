@@ -8,6 +8,11 @@
     "@apache-annotator/selector": "^0.2.0",
     "@readmepls/types": "workspace:*",
     "pocketbase": "^0.21.0",
+    "turndown": "^7.2.4",
+    "turndown-plugin-gfm": "^1.0.2",
     "zod": "^3.23.0"
+  },
+  "devDependencies": {
+    "@types/turndown": "^5.0.6"
   }
 }
