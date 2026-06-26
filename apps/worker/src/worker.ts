@@ -47,6 +47,7 @@ export async function processJob(
       word_count: result.wordCount,
       read_time: result.readTime,
       hero_image: result.heroImage,
+      published_at: result.publishedAt,
       ai_tags_json: ai.tags,
       fetched_at: new Date().toISOString(),
       extract_status: result.status,
