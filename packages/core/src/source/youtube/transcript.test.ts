@@ -29,6 +29,11 @@ describe("parseJson3Captions", () => {
     expect(parseJson3Captions("not json")).toBeNull();
     expect(parseJson3Captions('{"events":[]}')).toBeNull();
   });
+  it("returns null for JSON literal null or non-object primitives", () => {
+    expect(parseJson3Captions("null")).toBeNull();
+    expect(parseJson3Captions("42")).toBeNull();
+    expect(parseJson3Captions('"hello"')).toBeNull();
+  });
 });
 
 describe("parseYtTranscript", () => {

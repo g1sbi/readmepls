@@ -34,6 +34,7 @@ export function parseJson3Captions(text: string): YtCaptions | null {
   } catch {
     return null;
   }
+  if (data === null || typeof data !== "object") return null;
   const events = (data as { events?: unknown }).events;
   if (!Array.isArray(events)) return null;
 

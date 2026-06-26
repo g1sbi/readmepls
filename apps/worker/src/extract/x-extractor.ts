@@ -6,6 +6,7 @@ import {
   failedResult,
 } from "@readmepls/core";
 import type { Extractor, ExtractIO } from "./extractor.js";
+import { sanitizeContentHtml } from "./sanitize.js";
 
 export class XExtractor implements Extractor {
   readonly source: SourceType = "x";
@@ -18,7 +19,9 @@ export class XExtractor implements Extractor {
       `?id=${id}&token=${syndicationToken(id)}&lang=en`;
     try {
       const raw = await io.fetchJson(endpoint);
-      return parseSyndicationThread(raw);
+      const result = parseSyndicationThread(raw);
+      if (result.status === "failed") return result;
+      return { ...result, contentHtml: sanitizeContentHtml(result.contentHtml) };
     } catch {
       return failedResult("x", "tweet unavailable");
     }

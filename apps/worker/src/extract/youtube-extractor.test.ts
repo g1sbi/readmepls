@@ -55,4 +55,19 @@ describe("YoutubeExtractor", () => {
     expect(res.status).toBe("failed");
     expect(res.failureReason).toBe("not a youtube video url");
   });
+
+  it("strips script tags from contentHtml even if transcript text contains them", async () => {
+    const maliciousOut: YtDlpOutput = {
+      meta: out.meta,
+      captions: {
+        cues: [{ startSec: 0, text: "click here <script>alert(1)</script>" }],
+      },
+    };
+    const res = await new YoutubeExtractor().extract(
+      "https://www.youtube.com/watch?v=dQw4w9WgXcQ",
+      io({ runYtDlp: async () => maliciousOut })
+    );
+    expect(res.status).toBe("ok");
+    expect(res.contentHtml).not.toContain("<script");
+  });
 });

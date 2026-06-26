@@ -44,4 +44,17 @@ describe("XExtractor", () => {
     expect(res.status).toBe("failed");
     expect(res.failureReason).toBe("not a tweet url");
   });
+
+  it("strips script tags from contentHtml even if text contains them", async () => {
+    const malicious = {
+      ...single,
+      text: "check this <script>alert(1)</script> out",
+    };
+    const res = await new XExtractor().extract(
+      "https://x.com/jack/status/20",
+      io({ fetchJson: async () => malicious })
+    );
+    expect(res.status).toBe("ok");
+    expect(res.contentHtml).not.toContain("<script");
+  });
 });
