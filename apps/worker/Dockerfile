@@ -27,6 +27,8 @@ FROM node:22-alpine AS runtime
 ENV NODE_ENV=production
 RUN addgroup -S app && adduser -S app -G app
 WORKDIR /app
+# yt-dlp (+ python runtime) for the YouTube transcript extractor.
+RUN apk add --no-cache python3 yt-dlp
 COPY --from=build --chown=app:app /out ./
 USER app
 CMD ["node", "dist/main.js"]
