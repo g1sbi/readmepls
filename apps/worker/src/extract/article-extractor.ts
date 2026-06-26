@@ -1,6 +1,7 @@
 import type { ExtractResult, SourceType } from "@readmepls/types";
 import type { Extractor, ExtractIO } from "./extractor.js";
 import { parseArticleHtml } from "./parse-article.js";
+import { isThinExtraction, recoverFromArchive } from "./archive-fallback.js";
 
 // Generic article path for everything that isn't X/YouTube: blogs, Substack,
 // Medium, news sites. Readability parses server-rendered HTML, so SSR pages work.
@@ -14,6 +15,9 @@ export class ArticleExtractor implements Extractor {
 
   async extract(url: string, io: ExtractIO): Promise<ExtractResult> {
     const html = await io.fetchHtml(url);
-    return parseArticleHtml(url, html);
+    const primary = parseArticleHtml(url, html);
+    if (!isThinExtraction(primary)) return primary;
+    const recovered = await recoverFromArchive(url, io);
+    return recovered ?? primary;
   }
 }
