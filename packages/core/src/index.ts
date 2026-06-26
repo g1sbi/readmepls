@@ -13,3 +13,5 @@ export * from "./source/x/tweet-id.js";
 export * from "./source/x/syndication.js";
 export * from "./source/youtube/video-id.js";
 export * from "./source/youtube/transcript.js";
+export * from "./connector/plugin.js";
+export * from "./connector/registry.js";
