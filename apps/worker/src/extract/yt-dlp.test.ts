@@ -47,4 +47,27 @@ describe("createRunYtDlp", () => {
     const out = await run("x");
     expect(out.captions).toBeNull();
   });
+
+  it("prefers manual subtitles over automatic_captions when both are present", async () => {
+    const manualUrl = "https://youtube.com/api/timedtext?fmt=json3&kind=manual";
+    const autoUrl = "https://youtube.com/api/timedtext?fmt=json3&kind=asr";
+    let fetchedUrl = "";
+
+    const run = createRunYtDlp({
+      exec: async () =>
+        JSON.stringify({
+          id: "dQw4w9WgXcQ",
+          title: "t",
+          subtitles: { en: [{ ext: "json3", url: manualUrl }] },
+          automatic_captions: { en: [{ ext: "json3", url: autoUrl }] },
+        }),
+      fetchText: async (url) => {
+        fetchedUrl = url;
+        return json3;
+      },
+    });
+
+    await run("dQw4w9WgXcQ");
+    expect(fetchedUrl).toBe(manualUrl);
+  });
 });

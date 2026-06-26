@@ -1,5 +1,6 @@
 import { execFile } from "node:child_process";
 import { promisify } from "node:util";
+import { z } from "zod";
 import { parseJson3Captions } from "@readmepls/core";
 import type { YtDlpOutput, YtMeta } from "@readmepls/core";
 
@@ -12,15 +13,26 @@ export interface RunYtDlpDeps {
   fetchText(url: string): Promise<string>;
 }
 
-interface YtDlpJson {
-  id?: string;
-  title?: string;
-  channel?: string | null;
-  thumbnail?: string | null;
-  description?: string | null;
-  automatic_captions?: Record<string, { ext?: string; url?: string }[]>;
-  subtitles?: Record<string, { ext?: string; url?: string }[]>;
-}
+// Permissive schema for the subset of yt-dlp `-j` output this adapter reads.
+// .passthrough() preserves any extra fields yt-dlp adds without failing.
+const CaptionTrack = z.object({
+  ext: z.string().optional(),
+  url: z.string().optional(),
+});
+
+const YtDlpJsonSchema = z
+  .object({
+    id: z.string().optional(),
+    title: z.string().optional(),
+    channel: z.string().nullable().optional(),
+    thumbnail: z.string().nullable().optional(),
+    description: z.string().nullable().optional(),
+    automatic_captions: z.record(z.array(CaptionTrack)).optional(),
+    subtitles: z.record(z.array(CaptionTrack)).optional(),
+  })
+  .passthrough();
+
+type YtDlpJson = z.infer<typeof YtDlpJsonSchema>;
 
 function pickJson3Url(meta: YtDlpJson): string | null {
   const manual = meta.subtitles?.en?.find((t) => t.ext === "json3")?.url;
@@ -35,7 +47,9 @@ export function createRunYtDlp(
   return async function runYtDlp(videoId: string): Promise<YtDlpOutput> {
     const url = `https://www.youtube.com/watch?v=${videoId}`;
     const raw = await deps.exec(["-j", "--skip-download", url]);
-    const json = JSON.parse(raw) as YtDlpJson;
+    // Validate at the IO boundary — malformed yt-dlp output throws here,
+    // which the caller's try/catch converts to a graceful failedResult.
+    const json = YtDlpJsonSchema.parse(JSON.parse(raw));
 
     const meta: YtMeta = {
       videoId,
