@@ -8,8 +8,9 @@
     "check": "svelte-check --tsconfig ./tsconfig.json"
   },
   "dependencies": {
-    "@readmepls/types": "workspace:*",
     "@readmepls/core": "workspace:*",
+    "@readmepls/types": "workspace:*",
+    "jszip": "^3.10.1",
     "pocketbase": "^0.21.0",
     "zod": "^3.23.0"
   },
