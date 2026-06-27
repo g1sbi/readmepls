@@ -28,6 +28,9 @@ services:
     env_file: .env
     environment:
       PB_URL: http://pocketbase:8090
+      # Browser-facing PB origin. From .env by default; overridable at runtime
+      # (the smoke test injects a sentinel to prove it reaches the browser).
+      PUBLIC_PB_URL: ${PUBLIC_PB_URL:-http://localhost:8090}
     ports:
       - "${WEB_PORT:-3000}:3000"
     depends_on:

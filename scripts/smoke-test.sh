@@ -24,6 +24,8 @@ trap cleanup EXIT
 set -a; . ./.env; set +a
 
 echo "==> building + starting stack (worker in mock-AI mode)"
+# Sentinel proves the browser-facing PB URL is injected at runtime (not baked).
+export PUBLIC_PB_URL="http://pb.smoke.test:8090"
 AI_PROVIDER=mock docker compose up -d --build
 
 wait_for() { # <name> <url>
@@ -45,6 +47,14 @@ for i in $(seq 1 30); do
   [ "$i" = "30" ] && { echo "web never responded"; docker compose logs web; exit 1; }
   sleep 2
 done
+
+echo "==> asserting runtime PUBLIC_PB_URL reached the browser bundle"
+LOGIN_HTML=$(curl -fsS "http://localhost:${WEB_PORT}/login")
+case "$LOGIN_HTML" in
+  *pb.smoke.test:8090*) echo "runtime PB URL present in served HTML" ;;
+  *) echo "PUBLIC_PB_URL sentinel missing from /login HTML — runtime env not wired";
+     docker compose logs web; exit 1 ;;
+esac
 
 echo "==> authenticating as PocketBase superuser"
 TOKEN=$(curl -fsS -X POST \
