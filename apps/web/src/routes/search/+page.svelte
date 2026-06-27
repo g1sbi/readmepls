@@ -4,6 +4,7 @@
   import { z } from "zod";
   import CardGrid from "$lib/components/ui/CardGrid.svelte";
   import { browserPb } from "$lib/pb";
+  import { publicPbUrl } from "$lib/public-pb-url";
 
   let results = $state<z.infer<typeof SearchResult>[]>([]);
   let loading = $state(false);
@@ -15,7 +16,7 @@
     const query = q;
     if (!query.trim()) { results = []; return; }
     loading = true;
-    const base = import.meta.env.VITE_PB_URL ?? "http://127.0.0.1:8090";
+    const base = publicPbUrl();
     fetch(`${base}/api/search?q=${encodeURIComponent(query)}`, {
       headers: { Authorization: browserPb().authStore.token },
     })
