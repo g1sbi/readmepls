@@ -1,4 +1,5 @@
 import { describe, it, expect, vi } from "vitest";
+import JSZip from "jszip";
 
 vi.mock("$lib/server/export.js", () => ({
   resolveArticleIds: vi.fn(),
@@ -50,5 +51,40 @@ describe("GET /api/export", () => {
     const url = new URL("http://localhost/api/export?scope=library");
     const locals = { userId: null, pb: { authStore: { token: "" } } } as never;
     await expect(GET({ url, locals } as never)).rejects.toMatchObject({ status: 401 });
+  });
+
+  // Fix #3 — 422 when the single article's render fails (e.g. non-string contentHtml)
+  it("422s when single-scope article render fails", async () => {
+    (resolveArticleIds as ReturnType<typeof vi.fn>).mockResolvedValue(["id1"]);
+    (loadArticleExports as ReturnType<typeof vi.fn>).mockResolvedValue([
+      article({ contentHtml: 123 as unknown as string }),
+    ]);
+    await expect(call("scope=single&id=id1")).rejects.toMatchObject({ status: 422 });
+  });
+
+  // Fix #4a — _export-report.md is present when at least one article fails to render
+  it("zip includes _export-report.md when some articles fail to render", async () => {
+    (resolveArticleIds as ReturnType<typeof vi.fn>).mockResolvedValue(["id1", "id2"]);
+    (loadArticleExports as ReturnType<typeof vi.fn>).mockResolvedValue([
+      article(),
+      article({ id: "id2", title: "Two", contentHtml: 123 as unknown as string }),
+    ]);
+    const res = await call("scope=library");
+    const bytes = new Uint8Array(await res.arrayBuffer());
+    const zip = await JSZip.loadAsync(bytes);
+    expect(zip.file("_export-report.md")).not.toBeNull();
+  });
+
+  // Fix #4b — _export-report.md is absent when all articles export cleanly
+  it("zip does not include _export-report.md when all articles export cleanly", async () => {
+    (resolveArticleIds as ReturnType<typeof vi.fn>).mockResolvedValue(["id1", "id2"]);
+    (loadArticleExports as ReturnType<typeof vi.fn>).mockResolvedValue([
+      article(),
+      article({ id: "id2", title: "Two" }),
+    ]);
+    const res = await call("scope=library");
+    const bytes = new Uint8Array(await res.arrayBuffer());
+    const zip = await JSZip.loadAsync(bytes);
+    expect(zip.file("_export-report.md")).toBeNull();
   });
 });

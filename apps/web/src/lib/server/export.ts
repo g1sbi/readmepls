@@ -1,6 +1,7 @@
+import { z } from "zod";
 import type PocketBase from "pocketbase";
 import type { ArticleExport } from "@readmepls/core";
-import { Highlight } from "@readmepls/types";
+import { Highlight, Content, ArticleStatus } from "@readmepls/types";
 
 export type Scope =
   | { kind: "single"; id: string }
@@ -54,19 +55,86 @@ export async function resolveArticleIds(
   }
 }
 
+/** Local schema for the PB article fields we actually read. Only these are
+ *  validated; the `expand` bag is handled separately via Content.partial(). */
+const ArticleRecord = z.object({
+  id: z.string(),
+  url: z.string(),
+  status: ArticleStatus.catch("unread"),
+  created: z.string(),
+});
+
+/** Partial content schema — tolerates absent/pending content without throwing. */
+const ContentPartial = Content.partial().nullable().optional();
+
 /** Load each article (with expanded content), its highlights, and its manual
  *  tags, mapping to the pure ArticleExport DTO. Ids the caller cannot read
- *  (getOne 404 under API rules) are silently skipped — tenant isolation. */
+ *  (getOne 404 under API rules) are silently skipped — tenant isolation.
+ *  Highlights and tags are fetched in two batched queries (not N×2). */
 export async function loadArticleExports(pb: PocketBase, ids: string[]): Promise<ArticleExport[]> {
-  const out: ArticleExport[] = [];
-  for (const id of ids) {
-    const a = await pb.collection("articles").getOne(id, { expand: "content" }).catch(() => null);
-    if (!a) continue;
-    const c = (a.expand as { content?: Record<string, unknown> } | undefined)?.content;
+  // Step 1: per-article getOne (preserves silent-skip on 404/permission deny).
+  // Zod-validate the article record and content at the PB boundary.
+  type Readable = {
+    parsed: z.infer<typeof ArticleRecord>;
+    content: z.infer<typeof ContentPartial>;
+  };
+  const readable: Readable[] = [];
 
-    const hls = await pb
-      .collection("highlights")
-      .getFullList({ filter: pb.filter("article = {:id}", { id }), sort: "created" });
+  for (const id of ids) {
+    const raw = await pb.collection("articles").getOne(id, { expand: "content" }).catch(() => null);
+    if (!raw) continue;
+
+    const articleResult = ArticleRecord.safeParse(raw);
+    if (!articleResult.success) continue;
+
+    const rawContent = (raw.expand as { content?: unknown } | undefined)?.content;
+    const contentResult = ContentPartial.safeParse(rawContent);
+    const content = contentResult.success ? contentResult.data : undefined;
+
+    readable.push({ parsed: articleResult.data, content });
+  }
+
+  if (readable.length === 0) return [];
+
+  const readableIds = readable.map((r) => r.parsed.id);
+
+  // Step 2: batch-fetch highlights for all readable articles (1 query total).
+  const hlFilter = pb.filter(
+    readableIds.map((_, i) => `article = {:a${i}}`).join(" || "),
+    Object.fromEntries(readableIds.map((artId, i) => [`a${i}`, artId])),
+  );
+  const allHls = await pb
+    .collection("highlights")
+    .getFullList({ filter: hlFilter, sort: "created" });
+
+  // Step 3: batch-fetch manual tags for all readable articles (1 query total).
+  const tagFilter = pb.filter(
+    `(${readableIds.map((_, i) => `article = {:a${i}}`).join(" || ")}) && source = {:src}`,
+    { ...Object.fromEntries(readableIds.map((artId, i) => [`a${i}`, artId])), src: "manual" },
+  );
+  const allTagLinks = await pb
+    .collection("article_tags")
+    .getFullList({ filter: tagFilter, expand: "tag" });
+
+  // Group by article id in memory.
+  const hlsByArticle = new Map<string, typeof allHls>();
+  for (const hl of allHls) {
+    const artId = hl.article as string;
+    if (!hlsByArticle.has(artId)) hlsByArticle.set(artId, []);
+    hlsByArticle.get(artId)!.push(hl);
+  }
+
+  const tagsByArticle = new Map<string, typeof allTagLinks>();
+  for (const link of allTagLinks) {
+    const artId = link.article as string;
+    if (!tagsByArticle.has(artId)) tagsByArticle.set(artId, []);
+    tagsByArticle.get(artId)!.push(link);
+  }
+
+  // Build output preserving input order.
+  const out: ArticleExport[] = [];
+  for (const { parsed: a, content: c } of readable) {
+    const hls = hlsByArticle.get(a.id) ?? [];
     const highlights = hls.map((r) =>
       Highlight.parse({
         id: r.id, user: r.user, article: r.article, text: r.text,
@@ -76,25 +144,22 @@ export async function loadArticleExports(pb: PocketBase, ids: string[]): Promise
       }),
     );
 
-    const tagLinks = await pb.collection("article_tags").getFullList({
-      filter: pb.filter("article = {:id} && source = {:s}", { id, s: "manual" }),
-      expand: "tag",
-    });
+    const tagLinks = tagsByArticle.get(a.id) ?? [];
     const tags = tagLinks
       .map((l) => (l.expand as { tag?: { name?: string } } | undefined)?.tag?.name)
       .filter((n): n is string => !!n);
 
     out.push({
       id: a.id,
-      title: (c?.title as string) ?? (a.url as string),
-      url: a.url as string,
+      title: (c?.title as string) ?? a.url,
+      url: a.url,
       author: (c?.author as string | null) ?? null,
       siteName: (c?.site_name as string | null) ?? null,
       lang: (c?.lang as string | null) ?? null,
       publishedAt: (c?.published_at as string | null) ?? null,
       fetchedAt: (c?.fetched_at as string) ?? "",
-      capturedAt: a.created as string,
-      status: ((a.status as ArticleExport["status"]) ?? "unread"),
+      capturedAt: a.created,
+      status: a.status,
       tags,
       aiTags: Array.isArray(c?.ai_tags_json) ? (c!.ai_tags_json as string[]) : [],
       summary: (c?.excerpt as string) ?? "",
