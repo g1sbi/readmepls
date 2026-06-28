@@ -3,7 +3,7 @@
   "version": "0.0.0",
   "type": "module",
   "scripts": {
-    "build": "esbuild src/main.ts --bundle --platform=node --format=esm --target=node22 --outfile=dist/main.js --external:pocketbase --external:@anthropic-ai/sdk --external:jsdom --external:@mozilla/readability --external:zod",
+    "build": "esbuild src/main.ts --bundle --platform=node --format=esm --target=node22 --outfile=dist/main.js --external:pocketbase --external:@anthropic-ai/sdk --external:jsdom --external:@mozilla/readability --external:zod --external:sanitize-html",
     "start": "node dist/main.js"
   },
   "dependencies": {
