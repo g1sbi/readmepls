@@ -49,10 +49,12 @@ for i in $(seq 1 30); do
 done
 
 echo "==> asserting runtime PUBLIC_PB_URL reached the browser bundle"
-LOGIN_HTML=$(curl -fsS "http://localhost:${WEB_PORT}/login")
-case "$LOGIN_HTML" in
-  *pb.smoke.test:8090*) echo "runtime PB URL present in served HTML" ;;
-  *) echo "PUBLIC_PB_URL sentinel missing from /login HTML — runtime env not wired";
+# SvelteKit serves the full public env unconditionally at /_app/env.js
+# (export const env={...}); layout-independent, so this can't false-fail.
+PUBLIC_ENV_JS=$(curl -fsS "http://localhost:${WEB_PORT}/_app/env.js")
+case "$PUBLIC_ENV_JS" in
+  *pb.smoke.test:8090*) echo "runtime PB URL present in public env" ;;
+  *) echo "PUBLIC_PB_URL sentinel missing from /_app/env.js — runtime env not wired";
      docker compose logs web; exit 1 ;;
 esac
 
