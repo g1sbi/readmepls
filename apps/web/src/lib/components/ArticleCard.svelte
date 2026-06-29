@@ -4,6 +4,7 @@
   import Button from "./ui/Button.svelte";
   import Spinner from "./ui/Spinner.svelte";
   import ConfirmDialog from "./ui/ConfirmDialog.svelte";
+  import { BookOpen, RotateCw, Trash2 } from "@lucide/svelte";
   import { deriveCardState } from "$lib/article/card-state.js";
 
   let {
@@ -40,16 +41,16 @@
     <h3>{content?.title ?? article.url}</h3>
     {#if state === "failed" || state === "partial"}
       <p data-state={state}>{content?.failure_reason ?? "extraction problem"}</p>
-      <Button variant="accent" onclick={() => onRetry?.(article.id)}>retry</Button>
+      <Button variant="accent" onclick={() => onRetry?.(article.id)}><RotateCw class="icon-sm" aria-hidden="true" /> retry</Button>
     {:else}
       <div class="tags">
         {#each tags as t}<Tag>{t}</Tag>{/each}
       </div>
-      <Button onclick={() => onOpen?.(article.id)}>read</Button>
+      <Button onclick={() => onOpen?.(article.id)}><BookOpen class="icon-sm" aria-hidden="true" /> read</Button>
     {/if}
   {/if}
   {#if onDelete}
-    <button class="delete-btn" onclick={() => (confirming = true)} aria-label="delete article">delete</button>
+    <button class="delete-btn" onclick={() => (confirming = true)} aria-label="delete article"><Trash2 class="icon-sm" aria-hidden="true" /></button>
     <ConfirmDialog
       open={confirming}
       title="delete this article?"
@@ -62,6 +63,8 @@
 
 <style>
   .delete-btn {
+    display: inline-flex;
+    align-items: center;
     background: none;
     border: none;
     cursor: pointer;

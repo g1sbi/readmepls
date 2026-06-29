@@ -1,6 +1,7 @@
 <script lang="ts">
   import Input from "./ui/Input.svelte";
   import Button from "./ui/Button.svelte";
+  import { BookmarkPlus } from "@lucide/svelte";
 
   let { onCaptured }: { onCaptured?: () => void } = $props();
   let url = $state("");
@@ -35,7 +36,7 @@
 
 <form onsubmit={(e) => { e.preventDefault(); submit(); }}>
   <Input bind:value={url} placeholder="Paste a link…" type="url" />
-  <Button type="submit" variant="accent" disabled={busy}>{busy ? "saving…" : "save it"}</Button>
+  <Button type="submit" variant="accent" disabled={busy}><BookmarkPlus class="icon-sm" aria-hidden="true" /> {busy ? "saving…" : "save it"}</Button>
   {#if err}<p role="alert">{err}</p>{/if}
 </form>
 
