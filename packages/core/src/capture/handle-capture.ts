@@ -8,6 +8,22 @@ export interface CaptureOutcome {
   body: { articleId?: string; cached?: boolean; error?: string };
 }
 
+/**
+ * True when a PocketBase create error is a unique-index violation — the SDK
+ * surfaces field errors on `.data` (or `.response.data`) keyed by field name.
+ */
+function isUniqueViolation(err: unknown): boolean {
+  const e = err as {
+    data?: Record<string, { code?: string }>;
+    response?: { data?: Record<string, { code?: string }> };
+  };
+  const fields = e?.data ?? e?.response?.data;
+  return (
+    !!fields &&
+    Object.values(fields).some((f) => f?.code === "validation_not_unique")
+  );
+}
+
 export async function handleCapture(
   pb: PocketBase,
   userId: string,
@@ -57,7 +73,14 @@ export async function handleCapture(
       status: "queued",
       attempts: 0,
     })
-    .catch(() => null); // ignore unique-violation: job already queued
+    .catch((err: unknown) => {
+      // The only tolerable failure is the unique-index violation that means a
+      // job for this URL is already queued (concurrent capture). Anything else
+      // — DB down, misconfigured API rule — must surface, not silently leave
+      // the article with no job to process.
+      if (isUniqueViolation(err)) return null;
+      throw err;
+    });
 
   const article = await pb.collection("articles").create({
     user: userId,
