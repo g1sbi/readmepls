@@ -26,7 +26,7 @@
 <div bind:this={anchor} class="anchor" style="left:{x}px; top:{y}px;"></div>
 
 <Popover.Root open onOpenChange={onOpenChange}>
-  <Popover.Content customAnchor={anchor} class="popover" role="dialog" aria-label="add highlight" sideOffset={4}>
+  <Popover.Content customAnchor={anchor} class="hl-popover" role="dialog" aria-label="add highlight" sideOffset={4}>
     <div class="swatches">
       {#each colors as c}
         <button
@@ -51,7 +51,7 @@
   }
   /* Bits UI portals Popover.Content to the body, so styles are :global with a
      specific class. Values copied from the previous version — no visual change. */
-  :global(.popover) {
+  :global(.hl-popover) {
     display: flex;
     gap: var(--space-2);
     align-items: center;
@@ -62,21 +62,21 @@
     box-shadow: var(--shadow-md);
     z-index: var(--z-sticky);
   }
-  :global(.popover) .swatches { display: flex; gap: var(--space-1); }
-  :global(.popover) .swatch {
+  :global(.hl-popover) .swatches { display: flex; gap: var(--space-1); }
+  :global(.hl-popover) .swatch {
     width: 1.25rem; height: 1.25rem;
     border: 1px solid var(--color-border);
     border-radius: var(--radius-sm);
     cursor: pointer;
   }
-  :global(.popover) .note {
+  :global(.hl-popover) .note {
     border: none;
     border-bottom: 1px solid var(--color-border);
     background: transparent;
     font: inherit;
     color: var(--color-text);
   }
-  :global(.popover) .cancel {
+  :global(.hl-popover) .cancel {
     background: none; border: none; cursor: pointer; color: var(--color-text-muted);
   }
 </style>

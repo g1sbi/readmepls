@@ -28,11 +28,11 @@
 
 <Dialog.Root {open} {onOpenChange}>
   <Dialog.Portal>
-    <Dialog.Overlay class="overlay" />
-    <Dialog.Content class="panel">
-      <Dialog.Title class="title">{title}</Dialog.Title>
-      <Dialog.Description class="message">{message}</Dialog.Description>
-      <div class="actions">
+    <Dialog.Overlay class="confirm-dialog__overlay" />
+    <Dialog.Content class="confirm-dialog__panel">
+      <Dialog.Title class="confirm-dialog__title">{title}</Dialog.Title>
+      <Dialog.Description class="confirm-dialog__message">{message}</Dialog.Description>
+      <div class="confirm-dialog__actions">
         <Button onclick={onCancel}>cancel</Button>
         <Button variant="accent" onclick={onConfirm}>{confirmLabel}</Button>
       </div>
@@ -43,13 +43,13 @@
 <style>
   /* Bits UI applies these classes to its portaled parts; styling is unchanged
      from the previous native-<dialog> version. */
-  :global(.overlay) {
+  :global(.confirm-dialog__overlay) {
     position: fixed;
     inset: 0;
     background: rgb(0 0 0 / 0.4);
     z-index: var(--z-modal, 100);
   }
-  :global(.panel) {
+  :global(.confirm-dialog__panel) {
     position: fixed;
     left: 50%;
     top: 50%;
@@ -64,16 +64,16 @@
     box-shadow: var(--shadow-lg, var(--shadow-sm));
     z-index: var(--z-modal, 100);
   }
-  :global(.title) {
+  :global(.confirm-dialog__title) {
     font-family: var(--font-display);
     font-size: var(--text-lg, 1.1rem);
     margin: 0 0 0.5rem;
   }
-  :global(.message) {
+  :global(.confirm-dialog__message) {
     color: var(--color-text-muted);
     margin: 0 0 1.25rem;
   }
-  :global(.actions) {
+  :global(.confirm-dialog__actions) {
     display: flex;
     justify-content: flex-end;
     gap: 0.5rem;
