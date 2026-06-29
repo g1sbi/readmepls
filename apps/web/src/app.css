@@ -1,0 +1,21 @@
+/* Global reset. Imported once in +layout.svelte. Keep minimal — visual
+   tokens live in tokens.css; this only normalizes the box model and the
+   document edges so the paper background reaches the viewport. */
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+html,
+body {
+  margin: 0;
+  padding: 0;
+}
+
+body {
+  /* Match the app gradient so rubber-band/over-scroll shows paper, not canvas.
+     The gradient itself is re-applied on .app for the in-flow fill. */
+  background: var(--color-bg);
+  min-height: 100dvh;
+}
