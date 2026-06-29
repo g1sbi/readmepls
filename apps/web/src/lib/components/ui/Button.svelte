@@ -21,6 +21,10 @@
 
 <style>
   button {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: var(--space-2);
     font-family: var(--font-display);
     font-size: var(--text-sm, 0.95rem);
     border: 1px solid var(--color-border);

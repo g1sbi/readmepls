@@ -86,6 +86,12 @@
   --tracking-normal:  0;
   --tracking-eyebrow: 0.25em; /* banner meta */
 
+  /* iconography (Track 2 slice 2) */
+  --icon-sm: 1rem;     /* 16 — inline with sm/md text */
+  --icon-md: 1.25rem;  /* 20 — default action/control icon */
+  --icon-lg: 1.5rem;   /* 24 — emphasis */
+  --icon-stroke: 1.75; /* line weight, pairs with Fredoka */
+
   /* ---- 1. PRIMITIVES — space (4px base) -------------------------------- */
   --space-1: 0.25rem;  --space-2: 0.5rem;   --space-3: 0.75rem;
   --space-4: 1rem;     --space-5: 1.5rem;   --space-6: 2rem;

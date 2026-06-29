@@ -8,6 +8,7 @@
     "check": "svelte-check --tsconfig ./tsconfig.json"
   },
   "dependencies": {
+    "@lucide/svelte": "^1.22",
     "@readmepls/core": "workspace:*",
     "@readmepls/types": "workspace:*",
     "bits-ui": "^2.18.1",
