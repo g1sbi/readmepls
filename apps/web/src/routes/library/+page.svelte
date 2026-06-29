@@ -5,6 +5,7 @@
   import { slugify } from "@readmepls/core";
   import { ClientResponseError } from "pocketbase";
   import type { ArticleRecord } from "$lib/article/record.js";
+  import { deleteArticle } from "$lib/article/delete.js";
   import ArticleCard from "$lib/components/ArticleCard.svelte";
   import CardGrid from "$lib/components/ui/CardGrid.svelte";
   import Tag from "$lib/components/ui/Tag.svelte";
@@ -25,6 +26,9 @@
   let renameTarget = $state<string | null>(null);
   let renameDraft = $state("");
   let collectionError = $state("");
+
+  // Article delete error — cleared on each attempt, shown inline if delete fails
+  let articleError = $state("");
 
   let visible = $derived(
     selectedTag === null ? articles : articles.filter((a) => taggedArticleIds.has(a.id)),
@@ -100,6 +104,16 @@
     await loadCollections();
   }
 
+  async function handleDelete(id: string) {
+    articleError = "";
+    try {
+      await deleteArticle(pb, id);
+      // grid refreshes via the existing articles realtime subscription
+    } catch {
+      articleError = "couldn't delete that. try again.";
+    }
+  }
+
   async function deleteCollection(id: string) {
     // collection_items cascade per Task 3 migration (cascadeDelete: true)
     await pb.collection("collections").delete(id);
@@ -138,6 +152,10 @@
   </nav>
 {/if}
 
+{#if articleError}
+  <p class="article-error" role="alert">{articleError}</p>
+{/if}
+
 {#if loading}
   <CardGrid>
     {#each Array(6) as _}
@@ -151,7 +169,7 @@
 {:else}
   <CardGrid>
     {#each visible as a (a.id)}
-      <ArticleCard article={a} onOpen={(id) => goto(`/read/${id}`)} />
+      <ArticleCard article={a} onOpen={(id) => goto(`/read/${id}`)} onDelete={handleDelete} />
     {/each}
   </CardGrid>
 {/if}
@@ -260,4 +278,5 @@
   }
   .new-collection-form { display: flex; align-items: center; gap: 0.5rem; }
   .collection-error { margin: 0.3rem 0 0; font-size: var(--text-sm); color: var(--color-accent); }
+  .article-error { margin: 0 0 0.75rem; font-size: var(--text-sm); color: var(--color-accent); }
 </style>

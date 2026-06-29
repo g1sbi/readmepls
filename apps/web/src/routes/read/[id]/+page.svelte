@@ -8,9 +8,12 @@
   import type { ArticleRecord } from "$lib/article/record.js";
   import type { RecordModel } from "pocketbase";
   import { ClientResponseError } from "pocketbase";
+  import { goto } from "$app/navigation";
   import { readerCssVars } from "$lib/reader/css-vars.js";
   import { markRange, unmarkAll } from "$lib/highlight/render";
+  import { deleteArticle } from "$lib/article/delete.js";
   import ReaderControls from "$lib/components/ReaderControls.svelte";
+  import ConfirmDialog from "$lib/components/ui/ConfirmDialog.svelte";
   import TagEditor from "$lib/components/TagEditor.svelte";
   import AddToCollection from "$lib/components/AddToCollection.svelte";
   import Button from "$lib/components/ui/Button.svelte";
@@ -41,6 +44,10 @@
 
   // Collection state
   let collections = $state<{ id: string; name: string }[]>([]);
+
+  let confirmingDelete = $state(false);
+  // No pre-existing inline error pattern on this page; introduced here for delete failures.
+  let deleteError = $state("");
 
   async function loadHighlights(articleId: string) {
     const raw = await pb.collection("highlights").getFullList({
@@ -224,6 +231,18 @@
     await addToCollection(c.id);
     await loadCollections();
   }
+
+  async function confirmDelete() {
+    if (!article) return;
+    confirmingDelete = false;
+    deleteError = "";
+    try {
+      await deleteArticle(pb, article.id);
+      await goto("/library");
+    } catch {
+      deleteError = "couldn't delete that. try again.";
+    }
+  }
 </script>
 
 <div class="progress" style="--p: {progress}" aria-hidden="true"></div>
@@ -233,7 +252,12 @@
     <a class="back" href="/library">← library</a>
     <ReaderControls {prefs} onChange={savePrefs} />
     <Button onclick={archive}>Archive</Button>
+    <button class="reader-delete" onclick={() => (confirmingDelete = true)} aria-label="delete article">delete</button>
   </div>
+
+  {#if deleteError}
+    <p class="delete-error" role="alert">{deleteError}</p>
+  {/if}
 
   {#if !content}
     <Spinner label="Loading article" />
@@ -265,6 +289,14 @@
   <HighlightsSidebar {highlights} {orphans} onjump={jumpTo} ondelete={deleteHighlight} />
 {/if}
 
+<ConfirmDialog
+  open={confirmingDelete}
+  title="delete this article?"
+  message="this can't be undone."
+  onConfirm={confirmDelete}
+  onCancel={() => (confirmingDelete = false)}
+/>
+
 <style>
   .progress { position: fixed; top: 0; left: 0; height: 3px; width: calc(var(--p) * 100%); background: var(--color-accent); z-index: 10; transition: width var(--dur-fast) var(--ease-out); }
   /* --reading-measure is set inline on .reader-shell so the column width
@@ -288,4 +320,15 @@
   .tag-section { max-width: var(--reading-measure); margin: var(--space-4) auto 0; padding: 0 1.5rem; }
   .collection-section { max-width: var(--reading-measure); margin: var(--space-4) auto 0; padding: 0 1.5rem; }
   @media (prefers-reduced-motion: reduce) { .progress { transition: none; } }
+  .reader-delete {
+    background: none;
+    border: none;
+    cursor: pointer;
+    font: inherit;
+    font-size: var(--text-sm);
+    color: var(--color-text-muted);
+    padding: 0.1rem 0.4rem;
+  }
+  .reader-delete:hover { color: var(--color-accent); }
+  .delete-error { margin: 0 0 0.75rem; font-size: var(--text-sm); color: var(--color-accent); }
 </style>
