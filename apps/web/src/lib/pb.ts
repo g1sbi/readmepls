@@ -7,10 +7,15 @@ let _pb: PocketBase | null = null;
 export function browserPb(): PocketBase {
   if (!_pb) {
     _pb = new PocketBase(publicPbUrl());
-    _pb.authStore.loadFromCookie(document.cookie);
-    _pb.authStore.onChange(() => {
-      document.cookie = _pb!.authStore.exportToCookie({ httpOnly: false });
-    });
+    // The root layout constructs this client during SSR too, where `document`
+    // does not exist. Cookie sync is browser-only; the browser gets its own
+    // module instance and wires it up there.
+    if (typeof document !== "undefined") {
+      _pb.authStore.loadFromCookie(document.cookie);
+      _pb.authStore.onChange(() => {
+        document.cookie = _pb!.authStore.exportToCookie({ httpOnly: false });
+      });
+    }
   }
   return _pb;
 }
