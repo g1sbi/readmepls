@@ -10,6 +10,7 @@
   "dependencies": {
     "@readmepls/core": "workspace:*",
     "@readmepls/types": "workspace:*",
+    "bits-ui": "^2.18.1",
     "jszip": "^3.10.1",
     "pocketbase": "^0.21.0",
     "zod": "^3.23.0"
