@@ -30,7 +30,7 @@
 
 <style>
   .topbar {
-    display: flex; align-items: center; gap: 1.5rem;
+    display: flex; align-items: center; gap: 1rem; flex-wrap: wrap;
     padding: 0.75rem 1.25rem;
     background: var(--color-surface);
     border-bottom: 1px solid var(--color-border);
@@ -61,4 +61,9 @@
   }
   .search input::placeholder { color: var(--color-text-subtle); }
   .search input:focus { border-color: var(--color-ring); box-shadow: 0 0 0 2px var(--color-accent-wash); }
+  @media (max-width: 640px) {
+    .topbar { gap: 0.6rem; }
+    .search { order: 3; flex-basis: 100%; max-width: none; }
+    .right { gap: 0.6rem; }
+  }
 </style>
