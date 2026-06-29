@@ -10,8 +10,8 @@
 </script>
 
 <div class="controls" role="group" aria-label="reading controls">
-  <Button onclick={() => emit({ size: clampSize(prefs.size - 1) })}><AArrowDown class="icon-md" aria-hidden="true" /><span class="sr-only">decrease text size</span></Button>
-  <Button onclick={() => emit({ size: clampSize(prefs.size + 1) })}><AArrowUp class="icon-md" aria-hidden="true" /><span class="sr-only">increase text size</span></Button>
+  <Button onclick={() => emit({ size: clampSize(prefs.size - 1) })}><AArrowDown class="icon-sm" aria-hidden="true" /><span class="sr-only">decrease text size</span></Button>
+  <Button onclick={() => emit({ size: clampSize(prefs.size + 1) })}><AArrowUp class="icon-sm" aria-hidden="true" /><span class="sr-only">increase text size</span></Button>
   <Button onclick={() => emit({ font: prefs.font === "serif" ? "sans" : "serif" })}>
     <Type class="icon-sm" aria-hidden="true" /> {prefs.font === "serif" ? "sans" : "serif"}
   </Button>
