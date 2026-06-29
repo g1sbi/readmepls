@@ -1,5 +1,6 @@
 <script lang="ts">
   import { onMount, onDestroy } from "svelte";
+  import { Pencil, Trash2, Check, X, Plus } from "@lucide/svelte";
   import { goto } from "$app/navigation";
   import { browserPb } from "$lib/pb.js";
   import { slugify } from "@readmepls/core";
@@ -188,13 +189,13 @@
                 bind:value={renameDraft}
                 class="rename-input"
               />
-              <button type="submit" class="action-btn">save</button>
-              <button type="button" class="action-btn" onclick={() => (renameTarget = null)}>cancel</button>
+              <button type="submit" class="action-btn"><Check class="icon-sm" aria-hidden="true" /> save</button>
+              <button type="button" class="action-btn" onclick={() => (renameTarget = null)}><X class="icon-sm" aria-hidden="true" /> cancel</button>
             </form>
           {:else}
             <a class="collection-chip" href="/collections/{col.slug}"><Chip>{col.name}</Chip></a>
-            <button class="action-btn" onclick={() => startRename(col.id, col.name)} aria-label="rename {col.name}">rename</button>
-            <button class="action-btn danger" onclick={() => deleteCollection(col.id)} aria-label="delete {col.name}">delete</button>
+            <button class="action-btn" onclick={() => startRename(col.id, col.name)} aria-label="rename {col.name}"><Pencil class="icon-sm" aria-hidden="true" /></button>
+            <button class="action-btn danger" onclick={() => deleteCollection(col.id)} aria-label="delete {col.name}"><Trash2 class="icon-sm" aria-hidden="true" /></button>
           {/if}
         </div>
       {/each}
@@ -207,7 +208,7 @@
       bind:value={newCollectionName}
       class="new-collection-input"
     />
-    <button type="submit" class="action-btn">create</button>
+    <button type="submit" class="action-btn"><Plus class="icon-sm" aria-hidden="true" /> create</button>
   </form>
   {#if collectionError}
     <p class="collection-error" role="alert">{collectionError}</p>
@@ -263,6 +264,7 @@
   .collection-chip { text-decoration: none; }
   .collection-chip:focus-visible { outline: var(--focus-ring-width) solid var(--color-ring); outline-offset: var(--focus-ring-offset); }
   .action-btn {
+    display: inline-flex; align-items: center; gap: var(--space-1);
     background: none; border: none; cursor: pointer; font: inherit; font-size: var(--text-sm);
     color: var(--color-text-muted); padding: 0.1rem 0.4rem;
   }

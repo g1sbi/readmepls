@@ -1,4 +1,5 @@
 <script lang="ts">
+  import { Trash2 } from "@lucide/svelte";
   import type { Highlight } from "@readmepls/types";
   let { highlights, orphans, onjump, ondelete }: {
     highlights: Highlight[];
@@ -21,7 +22,7 @@
         </button>
         {#if h.note}<p class="note">{h.note}</p>{/if}
         {#if orphans.includes(h.id)}<p class="warn">can't locate in current text</p>{/if}
-        <button class="del" aria-label="delete" onclick={() => ondelete(h.id)}>delete</button>
+        <button class="del" aria-label="delete" onclick={() => ondelete(h.id)}><Trash2 class="icon-sm" aria-hidden="true" /></button>
       </li>
     {/each}
   </ul>
@@ -39,7 +40,7 @@
   .quote:focus-visible { outline: var(--focus-ring-width) solid var(--color-ring); outline-offset: var(--focus-ring-offset); }
   .note { color: var(--color-text-muted); font-size: var(--text-sm); margin: var(--space-1) 0 0 var(--space-2); }
   .warn { color: var(--color-accent); font-size: var(--text-xs); margin-left: var(--space-2); }
-  .del { background: none; border: none; color: var(--color-text-muted); cursor: pointer; font-size: var(--text-xs); }
+  .del { display: inline-flex; align-items: center; background: none; border: none; color: var(--color-text-muted); cursor: pointer; font-size: var(--text-xs); }
   .del:focus-visible { outline: var(--focus-ring-width) solid var(--color-ring); outline-offset: var(--focus-ring-offset); }
   .orphan .quote { opacity: 0.6; }
 </style>

@@ -1,5 +1,6 @@
 <script lang="ts">
   import { Popover } from "bits-ui";
+  import { X } from "@lucide/svelte";
   import type { HighlightColor } from "@readmepls/types";
 
   let { x, y, onpick, oncancel }: {
@@ -38,7 +39,7 @@
       {/each}
     </div>
     <input class="note" placeholder="note…" bind:value={note} aria-label="note" />
-    <button class="cancel" onclick={oncancel} aria-label="cancel">×</button>
+    <button class="cancel" onclick={oncancel} aria-label="cancel"><X class="icon-sm" aria-hidden="true" /></button>
   </Popover.Content>
 </Popover.Root>
 
@@ -77,6 +78,7 @@
     color: var(--color-text);
   }
   :global(.hl-popover) .cancel {
+    display: inline-flex; align-items: center;
     background: none; border: none; cursor: pointer; color: var(--color-text-muted);
   }
 </style>
