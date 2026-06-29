@@ -24,12 +24,18 @@
   const content = $derived(article.expand?.content ?? null);
   const state = $derived(deriveCardState(content));
   const tags = $derived<string[]>(content?.ai_tags_json ?? []);
+
+  // Show a clean hostname while processing; fall back to the raw URL if it
+  // can't be parsed (e.g. malformed input mid-capture).
+  function hostOf(u: string): string {
+    try { return new URL(u).hostname; } catch { return u; }
+  }
 </script>
 
 <Card>
   {#if state === "processing"}
     <Spinner label="Processing" />
-    <span>{article.url}</span>
+    <span class="url">{hostOf(article.url)}</span>
   {:else}
     <h3>{content?.title ?? article.url}</h3>
     {#if state === "failed" || state === "partial"}
@@ -66,4 +72,10 @@
     align-self: flex-end;
   }
   .delete-btn:hover { color: var(--color-accent); }
+
+  .url {
+    overflow-wrap: anywhere;
+    color: var(--color-text-muted);
+    font-size: var(--text-sm);
+  }
 </style>

@@ -51,4 +51,16 @@ describe("ArticleCard", () => {
     await fireEvent.click(screen.getByRole("button", { name: "delete" }));
     expect(onDelete).toHaveBeenCalledWith("a1");
   });
+
+  it("shows the hostname (not the full path) while processing", () => {
+    render(ArticleCard, {
+      article: {
+        id: "a2",
+        url: "https://example.com/some/very/long/path?x=1",
+        expand: undefined,
+      },
+    });
+    expect(screen.getByText("example.com")).toBeInTheDocument();
+    expect(screen.queryByText(/some\/very\/long\/path/)).not.toBeInTheDocument();
+  });
 });
