@@ -153,6 +153,8 @@
   --color-border:        color-mix(in srgb, var(--ink-900) 12%, transparent);
   --color-border-strong: color-mix(in srgb, var(--ink-900) 22%, transparent);
   --color-ring:          var(--terracotta-500);
+  --focus-ring-width:    2px;
+  --focus-ring-offset:   2px;
   --color-selection:     var(--terracotta-100);
 
   /* status */

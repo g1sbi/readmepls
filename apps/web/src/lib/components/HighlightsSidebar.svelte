@@ -36,8 +36,10 @@
     text-align: left; background: none; border: none; border-left: 3px solid var(--color-border);
     padding-left: var(--space-2); cursor: pointer; color: var(--color-text); font: inherit;
   }
+  .quote:focus-visible { outline: var(--focus-ring-width) solid var(--color-ring); outline-offset: var(--focus-ring-offset); }
   .note { color: var(--color-text-muted); font-size: var(--text-sm); margin: var(--space-1) 0 0 var(--space-2); }
   .warn { color: var(--color-accent); font-size: var(--text-xs); margin-left: var(--space-2); }
   .del { background: none; border: none; color: var(--color-text-muted); cursor: pointer; font-size: var(--text-xs); }
+  .del:focus-visible { outline: var(--focus-ring-width) solid var(--color-ring); outline-offset: var(--focus-ring-offset); }
   .orphan .quote { opacity: 0.6; }
 </style>

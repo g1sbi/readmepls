@@ -249,6 +249,7 @@
     border-color: var(--color-accent);
     color: var(--color-accent);
   }
+  .tag-chip:focus-visible { outline: var(--focus-ring-width) solid var(--color-ring); outline-offset: var(--focus-ring-offset); }
   .tag-chip.selected :global(.chip) {
     background: var(--color-accent);
     border-color: var(--color-accent);
@@ -260,11 +261,13 @@
   .collections-rail { display: flex; flex-direction: column; gap: 0.4rem; margin: 0 0 0.75rem; }
   .collection-item { display: flex; align-items: center; gap: 0.5rem; flex-wrap: wrap; }
   .collection-chip { text-decoration: none; }
+  .collection-chip:focus-visible { outline: var(--focus-ring-width) solid var(--color-ring); outline-offset: var(--focus-ring-offset); }
   .action-btn {
     background: none; border: none; cursor: pointer; font: inherit; font-size: var(--text-sm);
     color: var(--color-text-muted); padding: 0.1rem 0.4rem;
   }
   .action-btn:hover { color: var(--color-text); }
+  .action-btn:focus-visible { outline: var(--focus-ring-width) solid var(--color-ring); outline-offset: var(--focus-ring-offset); }
   .action-btn.danger:hover { color: var(--color-accent); }
   .rename-form { display: flex; align-items: center; gap: 0.4rem; }
   .rename-input, .new-collection-input {

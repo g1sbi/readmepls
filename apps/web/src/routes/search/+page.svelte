@@ -74,6 +74,7 @@
     border-color: var(--color-border-strong);
     box-shadow: var(--shadow-md);
   }
+  .result:focus-visible { outline: var(--focus-ring-width) solid var(--color-ring); outline-offset: var(--focus-ring-offset); }
   .result h2 {
     font-family: var(--font-display);
     font-size: var(--text-md);

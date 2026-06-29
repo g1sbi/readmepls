@@ -72,6 +72,7 @@
     align-self: flex-end;
   }
   .delete-btn:hover { color: var(--color-accent); }
+  .delete-btn:focus-visible { outline: var(--focus-ring-width) solid var(--color-ring); outline-offset: var(--focus-ring-offset); }
 
   .url {
     overflow-wrap: anywhere;
