@@ -56,7 +56,7 @@
   .app { min-height: 100dvh; background: var(--color-bg-gradient); position: relative; }
   .app::before {
     content: ""; position: fixed; inset: 0; pointer-events: none; z-index: 0;
-    background-image: var(--texture-grain); opacity: 0.04; mix-blend-mode: multiply;
+    background-image: var(--texture-grain); opacity: var(--grain-opacity); mix-blend-mode: multiply;
   }
   .page { position: relative; z-index: 1; max-width: var(--width-page); margin: 0 auto; padding: 1.5rem 1.25rem; animation: reveal var(--dur-slow) var(--ease-paper) both; }
   @keyframes reveal { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: none; } }

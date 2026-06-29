@@ -53,6 +53,8 @@
   /* Bits UI portals Popover.Content to the body, so styles are :global with a
      specific class. Values copied from the previous version — no visual change. */
   :global(.hl-popover) {
+    position: relative;
+    overflow: hidden;
     display: flex;
     gap: var(--space-2);
     align-items: center;
@@ -60,8 +62,13 @@
     background: var(--color-surface);
     border: 1px solid var(--color-border);
     border-radius: var(--radius-md);
-    box-shadow: var(--shadow-md);
+    box-shadow: var(--shadow-lg);
     z-index: var(--z-sticky);
+  }
+  :global(.hl-popover)::before {
+    content: ""; position: absolute; inset: 0; pointer-events: none; z-index: 0;
+    background-image: var(--texture-grain); opacity: var(--grain-opacity); mix-blend-mode: multiply;
+    border-radius: inherit;
   }
   :global(.hl-popover) .swatches { display: flex; gap: var(--space-1); }
   :global(.hl-popover) .swatch {

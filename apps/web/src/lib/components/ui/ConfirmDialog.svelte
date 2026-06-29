@@ -61,8 +61,14 @@
     border-radius: var(--radius-xl);
     background: var(--color-surface);
     color: var(--color-text);
-    box-shadow: var(--shadow-lg, var(--shadow-sm));
+    box-shadow: var(--shadow-lg);
     z-index: var(--z-modal, 100);
+    overflow: hidden;
+  }
+  :global(.confirm-dialog__panel)::before {
+    content: ""; position: absolute; inset: 0; pointer-events: none; z-index: 0;
+    background-image: var(--texture-grain); opacity: var(--grain-opacity); mix-blend-mode: multiply;
+    border-radius: inherit;
   }
   :global(.confirm-dialog__title) {
     font-family: var(--font-display);

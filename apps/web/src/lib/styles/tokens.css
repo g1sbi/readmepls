@@ -129,6 +129,9 @@
   --dur-base: 200ms;
   --dur-slow: 360ms;
 
+  --grain-opacity: 0.04;        /* banner ::before grain strength */
+  --dur-view: var(--dur-base);  /* cross-route view-transition duration */
+
   --z-base: 0; --z-raised: 10; --z-sticky: 100;
   --z-overlay: 1000; --z-modal: 1100; --z-toast: 1200;
 
