@@ -49,7 +49,7 @@
 
 <style>
   .search-results {
-    max-width: 56rem;
+    max-width: var(--width-prose);
     margin: 0 auto;
     padding: var(--space-6) var(--space-5);
   }

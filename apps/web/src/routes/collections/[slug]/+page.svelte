@@ -49,7 +49,7 @@
 </div>
 
 <style>
-  .collection-view { max-width: 900px; margin: 0 auto; }
+  .collection-view { max-width: var(--width-prose); margin: 0 auto; }
   .back { font-family: var(--font-display); color: var(--color-text-muted); text-decoration: none; display: inline-block; margin-bottom: var(--space-3); }
   .back:hover { color: var(--color-text); }
   h1 { font-family: var(--font-display); color: var(--color-text); font-size: 1.6rem; margin: 0 0 1.25rem; }

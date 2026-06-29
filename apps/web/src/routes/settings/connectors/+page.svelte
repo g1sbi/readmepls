@@ -26,7 +26,7 @@
 
 <style>
   .connectors {
-    max-width: 48rem;
+    max-width: var(--width-narrow);
     margin: 0 auto;
     padding: var(--space-6) var(--space-5);
   }
