@@ -9,6 +9,7 @@
   import ArticleCard from "$lib/components/ArticleCard.svelte";
   import CardGrid from "$lib/components/ui/CardGrid.svelte";
   import Tag from "$lib/components/ui/Tag.svelte";
+  import Chip from "$lib/components/ui/Chip.svelte";
 
   const pb = browserPb();
   let articles = $state<ArticleRecord[]>([]);
@@ -191,7 +192,7 @@
               <button type="button" class="action-btn" onclick={() => (renameTarget = null)}>cancel</button>
             </form>
           {:else}
-            <a class="collection-chip" href="/collections/{col.slug}">{col.name}</a>
+            <a class="collection-chip" href="/collections/{col.slug}"><Chip>{col.name}</Chip></a>
             <button class="action-btn" onclick={() => startRename(col.id, col.name)} aria-label="rename {col.name}">rename</button>
             <button class="action-btn danger" onclick={() => deleteCollection(col.id)} aria-label="delete {col.name}">delete</button>
           {/if}
@@ -244,11 +245,11 @@
     cursor: pointer;
     transition: all 0.15s;
   }
-  .tag-chip:hover :global(.tag) {
+  .tag-chip:hover :global(.chip) {
     border-color: var(--color-accent);
     color: var(--color-accent);
   }
-  .tag-chip.selected :global(.tag) {
+  .tag-chip.selected :global(.chip) {
     background: var(--color-accent);
     border-color: var(--color-accent);
     color: var(--color-surface);
@@ -258,13 +259,7 @@
   .collections-heading { font-family: var(--font-display); color: var(--color-text); font-size: 1.1rem; margin: 0 0 0.75rem; }
   .collections-rail { display: flex; flex-direction: column; gap: 0.4rem; margin: 0 0 0.75rem; }
   .collection-item { display: flex; align-items: center; gap: 0.5rem; flex-wrap: wrap; }
-  .collection-chip {
-    font-family: var(--font-display); color: var(--color-text);
-    background: var(--color-surface-sunken); border-radius: var(--radius-pill);
-    padding: 0.2rem 0.75rem; text-decoration: none; font-size: var(--text-sm);
-    border: 1px solid var(--color-border); transition: border-color 0.15s;
-  }
-  .collection-chip:hover { border-color: var(--color-accent); color: var(--color-accent); }
+  .collection-chip { text-decoration: none; }
   .action-btn {
     background: none; border: none; cursor: pointer; font: inherit; font-size: var(--text-sm);
     color: var(--color-text-muted); padding: 0.1rem 0.4rem;
