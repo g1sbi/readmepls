@@ -40,12 +40,12 @@
     <h3>{content?.title ?? article.url}</h3>
     {#if state === "failed" || state === "partial"}
       <p data-state={state}>{content?.failure_reason ?? "extraction problem"}</p>
-      <Button variant="accent" onclick={() => onRetry?.(article.id)}>Retry</Button>
+      <Button variant="accent" onclick={() => onRetry?.(article.id)}>retry</Button>
     {:else}
       <div class="tags">
         {#each tags as t}<Tag>{t}</Tag>{/each}
       </div>
-      <Button onclick={() => onOpen?.(article.id)}>Read</Button>
+      <Button onclick={() => onOpen?.(article.id)}>read</Button>
     {/if}
   {/if}
   {#if onDelete}

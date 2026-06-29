@@ -63,4 +63,11 @@ describe("ArticleCard", () => {
     expect(screen.getByText("example.com")).toBeInTheDocument();
     expect(screen.queryByText(/some\/very\/long\/path/)).not.toBeInTheDocument();
   });
+
+  it("uses the lowercase voice for the read action", () => {
+    render(ArticleCard, {
+      article: article({ extract_status: "ok", title: "Hello", ai_tags_json: [] }),
+    });
+    expect(screen.getByRole("button", { name: "read" })).toBeInTheDocument();
+  });
 });

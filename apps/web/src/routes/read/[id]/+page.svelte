@@ -251,7 +251,7 @@
   <div class="bar">
     <a class="back" href="/library">← library</a>
     <ReaderControls {prefs} onChange={savePrefs} />
-    <Button onclick={archive}>Archive</Button>
+    <Button onclick={archive}>archive</Button>
     <button class="reader-delete" onclick={() => (confirmingDelete = true)} aria-label="delete article">delete</button>
   </div>
 

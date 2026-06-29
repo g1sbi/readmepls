@@ -12,12 +12,12 @@
   <Button onclick={() => emit({ size: clampSize(prefs.size - 1) })}>A−</Button>
   <Button onclick={() => emit({ size: clampSize(prefs.size + 1) })}>A+</Button>
   <Button onclick={() => emit({ font: prefs.font === "serif" ? "sans" : "serif" })}>
-    {prefs.font === "serif" ? "Sans" : "Serif"}
+    {prefs.font === "serif" ? "sans" : "serif"}
   </Button>
   <span class="sep" aria-hidden="true"></span>
-  <Button onclick={() => emit({ theme: "light" })}>Light</Button>
-  <Button onclick={() => emit({ theme: "dark" })}>Dark</Button>
-  <Button onclick={() => emit({ theme: "sepia" })}>Sepia</Button>
+  <Button onclick={() => emit({ theme: "light" })}>light</Button>
+  <Button onclick={() => emit({ theme: "dark" })}>dark</Button>
+  <Button onclick={() => emit({ theme: "sepia" })}>sepia</Button>
 </div>
 
 <style>
