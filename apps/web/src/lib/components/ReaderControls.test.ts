@@ -18,4 +18,10 @@ describe("ReaderControls", () => {
     await fireEvent.click(screen.getByRole("button", { name: /A\+|increase/i }));
     expect(onChange).toHaveBeenCalledWith(expect.objectContaining({ size: 19 }));
   });
+
+  it("labels the size steppers for assistive tech", () => {
+    render(ReaderControls, { prefs, onChange: vi.fn() });
+    expect(screen.getByRole("button", { name: "decrease text size" })).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: "increase text size" })).toBeInTheDocument();
+  });
 });

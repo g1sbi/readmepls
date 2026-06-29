@@ -1,6 +1,7 @@
 <script lang="ts">
   import type { ReaderPrefs } from "@readmepls/types";
   import Button from "./ui/Button.svelte";
+  import { AArrowDown, AArrowUp, Type, Sun, Moon, Coffee } from "@lucide/svelte";
 
   let { prefs, onChange }: { prefs: ReaderPrefs; onChange?: (p: ReaderPrefs) => void } = $props();
 
@@ -9,15 +10,15 @@
 </script>
 
 <div class="controls" role="group" aria-label="reading controls">
-  <Button onclick={() => emit({ size: clampSize(prefs.size - 1) })}>A−</Button>
-  <Button onclick={() => emit({ size: clampSize(prefs.size + 1) })}>A+</Button>
+  <Button onclick={() => emit({ size: clampSize(prefs.size - 1) })}><AArrowDown class="icon-md" aria-hidden="true" /><span class="sr-only">decrease text size</span></Button>
+  <Button onclick={() => emit({ size: clampSize(prefs.size + 1) })}><AArrowUp class="icon-md" aria-hidden="true" /><span class="sr-only">increase text size</span></Button>
   <Button onclick={() => emit({ font: prefs.font === "serif" ? "sans" : "serif" })}>
-    {prefs.font === "serif" ? "sans" : "serif"}
+    <Type class="icon-sm" aria-hidden="true" /> {prefs.font === "serif" ? "sans" : "serif"}
   </Button>
   <span class="sep" aria-hidden="true"></span>
-  <Button onclick={() => emit({ theme: "light" })}>light</Button>
-  <Button onclick={() => emit({ theme: "dark" })}>dark</Button>
-  <Button onclick={() => emit({ theme: "sepia" })}>sepia</Button>
+  <Button onclick={() => emit({ theme: "light" })}><Sun class="icon-sm" aria-hidden="true" /> light</Button>
+  <Button onclick={() => emit({ theme: "dark" })}><Moon class="icon-sm" aria-hidden="true" /> dark</Button>
+  <Button onclick={() => emit({ theme: "sepia" })}><Coffee class="icon-sm" aria-hidden="true" /> sepia</Button>
 </div>
 
 <style>

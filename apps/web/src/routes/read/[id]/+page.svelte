@@ -17,6 +17,7 @@
   import TagEditor from "$lib/components/TagEditor.svelte";
   import AddToCollection from "$lib/components/AddToCollection.svelte";
   import Button from "$lib/components/ui/Button.svelte";
+  import { ArrowLeft, Archive, Trash2 } from "@lucide/svelte";
   import Spinner from "$lib/components/ui/Spinner.svelte";
   import HighlightPopover from "$lib/components/HighlightPopover.svelte";
   import HighlightsSidebar from "$lib/components/HighlightsSidebar.svelte";
@@ -249,10 +250,10 @@
 <!-- reader vars live on the shell so the width pref governs the shell, not just the article -->
 <div class="reader-shell" style={readerCssVars(prefs)}>
   <div class="bar">
-    <a class="back" href="/library">← library</a>
+    <a class="back" href="/library"><ArrowLeft class="icon-sm" aria-hidden="true" /> library</a>
     <ReaderControls {prefs} onChange={savePrefs} />
-    <Button onclick={archive}>archive</Button>
-    <button class="reader-delete" onclick={() => (confirmingDelete = true)} aria-label="delete article">delete</button>
+    <Button onclick={archive}><Archive class="icon-sm" aria-hidden="true" /> archive</Button>
+    <button class="reader-delete" onclick={() => (confirmingDelete = true)} aria-label="delete article"><Trash2 class="icon-sm" aria-hidden="true" /></button>
   </div>
 
   {#if deleteError}
@@ -305,7 +306,7 @@
      The shell is wider than the prose measure so the highlights rail has room. */
   .reader-shell { max-width: var(--width-prose); margin: 0 auto; }
   .bar { display: flex; align-items: center; gap: 0.75rem; margin-bottom: 1rem; }
-  .bar .back { font-family: var(--font-display); color: var(--color-text-muted); text-decoration: none; }
+  .bar .back { display: inline-flex; align-items: center; gap: var(--space-1); font-family: var(--font-display); color: var(--color-text-muted); text-decoration: none; }
   .bar .back:hover { color: var(--color-text); }
   .reader {
     background: var(--reading-bg); color: var(--reading-text);
@@ -331,6 +332,7 @@
   }
   @media (prefers-reduced-motion: reduce) { .progress { transition: none; } }
   .reader-delete {
+    display: inline-flex; align-items: center;
     background: none;
     border: none;
     cursor: pointer;
