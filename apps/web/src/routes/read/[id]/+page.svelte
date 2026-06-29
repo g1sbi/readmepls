@@ -260,33 +260,34 @@
   {/if}
 
   {#if !content}
-    <Spinner label="Loading article" />
+    <Spinner label="loading article" />
   {:else}
-    <!-- data-theme uses the live global context so TopBar changes retone the article (FIX 1) -->
-    <!-- Svelte emits an a11y warning for onmouseup on a non-interactive <article>; accepted for text-selection in the reader. -->
-    <article data-theme={activeTheme} class="reader" onmouseup={onMouseUp}>
-      <h1>{content.title}</h1>
-      <!-- content_html is sanitized in the worker (Task 2) before storage -->
-      <!-- bind:this anchors the highlight anchoring scope to the article body -->
-      <div bind:this={bodyEl}>
-        {@html content.content_html}
+    <div class="reader-layout">
+      <div class="reader-main">
+        <!-- data-theme uses the live global context so TopBar changes retone the article (FIX 1) -->
+        <!-- Svelte emits an a11y warning for onmouseup on a non-interactive <article>; accepted for text-selection in the reader. -->
+        <article data-theme={activeTheme} class="reader" onmouseup={onMouseUp}>
+          <h1>{content.title}</h1>
+          <!-- content_html is sanitized in the worker (Task 2) before storage -->
+          <!-- bind:this anchors the highlight anchoring scope to the article body -->
+          <div bind:this={bodyEl}>
+            {@html content.content_html}
+          </div>
+        </article>
+        <div class="tag-section">
+          <TagEditor tags={manualTags.map(t => ({ id: t.id, name: t.name }))} onadd={addTag} onremove={removeTag} />
+        </div>
+        <div class="collection-section">
+          <AddToCollection {collections} onadd={addToCollection} oncreate={createCollection} />
+        </div>
       </div>
-    </article>
-    <div class="tag-section">
-      <TagEditor tags={manualTags.map(t => ({ id: t.id, name: t.name }))} onadd={addTag} onremove={removeTag} />
-    </div>
-    <div class="collection-section">
-      <AddToCollection {collections} onadd={addToCollection} oncreate={createCollection} />
+      <HighlightsSidebar {highlights} {orphans} onjump={jumpTo} ondelete={deleteHighlight} />
     </div>
   {/if}
 </div>
 
 {#if popover}
   <HighlightPopover x={popover.x} y={popover.y} onpick={createHighlight} oncancel={() => (popover = null)} />
-{/if}
-
-{#if content}
-  <HighlightsSidebar {highlights} {orphans} onjump={jumpTo} ondelete={deleteHighlight} />
 {/if}
 
 <ConfirmDialog
@@ -300,15 +301,18 @@
 <style>
   .progress { position: fixed; top: 0; left: 0; height: 3px; width: calc(var(--p) * 100%); background: var(--color-accent); z-index: 10; transition: width var(--dur-fast) var(--ease-out); }
   /* --reading-measure is set inline on .reader-shell so the column width
-     follows the pref (narrow/normal/wide) end-to-end (FIX 2). */
-  .reader-shell { max-width: var(--reading-measure); margin: 0 auto; }
+     follows the pref (narrow/normal/wide) end-to-end (FIX 2).
+     The shell is wider than the prose measure so the highlights rail has room. */
+  .reader-shell { max-width: var(--width-prose); margin: 0 auto; }
   .bar { display: flex; align-items: center; gap: 0.75rem; margin-bottom: 1rem; }
   .bar .back { font-family: var(--font-display); color: var(--color-text-muted); text-decoration: none; }
   .bar .back:hover { color: var(--color-text); }
   .reader {
     background: var(--reading-bg); color: var(--reading-text);
     font-family: var(--reading-font); font-size: var(--reading-size);
-    line-height: var(--reading-leading); max-width: var(--reading-measure);
+    line-height: var(--reading-leading);
+    /* calc accounts for padding so content width = measure exactly (box-sizing: border-box from Task 1) */
+    max-width: calc(var(--reading-measure) + 2 * 1.5rem);
     margin: 0 auto; padding: 1.5rem; border-radius: var(--radius-lg);
   }
   .reader :global(h1) { font-family: var(--font-display); line-height: 1.15; }
@@ -317,8 +321,14 @@
   .reader :global(pre) { background: var(--color-surface-sunken); padding: 1rem; border-radius: var(--radius-md); overflow-x: auto; }
   .reader :global(blockquote) { border-left: 3px solid var(--color-accent); margin: 1rem 0; padding-left: 1rem; color: var(--color-text-muted); }
   .reader :global(img) { max-width: 100%; height: auto; border-radius: var(--radius-md); }
-  .tag-section { max-width: var(--reading-measure); margin: var(--space-4) auto 0; padding: 0 1.5rem; }
-  .collection-section { max-width: var(--reading-measure); margin: var(--space-4) auto 0; padding: 0 1.5rem; }
+  .tag-section { max-width: calc(var(--reading-measure) + 2 * 1.5rem); margin: var(--space-4) auto 0; padding: 0 1.5rem; }
+  .collection-section { max-width: calc(var(--reading-measure) + 2 * 1.5rem); margin: var(--space-4) auto 0; padding: 0 1.5rem; }
+  .reader-layout { display: grid; grid-template-columns: 1fr; gap: var(--space-5); }
+  @media (min-width: 1024px) {
+    .reader-shell { max-width: var(--width-page); }
+    .reader-layout { grid-template-columns: minmax(0, 1fr) 16rem; align-items: start; }
+    .reader-layout :global(.hl-sidebar) { position: sticky; top: var(--space-4); }
+  }
   @media (prefers-reduced-motion: reduce) { .progress { transition: none; } }
   .reader-delete {
     background: none;
