@@ -11,6 +11,7 @@
   import CardGrid from "$lib/components/ui/CardGrid.svelte";
   import Tag from "$lib/components/ui/Tag.svelte";
   import Chip from "$lib/components/ui/Chip.svelte";
+  import PaperCorner from "$lib/components/ui/PaperCorner.svelte";
 
   const pb = browserPb();
   let articles = $state<ArticleRecord[]>([]);
@@ -166,6 +167,7 @@
   </CardGrid>
 {:else if articles.length === 0}
   <div class="empty">
+    <PaperCorner />
     <p>nothing saved yet. paste a link on the <a href="/">extract page</a> ☝</p>
   </div>
 {:else}
@@ -222,13 +224,7 @@
   @media (prefers-reduced-motion: reduce) { .skeleton { animation: none; } }
   .empty {
     text-align: center; padding: 3rem 1rem; background: var(--color-surface);
-    border-radius: var(--radius-xl); box-shadow: var(--shadow-sm); position: relative;
-  }
-  /* dog-ear fold */
-  .empty::after {
-    content: ""; position: absolute; top: 0; right: 0; width: 40px; height: 40px;
-    background: var(--color-fold); clip-path: polygon(100% 0, 0 0, 100% 100%);
-    border-top-right-radius: var(--radius-xl);
+    border-radius: var(--radius-xl); box-shadow: var(--shadow-sm); position: relative; overflow: hidden;
   }
   .empty p { font-family: var(--font-display); color: var(--color-text-muted); }
   .empty a { color: var(--color-accent); }

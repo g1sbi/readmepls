@@ -21,6 +21,7 @@
   import Spinner from "$lib/components/ui/Spinner.svelte";
   import HighlightPopover from "$lib/components/HighlightPopover.svelte";
   import HighlightsSidebar from "$lib/components/HighlightsSidebar.svelte";
+  import PaperCorner from "$lib/components/ui/PaperCorner.svelte";
 
   // Global theme context provided by +layout.svelte. May be undefined when
   // the reader is rendered in isolation (e.g. unit tests without the layout).
@@ -250,6 +251,7 @@
 <!-- reader vars live on the shell so the width pref governs the shell, not just the article -->
 <div class="reader-shell" style={readerCssVars(prefs)}>
   <div class="bar">
+    <PaperCorner size={36} />
     <a class="back" href="/library"><ArrowLeft class="icon-sm" aria-hidden="true" /> library</a>
     <ReaderControls {prefs} onChange={savePrefs} />
     <Button onclick={archive}><Archive class="icon-sm" aria-hidden="true" /> archive</Button>
@@ -305,7 +307,7 @@
      follows the pref (narrow/normal/wide) end-to-end (FIX 2).
      The shell is wider than the prose measure so the highlights rail has room. */
   .reader-shell { max-width: var(--width-prose); margin: 0 auto; }
-  .bar { display: flex; align-items: center; gap: 0.75rem; margin-bottom: 1rem; }
+  .bar { display: flex; align-items: center; gap: 0.75rem; margin-bottom: 1rem; position: relative; overflow: hidden; }
   .bar .back { display: inline-flex; align-items: center; gap: var(--space-1); font-family: var(--font-display); color: var(--color-text-muted); text-decoration: none; }
   .bar .back:hover { color: var(--color-text); }
   .reader {
