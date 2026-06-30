@@ -12,6 +12,7 @@
   import Tag from "$lib/components/ui/Tag.svelte";
   import Chip from "$lib/components/ui/Chip.svelte";
   import PaperCorner from "$lib/components/ui/PaperCorner.svelte";
+  import { reveal } from "$lib/actions/reveal.js";
 
   const pb = browserPb();
   let articles = $state<ArticleRecord[]>([]);
@@ -172,8 +173,10 @@
   </div>
 {:else}
   <CardGrid>
-    {#each visible as a (a.id)}
-      <ArticleCard article={a} onOpen={(id) => goto(`/read/${id}`)} onDelete={handleDelete} />
+    {#each visible as a, i (a.id)}
+      <div use:reveal={{ delay: Math.min(i, 8) * 40 }}>
+        <ArticleCard article={a} onOpen={(id) => goto(`/read/${id}`)} onDelete={handleDelete} />
+      </div>
     {/each}
   </CardGrid>
 {/if}

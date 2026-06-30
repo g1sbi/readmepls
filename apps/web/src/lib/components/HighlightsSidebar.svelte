@@ -1,6 +1,7 @@
 <script lang="ts">
   import { Trash2 } from "@lucide/svelte";
   import type { Highlight } from "@readmepls/types";
+  import { reveal } from "$lib/actions/reveal.js";
   let { highlights, orphans, onjump, ondelete }: {
     highlights: Highlight[];
     orphans: string[];
@@ -15,8 +16,8 @@
     <p class="empty">select text to highlight it</p>
   {/if}
   <ul>
-    {#each highlights as h (h.id)}
-      <li class:orphan={orphans.includes(h.id)}>
+    {#each highlights as h, i (h.id)}
+      <li class:orphan={orphans.includes(h.id)} use:reveal={{ delay: Math.min(i, 8) * 40 }}>
         <button class="quote" style="border-color: var(--hl-{h.color});" onclick={() => onjump(h.id)}>
           {h.text}
         </button>
