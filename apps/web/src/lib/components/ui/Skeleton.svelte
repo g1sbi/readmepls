@@ -22,7 +22,7 @@
       var(--color-surface-sunken) 100%
     );
     background-size: 200% 100%;
-    animation: skeleton-shimmer 1.4s ease-in-out infinite;
+    animation: skeleton-shimmer var(--dur-shimmer) var(--ease-out) infinite;
   }
   @keyframes skeleton-shimmer {
     from { background-position: 200% 0; }

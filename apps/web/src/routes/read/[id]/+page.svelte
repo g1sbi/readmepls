@@ -307,7 +307,7 @@
      follows the pref (narrow/normal/wide) end-to-end (FIX 2).
      The shell is wider than the prose measure so the highlights rail has room. */
   .reader-shell { max-width: var(--width-prose); margin: 0 auto; }
-  .bar { display: flex; align-items: center; gap: 0.75rem; margin-bottom: 1rem; position: relative; overflow: hidden; }
+  .bar { display: flex; align-items: center; gap: 0.75rem; margin-bottom: 1rem; position: relative; }
   .bar .back { display: inline-flex; align-items: center; gap: var(--space-1); font-family: var(--font-display); color: var(--color-text-muted); text-decoration: none; }
   .bar .back:hover { color: var(--color-text); }
   .reader {

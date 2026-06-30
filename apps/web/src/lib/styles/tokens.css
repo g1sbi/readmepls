@@ -128,6 +128,7 @@
   --dur-fast: 120ms;
   --dur-base: 200ms;
   --dur-slow: 360ms;
+  --dur-shimmer: 1.4s;
 
   --grain-opacity: 0.04;        /* banner ::before grain strength */
   --dur-view: var(--dur-base);  /* cross-route view-transition duration */
