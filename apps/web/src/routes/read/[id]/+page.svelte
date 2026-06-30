@@ -18,7 +18,7 @@
   import AddToCollection from "$lib/components/AddToCollection.svelte";
   import Button from "$lib/components/ui/Button.svelte";
   import { ArrowLeft, Archive, Trash2 } from "@lucide/svelte";
-  import Spinner from "$lib/components/ui/Spinner.svelte";
+  import Skeleton from "$lib/components/ui/Skeleton.svelte";
   import HighlightPopover from "$lib/components/HighlightPopover.svelte";
   import HighlightsSidebar from "$lib/components/HighlightsSidebar.svelte";
   import PaperCorner from "$lib/components/ui/PaperCorner.svelte";
@@ -263,7 +263,7 @@
   {/if}
 
   {#if !content}
-    <Spinner label="loading article" />
+    <Skeleton lines={8} />
   {:else}
     <div class="reader-layout">
       <div class="reader-main">

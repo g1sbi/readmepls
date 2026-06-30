@@ -12,6 +12,8 @@
   import Tag from "$lib/components/ui/Tag.svelte";
   import Chip from "$lib/components/ui/Chip.svelte";
   import PaperCorner from "$lib/components/ui/PaperCorner.svelte";
+  import Card from "$lib/components/ui/Card.svelte";
+  import Skeleton from "$lib/components/ui/Skeleton.svelte";
   import { reveal } from "$lib/actions/reveal.js";
 
   const pb = browserPb();
@@ -163,7 +165,7 @@
 {#if loading}
   <CardGrid>
     {#each Array(6) as _}
-      <div class="skeleton" aria-hidden="true"></div>
+      <Card><Skeleton lines={3} /></Card>
     {/each}
   </CardGrid>
 {:else if articles.length === 0}
@@ -222,9 +224,6 @@
 
 <style>
   h1 { font-family: var(--font-display); color: var(--color-text); font-size: 1.6rem; margin: 0 0 1.25rem; }
-  .skeleton { height: 9rem; border-radius: var(--radius-lg); background: var(--color-surface-sunken); animation: pulse var(--dur-slow) var(--ease-out) infinite alternate; }
-  @keyframes pulse { to { opacity: 0.5; } }
-  @media (prefers-reduced-motion: reduce) { .skeleton { animation: none; } }
   .empty {
     text-align: center; padding: 3rem 1rem; background: var(--color-surface);
     border-radius: var(--radius-xl); box-shadow: var(--shadow-sm); position: relative; overflow: hidden;
