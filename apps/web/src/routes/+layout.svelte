@@ -3,7 +3,8 @@
   import "$lib/styles/tokens.css";
   import "../app.css";
   import { onMount, setContext } from "svelte";
-  import { goto } from "$app/navigation";
+  import { goto, onNavigate } from "$app/navigation";
+  import { shouldAnimateNavigation } from "$lib/view-transition.js";
   import { page } from "$app/stores";
   import { browserPb } from "$lib/pb.js";
   import { resolveTheme, applyTheme, readStoredTheme, type Theme } from "$lib/theme/theme.js";
@@ -18,6 +19,21 @@
   setContext("theme", {
     get current() { return theme; },
     set: (t: Theme) => setTheme(t),
+  });
+
+  // Cross-route view transition (global cross-fade). Feature-detected and
+  // reduced-motion-guarded by shouldAnimateNavigation; resolves per the
+  // SvelteKit onNavigate + startViewTransition pattern.
+  onNavigate((navigation) => {
+    if (typeof document === "undefined") return;
+    const mql = window.matchMedia("(prefers-reduced-motion: reduce)");
+    if (!shouldAnimateNavigation(document, mql)) return;
+    return new Promise((resolve) => {
+      document.startViewTransition(async () => {
+        resolve();
+        await navigation.complete;
+      });
+    });
   });
 
   // Chrome (TopBar + paper bg) is hidden on the standalone login screen.

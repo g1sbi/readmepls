@@ -59,3 +59,10 @@ body {
 @media (prefers-reduced-motion: reduce) {
   .reveal, .reveal.is-visible { opacity: 1; transform: none; transition: none; }
 }
+
+/* Cross-route view transitions (lib/view-transition.ts gates them on support +
+   motion preference, so no reduced-motion guard is needed here — the hook simply
+   isn't invoked when motion is off). */
+::view-transition-old(root) { animation: vt-fade var(--dur-view) var(--ease-out) reverse; }
+::view-transition-new(root) { animation: vt-fade var(--dur-view) var(--ease-out); }
+@keyframes vt-fade { from { opacity: 0; } to { opacity: 1; } }
