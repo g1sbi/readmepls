@@ -25,6 +25,8 @@
     border-radius: var(--radius-pill);
     padding: 0.1rem 0.6rem;
   }
+  /* hover tint for non-selected chips; placed before [data-selected] so the accent bg wins on hover */
+  .chip:hover { background: var(--color-surface-sunken); }
   .chip[data-selected="true"] {
     background: var(--color-accent);
     border-color: var(--color-accent);

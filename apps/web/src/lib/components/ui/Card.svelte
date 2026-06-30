@@ -17,6 +17,13 @@
     border-radius: var(--radius-lg);
     box-shadow: var(--shadow-sm);
     padding: 1.1rem 1.2rem;
+    transition: box-shadow var(--dur-fast) var(--ease-out), transform var(--dur-fast) var(--ease-out);
+  }
+  .card:hover { box-shadow: var(--shadow-md); transform: translateY(-2px); }
+  .card:active { transform: translateY(0); }
+  @media (prefers-reduced-motion: reduce) {
+    .card { transition: none; }
+    .card:hover { transform: none; }
   }
   .card::before {
     content: ""; position: absolute; inset: 0; pointer-events: none; z-index: 0;
