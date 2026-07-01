@@ -170,7 +170,7 @@
 {:else if articles.length === 0}
   <div class="empty">
     <PaperCorner />
-    <p>nothing saved yet. paste a link on the <a href="/">extract page</a> ☝</p>
+    <p>nothing saved yet. paste a link on your <a href="/">home page</a> ☝</p>
   </div>
 {:else}
   <CardGrid>
