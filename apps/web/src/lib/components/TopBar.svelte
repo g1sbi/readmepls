@@ -37,17 +37,17 @@
 
 <style>
   .topbar {
-    display: flex; align-items: center; gap: 1rem; flex-wrap: wrap;
-    padding: 0.75rem 1.25rem;
+    display: flex; align-items: center; gap: var(--space-4); flex-wrap: wrap;
+    padding: var(--space-3) var(--space-5);
     background: var(--color-surface);
     border-bottom: 1px solid var(--color-border);
   }
   .brand { font-family: var(--font-display); font-size: 1.3rem; font-weight: 600; color: var(--color-text); text-decoration: none; }
   .brand span { color: var(--color-accent); }
-  nav { display: flex; gap: 1rem; }
+  nav { display: flex; gap: var(--space-4); }
   nav a { display: inline-flex; align-items: center; gap: var(--space-1); font-family: var(--font-ui); color: var(--color-text-muted); text-decoration: none; }
   nav a:hover { color: var(--color-text); }
-  .right { margin-left: auto; display: flex; align-items: center; gap: 1rem; }
+  .right { margin-left: auto; display: flex; align-items: center; gap: var(--space-4); }
   .themes { display: inline-flex; border: 1px solid var(--color-border); border-radius: var(--radius-pill); overflow: hidden; }
   .themes button { display: inline-flex; align-items: center; gap: var(--space-1); font-family: var(--font-ui); font-size: 0.8rem; padding: 0.25rem 0.6rem; border: none; background: transparent; color: var(--color-text-muted); cursor: pointer; }
   .themes button[data-active="true"] { background: var(--color-accent-wash); color: var(--color-text); }

@@ -56,8 +56,9 @@
   h1 {
     font-family: var(--font-ui);
     font-size: var(--text-xl);
+    font-weight: var(--weight-semibold);
     color: var(--color-text);
-    margin-bottom: var(--space-5);
+    margin: 0 0 var(--space-5);
   }
   .status, .empty { color: var(--color-text-muted); font-family: var(--font-ui); }
   .result {

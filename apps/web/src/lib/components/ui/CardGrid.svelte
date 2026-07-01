@@ -6,7 +6,7 @@
 <div class="grid">{@render children()}</div>
 
 <style>
-  .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(min(240px, 100%), 1fr)); gap: 1rem; }
+  .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(min(240px, 100%), 1fr)); gap: var(--space-4); }
   /* Propagate the stretched grid-item size down to the card inside any wrapper
      (e.g. the reveal <div>). A single grid child stretches on BOTH axes by default
      (grid align-items/justify-items default to stretch), fixing height AND width.

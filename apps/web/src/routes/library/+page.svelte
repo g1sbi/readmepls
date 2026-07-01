@@ -223,9 +223,9 @@
 </section>
 
 <style>
-  h1 { font-family: var(--font-ui); color: var(--color-text); font-size: 1.6rem; margin: 0 0 1.25rem; }
+  h1 { font-family: var(--font-ui); font-size: var(--text-xl); font-weight: var(--weight-semibold); color: var(--color-text); margin: 0 0 var(--space-5); }
   .empty {
-    text-align: center; padding: 3rem 1rem; background: var(--color-surface);
+    text-align: center; padding: var(--space-7) var(--space-4); background: var(--color-surface);
     border-radius: var(--radius-xl); box-shadow: var(--shadow-sm); position: relative; overflow: hidden;
   }
   .empty p { font-family: var(--font-ui); color: var(--color-text-muted); }
@@ -255,10 +255,10 @@
     color: var(--color-surface);
   }
 
-  .collections-section { margin-top: 2rem; }
-  .collections-heading { font-family: var(--font-ui); color: var(--color-text); font-size: 1.1rem; margin: 0 0 0.75rem; }
-  .collections-rail { display: flex; flex-direction: column; gap: 0.4rem; margin: 0 0 0.75rem; }
-  .collection-item { display: flex; align-items: center; gap: 0.5rem; flex-wrap: wrap; }
+  .collections-section { margin-top: var(--space-6); }
+  .collections-heading { font-family: var(--font-ui); font-size: var(--text-lg); font-weight: var(--weight-medium); color: var(--color-text-muted); margin: 0 0 var(--space-4); }
+  .collections-rail { display: flex; flex-direction: column; gap: 0.4rem; margin: 0 0 var(--space-3); }
+  .collection-item { display: flex; align-items: center; gap: var(--space-2); flex-wrap: wrap; }
   .collection-chip { text-decoration: none; }
   .collection-chip:focus-visible { outline: var(--focus-ring-width) solid var(--color-ring); outline-offset: var(--focus-ring-offset); }
   .action-btn {
@@ -274,7 +274,7 @@
     border: none; border-bottom: 1px solid var(--color-border);
     background: transparent; font: inherit; font-size: var(--text-sm); color: var(--color-text);
   }
-  .new-collection-form { display: flex; align-items: center; gap: 0.5rem; }
+  .new-collection-form { display: flex; align-items: center; gap: var(--space-2); }
   .collection-error { margin: 0.3rem 0 0; font-size: var(--text-sm); color: var(--color-accent); }
-  .article-error { margin: 0 0 0.75rem; font-size: var(--text-sm); color: var(--color-accent); }
+  .article-error { margin: 0 0 var(--space-3); font-size: var(--text-sm); color: var(--color-accent); }
 </style>

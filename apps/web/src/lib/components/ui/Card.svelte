@@ -16,7 +16,7 @@
     background: var(--color-surface-raised);
     border-radius: var(--radius-lg);
     box-shadow: var(--shadow-sm);
-    padding: 1.1rem 1.2rem;
+    padding: var(--space-4);
     transition: box-shadow var(--dur-fast) var(--ease-out), transform var(--dur-fast) var(--ease-out);
   }
   .card:hover { box-shadow: var(--shadow-md); transform: translateY(-2px); }
