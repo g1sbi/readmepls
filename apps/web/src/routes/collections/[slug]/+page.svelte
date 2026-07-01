@@ -1,6 +1,5 @@
 <script lang="ts">
   import { page } from "$app/stores";
-  import { goto } from "$app/navigation";
   import { browserPb } from "$lib/pb.js";
   import type { ArticleRecord } from "$lib/article/record.js";
   import CardGrid from "$lib/components/ui/CardGrid.svelte";
@@ -43,7 +42,7 @@
   {:else}
     <CardGrid>
       {#each articles as a (a.id)}
-        <ArticleCard article={a} onOpen={(id) => goto(`/read/${id}`)} />
+        <ArticleCard article={a} />
       {/each}
     </CardGrid>
   {/if}
