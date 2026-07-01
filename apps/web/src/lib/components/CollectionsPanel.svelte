@@ -96,5 +96,5 @@
   .new-btn { display: inline-flex; align-items: center; gap: var(--space-1); background: none; border: none; cursor: pointer; font-family: var(--font-ui); font-size: var(--text-sm); color: var(--color-accent); padding: var(--space-2); }
   .new-btn:hover { color: var(--color-accent-hover); }
   .new-btn:focus-visible { outline: var(--focus-ring-width) solid var(--color-ring); outline-offset: var(--focus-ring-offset); }
-  .error { margin: var(--space-1) 0 0; font-size: var(--text-sm); color: var(--color-accent); }
+  .error { margin: var(--space-1) 0 0; font-size: var(--text-sm); color: var(--color-danger); }
 </style>
