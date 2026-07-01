@@ -223,12 +223,12 @@
 </section>
 
 <style>
-  h1 { font-family: var(--font-display); color: var(--color-text); font-size: 1.6rem; margin: 0 0 1.25rem; }
+  h1 { font-family: var(--font-ui); color: var(--color-text); font-size: 1.6rem; margin: 0 0 1.25rem; }
   .empty {
     text-align: center; padding: 3rem 1rem; background: var(--color-surface);
     border-radius: var(--radius-xl); box-shadow: var(--shadow-sm); position: relative; overflow: hidden;
   }
-  .empty p { font-family: var(--font-display); color: var(--color-text-muted); }
+  .empty p { font-family: var(--font-ui); color: var(--color-text-muted); }
   .empty a { color: var(--color-accent); }
 
   .tag-rail {
@@ -256,7 +256,7 @@
   }
 
   .collections-section { margin-top: 2rem; }
-  .collections-heading { font-family: var(--font-display); color: var(--color-text); font-size: 1.1rem; margin: 0 0 0.75rem; }
+  .collections-heading { font-family: var(--font-ui); color: var(--color-text); font-size: 1.1rem; margin: 0 0 0.75rem; }
   .collections-rail { display: flex; flex-direction: column; gap: 0.4rem; margin: 0 0 0.75rem; }
   .collection-item { display: flex; align-items: center; gap: 0.5rem; flex-wrap: wrap; }
   .collection-chip { text-decoration: none; }

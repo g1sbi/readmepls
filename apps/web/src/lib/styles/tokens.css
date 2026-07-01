@@ -58,6 +58,7 @@
   --font-display: "Fredoka", ui-rounded, "Segoe UI", system-ui, sans-serif;
   --font-reading: "Newsreader", Georgia, "Times New Roman", serif;
   --font-mono:    "IBM Plex Mono", ui-monospace, "SFMono-Regular", monospace;
+  --font-ui:      "IBM Plex Sans", ui-sans-serif, system-ui, sans-serif;
 
   /* UI type scale — Fredoka. Headings/chrome/controls. */
   --text-2xs: 0.6875rem; /* 11 — tracked eyebrow/meta */

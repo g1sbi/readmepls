@@ -62,10 +62,10 @@
 
 <style>
   .hero { text-align: center; padding: 2.5rem 0 2rem; }
-  .hero h1 { font-family: var(--font-display); font-size: clamp(1.8rem, 4vw, 2.8rem); color: var(--color-text); margin: 0 0 1.5rem; }
+  .hero h1 { font-family: var(--font-ui); font-size: clamp(1.8rem, 4vw, 2.8rem); color: var(--color-text); margin: 0 0 1.5rem; }
   .hero h1 span { color: var(--color-accent); }
   .block { margin-top: 2.5rem; }
-  .block h2 { font-family: var(--font-display); font-size: 1.1rem; color: var(--color-text-muted); margin: 0 0 0.9rem; }
-  .more { display: inline-block; margin-top: 1rem; font-family: var(--font-display); color: var(--color-accent); text-decoration: none; }
+  .block h2 { font-family: var(--font-ui); font-size: 1.1rem; color: var(--color-text-muted); margin: 0 0 0.9rem; }
+  .more { display: inline-block; margin-top: 1rem; font-family: var(--font-ui); color: var(--color-accent); text-decoration: none; }
   .more:hover { color: var(--color-accent-hover); }
 </style>

@@ -43,5 +43,5 @@
 <style>
   form { display: flex; gap: 0.6rem; max-width: 640px; margin: 0 auto; align-items: center; }
   form :global(input) { flex: 1; font-size: 1.05rem; padding: 0.7rem 0.9rem; }
-  p { flex-basis: 100%; margin: 0.5rem 0 0; color: var(--color-danger); font-family: var(--font-display); font-size: 0.9rem; }
+  p { flex-basis: 100%; margin: 0.5rem 0 0; color: var(--color-danger); font-family: var(--font-ui); font-size: 0.9rem; }
 </style>

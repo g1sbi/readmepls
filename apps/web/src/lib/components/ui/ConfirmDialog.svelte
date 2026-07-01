@@ -71,7 +71,7 @@
     border-radius: inherit;
   }
   :global(.confirm-dialog__title) {
-    font-family: var(--font-display);
+    font-family: var(--font-ui);
     font-size: var(--text-lg, 1.1rem);
     margin: 0 0 0.5rem;
   }

@@ -16,7 +16,7 @@
 
 <style>
   input {
-    font-family: var(--font-display);
+    font-family: var(--font-ui);
     font-size: 1rem;
     color: var(--color-text);
     background: var(--color-surface);

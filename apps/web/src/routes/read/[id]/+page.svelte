@@ -308,7 +308,7 @@
      The shell is wider than the prose measure so the highlights rail has room. */
   .reader-shell { max-width: var(--width-prose); margin: 0 auto; }
   .bar { display: flex; align-items: center; gap: 0.75rem; margin-bottom: 1rem; position: relative; }
-  .bar .back { display: inline-flex; align-items: center; gap: var(--space-1); font-family: var(--font-display); color: var(--color-text-muted); text-decoration: none; }
+  .bar .back { display: inline-flex; align-items: center; gap: var(--space-1); font-family: var(--font-ui); color: var(--color-text-muted); text-decoration: none; }
   .bar .back:hover { color: var(--color-text); }
   .reader {
     background: var(--reading-bg); color: var(--reading-text);
@@ -318,7 +318,7 @@
     max-width: calc(var(--reading-measure) + 2 * 1.5rem);
     margin: 0 auto; padding: 1.5rem; border-radius: var(--radius-lg);
   }
-  .reader :global(h1) { font-family: var(--font-display); line-height: 1.15; }
+  .reader :global(h1) { font-family: var(--font-reading); line-height: 1.15; }
   .reader :global(a) { color: var(--color-accent); }
   .reader :global(pre), .reader :global(code) { font-family: var(--font-mono); }
   .reader :global(pre) { background: var(--color-surface-sunken); padding: 1rem; border-radius: var(--radius-md); overflow-x: auto; }

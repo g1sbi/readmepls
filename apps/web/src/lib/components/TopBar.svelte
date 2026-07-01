@@ -45,20 +45,20 @@
   .brand { font-family: var(--font-display); font-size: 1.3rem; font-weight: 600; color: var(--color-text); text-decoration: none; }
   .brand span { color: var(--color-accent); }
   nav { display: flex; gap: 1rem; }
-  nav a { display: inline-flex; align-items: center; gap: var(--space-1); font-family: var(--font-display); color: var(--color-text-muted); text-decoration: none; }
+  nav a { display: inline-flex; align-items: center; gap: var(--space-1); font-family: var(--font-ui); color: var(--color-text-muted); text-decoration: none; }
   nav a:hover { color: var(--color-text); }
   .right { margin-left: auto; display: flex; align-items: center; gap: 1rem; }
   .themes { display: inline-flex; border: 1px solid var(--color-border); border-radius: var(--radius-pill); overflow: hidden; }
-  .themes button { display: inline-flex; align-items: center; gap: var(--space-1); font-family: var(--font-display); font-size: 0.8rem; padding: 0.25rem 0.6rem; border: none; background: transparent; color: var(--color-text-muted); cursor: pointer; }
+  .themes button { display: inline-flex; align-items: center; gap: var(--space-1); font-family: var(--font-ui); font-size: 0.8rem; padding: 0.25rem 0.6rem; border: none; background: transparent; color: var(--color-text-muted); cursor: pointer; }
   .themes button[data-active="true"] { background: var(--color-accent-wash); color: var(--color-text); }
   .themes button:focus-visible, .signout:focus-visible { outline: 2px solid var(--color-ring); outline-offset: 2px; }
-  .signout { display: inline-flex; align-items: center; gap: var(--space-1); font-family: var(--font-display); font-size: 0.85rem; background: none; border: none; color: var(--color-text-muted); cursor: pointer; }
+  .signout { display: inline-flex; align-items: center; gap: var(--space-1); font-family: var(--font-ui); font-size: 0.85rem; background: none; border: none; color: var(--color-text-muted); cursor: pointer; }
   .signout:hover { color: var(--color-text); }
   .search { display: flex; flex: 1; max-width: 20rem; position: relative; align-items: center; }
   .search :global(.search-icon) { position: absolute; left: 0.6rem; color: var(--color-text-subtle); pointer-events: none; }
   .search input {
     width: 100%;
-    font-family: var(--font-display);
+    font-family: var(--font-ui);
     font-size: var(--text-sm);
     padding: 0.3rem 0.65rem 0.3rem 1.9rem; /* left pad for the icon */
     background: var(--color-surface-sunken);

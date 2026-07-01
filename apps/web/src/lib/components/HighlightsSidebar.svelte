@@ -31,7 +31,7 @@
 
 <style>
   .hl-sidebar { display: flex; flex-direction: column; gap: var(--space-3); }
-  h2 { font-family: var(--font-display); font-size: var(--text-sm); color: var(--color-text-muted); }
+  h2 { font-family: var(--font-ui); font-size: var(--text-sm); color: var(--color-text-muted); }
   .empty { color: var(--color-text-muted); font-size: var(--text-sm); }
   ul { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: var(--space-3); }
   .quote {

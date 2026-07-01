@@ -17,7 +17,7 @@
     display: inline-flex;
     align-items: center;
     gap: var(--space-1);
-    font-family: var(--font-display);
+    font-family: var(--font-ui);
     font-size: var(--text-sm);
     color: var(--color-text-muted);
     background: transparent;

@@ -51,8 +51,8 @@
 
 <style>
   .collection-view { max-width: var(--width-prose); margin: 0 auto; }
-  .back { display: inline-flex; align-items: center; gap: var(--space-1); font-family: var(--font-display); color: var(--color-text-muted); text-decoration: none; margin-bottom: var(--space-3); }
+  .back { display: inline-flex; align-items: center; gap: var(--space-1); font-family: var(--font-ui); color: var(--color-text-muted); text-decoration: none; margin-bottom: var(--space-3); }
   .back:hover { color: var(--color-text); }
-  h1 { font-family: var(--font-display); color: var(--color-text); font-size: 1.6rem; margin: 0 0 1.25rem; }
-  .empty-note { color: var(--color-text-muted); font-family: var(--font-display); text-align: center; padding: var(--space-6) 0; }
+  h1 { font-family: var(--font-ui); color: var(--color-text); font-size: 1.6rem; margin: 0 0 1.25rem; }
+  .empty-note { color: var(--color-text-muted); font-family: var(--font-ui); text-align: center; padding: var(--space-6) 0; }
 </style>

@@ -54,12 +54,12 @@
     padding: var(--space-6) var(--space-5);
   }
   h1 {
-    font-family: var(--font-display);
+    font-family: var(--font-ui);
     font-size: var(--text-xl);
     color: var(--color-text);
     margin-bottom: var(--space-5);
   }
-  .status, .empty { color: var(--color-text-muted); font-family: var(--font-display); }
+  .status, .empty { color: var(--color-text-muted); font-family: var(--font-ui); }
   .result {
     display: block;
     text-decoration: none;
@@ -76,7 +76,7 @@
   }
   .result:focus-visible { outline: var(--focus-ring-width) solid var(--color-ring); outline-offset: var(--focus-ring-offset); }
   .result h2 {
-    font-family: var(--font-display);
+    font-family: var(--font-ui);
     font-size: var(--text-md);
     font-weight: var(--weight-semibold);
     margin: 0 0 var(--space-2);
