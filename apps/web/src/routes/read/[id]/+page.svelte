@@ -16,12 +16,11 @@
   import ConfirmDialog from "$lib/components/ui/ConfirmDialog.svelte";
   import TagEditor from "$lib/components/TagEditor.svelte";
   import AddToCollection from "$lib/components/AddToCollection.svelte";
-  import Button from "$lib/components/ui/Button.svelte";
+  import Rail from "$lib/components/ui/Rail.svelte";
   import { ArrowLeft, Archive, Trash2 } from "@lucide/svelte";
   import Skeleton from "$lib/components/ui/Skeleton.svelte";
   import HighlightPopover from "$lib/components/HighlightPopover.svelte";
   import HighlightsSidebar from "$lib/components/HighlightsSidebar.svelte";
-  import PaperCorner from "$lib/components/ui/PaperCorner.svelte";
 
   // Global theme context provided by +layout.svelte. May be undefined when
   // the reader is rendered in isolation (e.g. unit tests without the layout).
@@ -251,11 +250,7 @@
 <!-- reader vars live on the shell so the width pref governs the shell, not just the article -->
 <div class="reader-shell" style={readerCssVars(prefs)}>
   <div class="bar">
-    <PaperCorner size={36} />
     <a class="back" href="/library"><ArrowLeft class="icon-sm" aria-hidden="true" /> library</a>
-    <ReaderControls {prefs} onChange={savePrefs} />
-    <Button onclick={archive}><Archive class="icon-sm" aria-hidden="true" /> archive</Button>
-    <button class="reader-delete" onclick={() => (confirmingDelete = true)} aria-label="delete article"><Trash2 class="icon-sm" aria-hidden="true" /></button>
   </div>
 
   {#if deleteError}
@@ -266,6 +261,16 @@
     <Skeleton lines={8} />
   {:else}
     <div class="reader-layout">
+      <Rail label="reading tools">
+        <ReaderControls {prefs} onChange={savePrefs} />
+        <TagEditor tags={manualTags.map(t => ({ id: t.id, name: t.name }))} onadd={addTag} onremove={removeTag} />
+        <AddToCollection {collections} onadd={addToCollection} oncreate={createCollection} />
+        <div class="article-actions" role="group" aria-label="article actions">
+          <button class="action-icon" onclick={archive} aria-label="archive article"><Archive class="icon-md" aria-hidden="true" /></button>
+          <button class="action-icon" onclick={() => (confirmingDelete = true)} aria-label="delete article"><Trash2 class="icon-md" aria-hidden="true" /></button>
+        </div>
+      </Rail>
+
       <div class="reader-main">
         <!-- data-theme uses the live global context so TopBar changes retone the article (FIX 1) -->
         <!-- Svelte emits an a11y warning for onmouseup on a non-interactive <article>; accepted for text-selection in the reader. -->
@@ -277,13 +282,8 @@
             {@html content.content_html}
           </div>
         </article>
-        <div class="tag-section">
-          <TagEditor tags={manualTags.map(t => ({ id: t.id, name: t.name }))} onadd={addTag} onremove={removeTag} />
-        </div>
-        <div class="collection-section">
-          <AddToCollection {collections} onadd={addToCollection} oncreate={createCollection} />
-        </div>
       </div>
+
       <HighlightsSidebar {highlights} {orphans} onjump={jumpTo} ondelete={deleteHighlight} />
     </div>
   {/if}
@@ -307,9 +307,28 @@
      follows the pref (narrow/normal/wide) end-to-end (FIX 2).
      The shell is wider than the prose measure so the highlights rail has room. */
   .reader-shell { max-width: var(--width-prose); margin: 0 auto; }
-  .bar { display: flex; align-items: center; gap: 0.75rem; margin-bottom: 1rem; position: relative; }
+  .bar { display: flex; align-items: center; gap: var(--space-3); margin-bottom: var(--space-4); }
   .bar .back { display: inline-flex; align-items: center; gap: var(--space-1); font-family: var(--font-ui); color: var(--color-text-muted); text-decoration: none; }
   .bar .back:hover { color: var(--color-text); }
+
+  /* controls read as a pill inside the rail */
+  .reader-layout :global(.controls) {
+    padding: var(--space-2) var(--space-3);
+    background: var(--color-surface); border-radius: var(--radius-pill); box-shadow: var(--shadow-sm);
+  }
+
+  .article-actions { display: flex; gap: var(--space-2); }
+  .action-icon {
+    display: inline-flex; align-items: center; justify-content: center;
+    width: 2.25rem; height: 2.25rem; padding: 0;
+    background: var(--color-surface); border: 1px solid var(--color-border);
+    border-radius: var(--radius-md); color: var(--color-text-muted); cursor: pointer;
+    transition: color var(--dur-fast) var(--ease-out), box-shadow var(--dur-fast) var(--ease-out);
+  }
+  .action-icon:hover { color: var(--color-accent); box-shadow: var(--shadow-sm); }
+  .action-icon:focus-visible { outline: var(--focus-ring-width) solid var(--color-ring); outline-offset: var(--focus-ring-offset); }
+  @media (prefers-reduced-motion: reduce) { .action-icon { transition: none; } }
+
   .reader {
     background: var(--reading-bg); color: var(--reading-text);
     font-family: var(--reading-font); font-size: var(--reading-size);
@@ -324,25 +343,14 @@
   .reader :global(pre) { background: var(--color-surface-sunken); padding: 1rem; border-radius: var(--radius-md); overflow-x: auto; }
   .reader :global(blockquote) { border-left: 3px solid var(--color-accent); margin: 1rem 0; padding-left: 1rem; color: var(--color-text-muted); }
   .reader :global(img) { max-width: 100%; height: auto; border-radius: var(--radius-md); }
-  .tag-section { max-width: calc(var(--reading-measure) + 2 * 1.5rem); margin: var(--space-4) auto 0; padding: 0 1.5rem; }
-  .collection-section { max-width: calc(var(--reading-measure) + 2 * 1.5rem); margin: var(--space-4) auto 0; padding: 0 1.5rem; }
+
+  /* single-column by default: rail (controls+actions) above article, highlights below */
   .reader-layout { display: grid; grid-template-columns: 1fr; gap: var(--space-5); }
   @media (min-width: 1024px) {
     .reader-shell { max-width: var(--width-page); }
-    .reader-layout { grid-template-columns: minmax(0, 1fr) 16rem; align-items: start; }
+    .reader-layout { grid-template-columns: 14rem minmax(0, 1fr) 16rem; align-items: start; }
     .reader-layout :global(.hl-sidebar) { position: sticky; top: var(--space-4); }
   }
   @media (prefers-reduced-motion: reduce) { .progress { transition: none; } }
-  .reader-delete {
-    display: inline-flex; align-items: center;
-    background: none;
-    border: none;
-    cursor: pointer;
-    font: inherit;
-    font-size: var(--text-sm);
-    color: var(--color-text-muted);
-    padding: 0.1rem 0.4rem;
-  }
-  .reader-delete:hover { color: var(--color-accent); }
   .delete-error { margin: 0 0 0.75rem; font-size: var(--text-sm); color: var(--color-accent); }
 </style>
