@@ -11,7 +11,7 @@
 </script>
 
 <header class="topbar">
-  <a class="brand" href="/">readmepls</a>
+  <a class="brand" href="/">readme<span>pls</span></a>
   <nav>
     <a href="/library"><Library class="icon-sm" aria-hidden="true" />library</a>
   </nav>
@@ -42,6 +42,7 @@
     border-bottom: 1px solid var(--color-border);
   }
   .brand { font-family: var(--font-display); font-size: 1.3rem; font-weight: 600; color: var(--color-text); text-decoration: none; }
+  .brand span { color: var(--color-accent); }
   nav { display: flex; gap: var(--space-4); }
   nav a { display: inline-flex; align-items: center; gap: var(--space-1); font-family: var(--font-ui); color: var(--color-text-muted); text-decoration: none; }
   nav a:hover { color: var(--color-text); }
