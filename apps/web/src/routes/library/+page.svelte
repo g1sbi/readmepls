@@ -1,7 +1,6 @@
 <script lang="ts">
   import { onMount, onDestroy } from "svelte";
   import { Pencil, Trash2, Check, X, Plus } from "@lucide/svelte";
-  import { goto } from "$app/navigation";
   import { browserPb } from "$lib/pb.js";
   import { slugify } from "@readmepls/core";
   import { ClientResponseError } from "pocketbase";
