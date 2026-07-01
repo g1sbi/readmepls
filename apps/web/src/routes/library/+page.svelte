@@ -177,7 +177,7 @@
   <CardGrid>
     {#each visible as a, i (a.id)}
       <div use:reveal={{ delay: Math.min(i, 8) * 40 }}>
-        <ArticleCard article={a} onOpen={(id) => goto(`/read/${id}`)} onDelete={handleDelete} />
+        <ArticleCard article={a} onDelete={handleDelete} />
       </div>
     {/each}
   </CardGrid>

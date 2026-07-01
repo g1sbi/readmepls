@@ -4,19 +4,17 @@
   import Button from "./ui/Button.svelte";
   import Spinner from "./ui/Spinner.svelte";
   import ConfirmDialog from "./ui/ConfirmDialog.svelte";
-  import { BookOpen, RotateCw, Trash2 } from "@lucide/svelte";
+  import { RotateCw, Trash2 } from "@lucide/svelte";
   import { deriveCardState } from "$lib/article/card-state.js";
 
   let {
     article,
     onRetry,
-    onOpen,
     onDelete,
   }: {
     // any: PocketBase SDK returns expand records as loosely-typed RecordModel; narrowing here would duplicate the full content schema.
     article: { id: string; url: string; expand?: { content?: any } };
     onRetry?: (id: string) => void;
-    onOpen?: (id: string) => void;
     onDelete?: (id: string) => void;
   } = $props();
 
@@ -37,18 +35,20 @@
   {#if state === "processing"}
     <Spinner label="Processing" />
     <span class="url">{hostOf(article.url)}</span>
-  {:else}
+  {:else if state === "failed" || state === "partial"}
     <h3>{content?.title ?? article.url}</h3>
-    {#if state === "failed" || state === "partial"}
-      <p data-state={state}>{content?.failure_reason ?? "extraction problem"}</p>
-      <Button variant="accent" onclick={() => onRetry?.(article.id)}><RotateCw class="icon-sm" aria-hidden="true" /> retry</Button>
-    {:else}
-      <div class="tags">
-        {#each tags as t}<Tag>{t}</Tag>{/each}
-      </div>
-      <Button onclick={() => onOpen?.(article.id)}><BookOpen class="icon-sm" aria-hidden="true" /> read</Button>
-    {/if}
+    <p data-state={state}>{content?.failure_reason ?? "extraction problem"}</p>
+    <Button variant="accent" onclick={() => onRetry?.(article.id)}><RotateCw class="icon-sm" aria-hidden="true" /> retry</Button>
+  {:else}
+    <!-- link-overlay: anchor covers the card; its aria-label is the title so the
+         link's accessible name is the article title, not generic "open" -->
+    <a class="card-link" href={`/read/${article.id}`} aria-label={content?.title ?? article.url}></a>
+    <h3>{content?.title ?? article.url}</h3>
+    <div class="tags">
+      {#each tags as t}<Tag>{t}</Tag>{/each}
+    </div>
   {/if}
+
   {#if onDelete}
     <button class="delete-btn" onclick={() => (confirming = true)} aria-label="delete article"><Trash2 class="icon-sm" aria-hidden="true" /></button>
     <ConfirmDialog
@@ -62,21 +62,22 @@
 </Card>
 
 <style>
+  .card-link { position: absolute; inset: 0; z-index: 1; border-radius: inherit; }
+  .card-link:focus-visible { outline: var(--focus-ring-width) solid var(--color-ring); outline-offset: 2px; }
+  h3, .tags { position: relative; z-index: 2; pointer-events: none; } /* text/tags don't block the overlay */
   .delete-btn {
-    display: inline-flex;
-    align-items: center;
-    background: none;
-    border: none;
-    cursor: pointer;
-    font: inherit;
-    font-size: var(--text-sm);
-    color: var(--color-text-muted);
-    padding: 0.1rem 0.4rem;
-    align-self: flex-end;
+    position: relative; z-index: 3; align-self: flex-end;
+    display: inline-flex; align-items: center;
+    background: none; border: none; cursor: pointer; font: inherit;
+    font-size: var(--text-sm); color: var(--color-text-muted); padding: var(--space-1) var(--space-2);
+    opacity: 0; transition: opacity var(--dur-fast) var(--ease-out);
   }
+  :global(.card):hover .delete-btn,
+  :global(.card):focus-within .delete-btn { opacity: 1; }
   .delete-btn:hover { color: var(--color-accent); }
-  .delete-btn:focus-visible { outline: var(--focus-ring-width) solid var(--color-ring); outline-offset: var(--focus-ring-offset); }
-
+  .delete-btn:focus-visible { outline: var(--focus-ring-width) solid var(--color-ring); outline-offset: var(--focus-ring-offset); opacity: 1; }
+  @media (hover: none) { .delete-btn { opacity: 1; } }
+  @media (prefers-reduced-motion: reduce) { .delete-btn { transition: none; } }
   .url {
     overflow-wrap: anywhere;
     color: var(--color-text-muted);

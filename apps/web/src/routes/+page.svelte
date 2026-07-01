@@ -1,6 +1,5 @@
 <script lang="ts">
   import { onMount, onDestroy } from "svelte";
-  import { goto } from "$app/navigation";
   import { browserPb } from "$lib/pb.js";
   import { splitHomeFeed } from "$lib/article/home-feed.js";
   import type { ArticleRecord } from "$lib/article/record.js";
@@ -42,7 +41,7 @@
     <h2>working on it</h2>
     <CardGrid>
       {#each feed.active as a (a.id)}
-        <ArticleCard article={a} onRetry={retry} onOpen={(id) => goto(`/read/${id}`)} />
+        <ArticleCard article={a} onRetry={retry} />
       {/each}
     </CardGrid>
   </section>
@@ -53,7 +52,7 @@
     <h2>recently saved</h2>
     <CardGrid>
       {#each feed.recent as a (a.id)}
-        <ArticleCard article={a} onOpen={(id) => goto(`/read/${id}`)} />
+        <ArticleCard article={a} />
       {/each}
     </CardGrid>
     <a class="more" href="/library">see all in your library →</a>

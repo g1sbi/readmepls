@@ -9,12 +9,14 @@ const article = (content: unknown) => ({
 });
 
 describe("ArticleCard", () => {
-  it("shows the title and tags when ready", () => {
+  it("links the whole card to the reader when ready", () => {
     render(ArticleCard, {
-      article: article({ extract_status: "ok", title: "Hello", ai_tags_json: ["ai", "ml"] }),
+      article: article({ extract_status: "ok", title: "Hello", ai_tags_json: ["ai"] }),
     });
-    expect(screen.getByText("Hello")).toBeInTheDocument();
+    const link = screen.getByRole("link", { name: /hello/i });
+    expect(link).toHaveAttribute("href", "/read/a1");
     expect(screen.getByText("ai")).toBeInTheDocument();
+    expect(screen.queryByRole("button", { name: /read/i })).not.toBeInTheDocument();
   });
 
   it("shows a processing indicator when not yet extracted", () => {
@@ -64,10 +66,4 @@ describe("ArticleCard", () => {
     expect(screen.queryByText(/some\/very\/long\/path/)).not.toBeInTheDocument();
   });
 
-  it("uses the lowercase voice for the read action", () => {
-    render(ArticleCard, {
-      article: article({ extract_status: "ok", title: "Hello", ai_tags_json: [] }),
-    });
-    expect(screen.getByRole("button", { name: "read" })).toBeInTheDocument();
-  });
 });
