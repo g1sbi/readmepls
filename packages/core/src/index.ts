@@ -1,5 +1,6 @@
 export * from "./url/canonicalize.js";
 export * from "./source/classify.js";
+export * from "./source/favicon.js";
 export * from "./source/site-host.js";
 export * from "./quota/quota.js";
 export * from "./capture/handle-capture.js";
