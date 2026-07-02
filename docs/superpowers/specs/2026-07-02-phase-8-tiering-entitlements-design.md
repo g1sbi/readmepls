@@ -31,12 +31,17 @@ Two deploy shapes, two different rules for who gets Pro:
 ### Goals
 - A single, pure, unit-tested `resolveTier` function that both deploy shapes
   go through — no scattered `if (user.tier === 'pro')` checks.
-- Gate the one existing AI feature (tag + summary on capture) behind Pro.
+- Gate the one existing AI feature (tags + summary) behind Pro **at display
+  time** — see §3 for why this can't be a write-time (worker) gate.
 - Standard users keep full manual tagging via the existing `TagEditor` — no
-  functionality lost, just no AI assist.
+  functionality lost, just no AI assist shown to them.
 - Hosted-SaaS users can self-serve switch tiers from a minimal profile page.
-- Self-hosted deploys need zero extra operator steps beyond the AI key they
-  already configure (or don't).
+- Self-hosted deploys need no separate tier-management mechanism — telling
+  hosted-SaaS and self-hosted deployments apart still needs one explicit
+  `SELF_HOSTED` env flag (a same-deployment-mode signal can't be inferred
+  from AI-key presence alone, since hosted SaaS always has a key too), but
+  it's one more line in the same `.env` file operators already edit per the
+  README's existing self-host setup — not a new mechanism, page, or command.
 - Rename the `free` tier value to `standard` to match the product naming.
 
 ### Non-Goals (deferred)
@@ -82,15 +87,37 @@ function resolveTier(user: { tier: Tier }, config: TierConfig): Tier {
   function of deploy config, uniform for every user on that instance.
 - Hosted SaaS: `user.tier` is authoritative, read from the user's own record.
 
+### Why gating happens at read time, not write time
+`content` (title, excerpt, `ai_tags_json`) is a **global, deduped cache**
+keyed by `canonical_url` — the first capture of a URL, by anyone, runs
+extraction + AI tagging once, and every later capture of the same URL
+(any user, any tier) is a cache hit that reuses that row; the worker never
+re-runs AI for it. Gating the AI call at capture time by *the capturing
+user's* tier would mean a Standard user who happens to capture a new URL
+first permanently denies AI tags to that content for every future Pro user
+too — and conversely a Standard viewer could see AI tags a different, prior
+Pro user already paid to generate. Tier is a property of the *viewer*, not
+of the *content*, so the gate belongs at render time, per viewing user.
+
 ### Where it's used
-- **Worker** (`apps/worker/src/worker.ts`): before calling
-  `deps.ai.tagAndSummarize`, resolve the capturing user's tier. On `standard`,
-  skip the AI call — `excerpt` falls back to the extractor's excerpt (already
-  wired: `ai.summary || result.excerpt`), `ai_tags_json` stays empty, the
-  article is otherwise unaffected. On `pro`, call AI as today.
-- **Web** (profile page + any future gated UI): same `resolveTier`, called
-  server-side with the session user and server-side deploy config — never
-  exposed as a client-trusted value.
+- **Worker** (`apps/worker/src/worker.ts`, `apps/worker/src/ai/select-provider.ts`):
+  **unaffected by per-user tier.** Hosted SaaS keeps calling AI on every new
+  URL exactly as today — that behavior doesn't change in this phase. The
+  only new worker behavior is for **self-hosted with no AI key configured**:
+  `selectAiProvider` currently assumes a provider always exists (mock or
+  real) and has no "none configured" path. Add a `NullAIProvider` returning
+  `{ tags: [], summary: '' }` so extraction can complete without crashing
+  when a self-host operator hasn't set up AI. This is deploy-config-driven
+  (no key → `NullAIProvider`), never per-user.
+- **Web** (library list, reader page, capture-bar tag display): resolve the
+  *viewing* user's tier server-side (session user + server deploy config,
+  never a client-trusted value) and gate presentation — a `standard`-tier
+  viewer's UI shows the plain extractor excerpt and empty/manual tags,
+  ignoring `content.ai_tags_json`/AI summary even when populated; a
+  `pro`-tier viewer sees the full AI output. Every surface that reads
+  `content.ai_tags_json` or treats `content.excerpt` as an AI summary must
+  go through this gate — enumerate them in the plan (library cards, reader
+  header, search results if they show tags).
 
 ## 4. Data Model Deltas
 
@@ -125,8 +152,18 @@ it isn't relocated later.
 
 - `resolveTier`: pure unit tests across all four combinations (self-host +AI,
   self-host −AI, SaaS user=standard, SaaS user=pro).
-- Worker: integration test asserts a `standard`-tier capture makes no call to
-  the injected `AIProvider` (spy/mock) and `pro`-tier does.
+- `NullAIProvider` / `selectAiProvider`: unit test that no key + no
+  `AI_PROVIDER=mock` yields `NullAIProvider`, and it returns
+  `{ tags: [], summary: '' }` without throwing.
+- Worker integration: a self-hosted job with no AI configured completes with
+  empty `ai_tags_json` and `excerpt === result.excerpt` (extractor excerpt,
+  not an AI summary); hosted-SaaS/self-host-with-key behavior is unchanged
+  from today (still covered by existing worker tests).
+- Web: given the same `content` row (with populated `ai_tags_json`/AI
+  excerpt), a `standard`-tier viewer's library/reader render shows the plain
+  excerpt and no AI tags; a `pro`-tier viewer sees both. Covers the case
+  where a Pro user captured first and a Standard user views the same
+  content.
 - Migration: existing `free` rows read back as `standard` after migration;
   `pro` rows unchanged.
 - Tier-toggle route: a user can only ever write their own `tier` (tenant
@@ -137,6 +174,18 @@ it isn't relocated later.
 
 ## 7. Risks
 
+- **Display-gate bypass leaks AI output to Standard users** — every render
+  surface that reads `content.ai_tags_json` or `content.excerpt` (as an AI
+  summary) must route through `resolveTier`, or a Standard-tier viewer sees
+  AI output a different Pro user's capture happened to generate. Enumerate
+  every such surface explicitly in the implementation plan; don't rely on a
+  single central chokepoint since content is read in more than one route.
+- **Hosted-SaaS AI spend is unchanged by this phase** — cost is already a
+  function of unique-URL volume (the shared cache), not per-user tier;
+  gating display doesn't reduce it. If AI cost needs to scale with paying
+  users specifically, that's a larger, later change (a per-user AI
+  enrichment path decoupled from the shared cache) — explicitly out of
+  scope here.
 - **Silent cost creep if `resolveTier` is bypassed** — any new AI feature
   (Phase C included) must route through it rather than re-deriving tier
   logic locally. Keep it the single seam.
