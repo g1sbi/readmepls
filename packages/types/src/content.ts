@@ -18,6 +18,8 @@ export const Content = z.object({
   read_time: z.number().int().nonnegative(),
   hero_image: z.string().nullable(),
   published_at: z.string().nullable(),
+  // Relation id to the sources collection; "" when not yet linked.
+  source: z.string().optional().default(""),
   ai_tags_json: z.array(z.string()),
   fetched_at: z.string(),
   extract_status: ExtractStatus,
