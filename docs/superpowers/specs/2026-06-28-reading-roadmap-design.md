@@ -1,7 +1,9 @@
 # Reading Roadmap — Phases 8–12 — Design
 
 **Date:** 2026-06-28
-**Status:** Approved design, pre-implementation
+**Status:** Superseded — scrapped in favor of the reading-experience roadmap
+starting at `2026-07-02-phase-8-tiering-entitlements-design.md`. Kept for
+history; do not implement.
 
 ## 1. Summary
 
