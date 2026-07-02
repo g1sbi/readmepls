@@ -18,7 +18,7 @@ beforeAll(async () => {
     email,
     password: "password12345",
     passwordConfirm: "password12345",
-    tier: "free",
+    tier: "standard",
     monthly_quota_used: 0,
   });
   userId = u.id;

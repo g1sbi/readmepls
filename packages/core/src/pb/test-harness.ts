@@ -69,7 +69,7 @@ export async function makeTestUser(pb: PocketBase): Promise<string> {
     email: `u${Date.now()}@test.local`,
     password: "password12345",
     passwordConfirm: "password12345",
-    tier: "free",
+    tier: "standard",
     monthly_quota_used: 0,
   });
   return user.id;

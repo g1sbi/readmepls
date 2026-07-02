@@ -17,7 +17,7 @@
     try {
       if (mode === "signup") {
         await pb.collection("users").create({
-          email, password, passwordConfirm: password, tier: "free", monthly_quota_used: 0,
+          email, password, passwordConfirm: password, tier: "standard", monthly_quota_used: 0,
         });
       }
       await pb.collection("users").authWithPassword(email, password);
