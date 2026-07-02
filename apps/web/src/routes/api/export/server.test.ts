@@ -19,9 +19,12 @@ function article(p: Partial<ArticleExport> = {}): ArticleExport {
   };
 }
 
-function call(scope: string) {
+function call(scope: string, userRecord: Record<string, unknown> = { tier: "pro" }) {
   const url = new URL(`http://localhost/api/export?${scope}`);
-  const locals = { userId: "u1", pb: { authStore: { token: "tok" } } } as never;
+  const locals = {
+    userId: "u1",
+    pb: { authStore: { token: "tok", model: userRecord } },
+  } as never;
   return GET({ url, locals } as never);
 }
 
@@ -86,5 +89,12 @@ describe("GET /api/export", () => {
     const bytes = new Uint8Array(await res.arrayBuffer());
     const zip = await JSZip.loadAsync(bytes);
     expect(zip.file("_export-report.md")).toBeNull();
+  });
+
+  it("resolves the caller's tier and passes it to loadArticleExports", async () => {
+    (resolveArticleIds as ReturnType<typeof vi.fn>).mockResolvedValue(["id1"]);
+    (loadArticleExports as ReturnType<typeof vi.fn>).mockResolvedValue([article()]);
+    await call("scope=single&id=id1", { tier: "standard" });
+    expect(loadArticleExports).toHaveBeenCalledWith(expect.anything(), ["id1"], "standard");
   });
 });
