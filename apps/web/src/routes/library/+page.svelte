@@ -13,6 +13,8 @@
   import Skeleton from "$lib/components/ui/Skeleton.svelte";
   import Rail from "$lib/components/ui/Rail.svelte";
   import CollectionsPanel from "$lib/components/CollectionsPanel.svelte";
+  import SourceFilter from "$lib/components/SourceFilter.svelte";
+  import { deriveLibrarySources, filterBySources, type SourceFacet } from "$lib/source/library-sources.js";
   import { reveal } from "$lib/actions/reveal.js";
 
   const pb = browserPb();
@@ -35,8 +37,16 @@
   // Archived view toggle — library shows non-archived by default.
   let archived = $state(false);
 
+  // Source filter state
+  let selectedSources = $state<Set<string>>(new Set());
+  let favoriteSourceIds = $state<Set<string>>(new Set());
+
+  let sourceFacets = $derived<SourceFacet[]>(deriveLibrarySources(articles, favoriteSourceIds));
   let visible = $derived(
-    selectedTag === null ? articles : articles.filter((a) => taggedArticleIds.has(a.id)),
+    filterBySources(
+      selectedTag === null ? articles : articles.filter((a) => taggedArticleIds.has(a.id)),
+      selectedSources,
+    ),
   );
 
   async function load() {
@@ -127,8 +137,34 @@
     await loadCollections();
   }
 
+  function toggleSource(id: string) {
+    if (id === "__all__") { selectedSources = new Set(); return; }
+    const next = new Set(selectedSources);
+    next.has(id) ? next.delete(id) : next.add(id);
+    selectedSources = next;
+  }
+
+  async function loadFavorites() {
+    const rows = await pb.collection("source_favorites").getFullList();
+    favoriteSourceIds = new Set(rows.map((r) => r.source as string));
+  }
+
+  async function toggleFavorite(facet: SourceFacet) {
+    const uid = pb.authStore.model?.id;
+    if (!uid) return;
+    if (favoriteSourceIds.has(facet.id)) {
+      const row = await pb.collection("source_favorites").getFirstListItem(
+        pb.filter("source = {:s}", { s: facet.id }),
+      );
+      await pb.collection("source_favorites").delete(row.id);
+    } else {
+      await pb.collection("source_favorites").create({ user: uid, source: facet.id });
+    }
+    await loadFavorites();
+  }
+
   onMount(async () => {
-    await Promise.all([load(), loadTags(), loadCollections()]);
+    await Promise.all([load(), loadTags(), loadCollections(), loadFavorites()]);
     unsub = await pb.collection("articles").subscribe("*", () => load(), { expand: "content.source" });
   });
   onDestroy(() => unsub?.());
@@ -142,6 +178,12 @@
 
 <div class="library-layout">
   <Rail label="filters and collections">
+    <SourceFilter
+      facets={sourceFacets}
+      selected={selectedSources}
+      onToggle={toggleSource}
+      onToggleFavorite={toggleFavorite}
+    />
     {#if tags.length > 0}
       <nav class="tag-rail" aria-label="Filter by tag">
         <button
