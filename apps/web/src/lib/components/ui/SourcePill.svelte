@@ -12,7 +12,7 @@
   {#if iconUrl}
     <img class="favicon" src={iconUrl} alt="" width="16" height="16" loading="lazy" />
   {:else}
-    <Globe class="favicon-fallback" aria-hidden="true" />
+    <Globe class="icon-sm favicon-fallback" aria-hidden="true" />
   {/if}
   <span class="label">{label}</span>
 </span>
@@ -27,9 +27,9 @@
     color: var(--color-text-muted);
     max-width: 100%;
   }
-  .favicon, :global(.source-pill .favicon-fallback) {
-    width: 1rem;
-    height: 1rem;
+  .favicon {
+    width: var(--icon-sm);
+    height: var(--icon-sm);
     border-radius: var(--radius-sm);
     flex-shrink: 0;
     object-fit: contain;
