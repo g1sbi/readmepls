@@ -11,7 +11,7 @@ const SU_PASS = "password12345";
 export interface PbHandle {
   url: string;
   pb: PocketBase;
-  stop: () => void;
+  stop: () => Promise<void>;
 }
 
 export async function startEphemeralPb(
@@ -43,7 +43,23 @@ export async function startEphemeralPb(
   const pb = new PocketBase(url);
   await pb.collection("_superusers").authWithPassword(SU_EMAIL, SU_PASS);
 
-  return { url, pb, stop: () => proc.kill("SIGKILL") };
+  return {
+    url,
+    pb,
+    stop: () =>
+      new Promise<void>((resolve) => {
+        // Wait for the actual 'exit' event so the OS releases the SQLite file
+        // lock before we resolve — callers that reboot PocketBase against the
+        // same data directory (e.g. a before/after migration test) depend on
+        // this to avoid a SQLITE_BUSY race on the second boot.
+        if (proc.exitCode !== null || proc.signalCode !== null) {
+          resolve();
+          return;
+        }
+        proc.once("exit", () => resolve());
+        proc.kill("SIGKILL");
+      }),
+  };
 }
 
 function mktempPbDir(): string {

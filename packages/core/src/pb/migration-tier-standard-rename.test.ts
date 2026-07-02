@@ -24,7 +24,7 @@ describe("tier standard-rename migration", () => {
       tier: "free",
       monthly_quota_used: 0,
     });
-    h1.stop();
+    await h1.stop();
 
     // Boot 2: same data dir, rename migration now present — PocketBase applies
     // it automatically on this boot, exactly as it would on a real deploy update.
@@ -32,7 +32,7 @@ describe("tier standard-rename migration", () => {
     const h2 = await startEphemeralPb({ dir: dataDir, migrationsDir });
     const reread = await h2.pb.collection("users").getOne(user.id);
     expect(reread.tier).toBe("standard");
-    h2.stop();
+    await h2.stop();
   }, 30000);
 
   it("does not touch a pro-tier user", async () => {
@@ -49,12 +49,38 @@ describe("tier standard-rename migration", () => {
       tier: "pro",
       monthly_quota_used: 0,
     });
-    h1.stop();
+    await h1.stop();
 
     copyFileSync(join(MIGRATIONS_SRC, RENAME_FILE), join(migrationsDir, RENAME_FILE));
     const h2 = await startEphemeralPb({ dir: dataDir, migrationsDir });
     const reread = await h2.pb.collection("users").getOne(user.id);
     expect(reread.tier).toBe("pro");
-    h2.stop();
+    await h2.stop();
+  }, 30000);
+
+  it("renames an unset (empty-string) tier user to standard once the migration is applied", async () => {
+    const dataDir = mkdtempSync(join(tmpdir(), "pb-tier-data-"));
+    const migrationsDir = mkdtempSync(join(tmpdir(), "pb-tier-migrations-"));
+    for (const f of ALL_MIGRATIONS.filter((f) => f < RENAME_FILE)) {
+      copyFileSync(join(MIGRATIONS_SRC, f), join(migrationsDir, f));
+    }
+    const h1 = await startEphemeralPb({ dir: dataDir, migrationsDir });
+    // PocketBase requires the field to be present on create even if empty —
+    // pass an explicit empty string rather than omitting the field, to
+    // reproduce a pre-existing row that never had `tier` set.
+    const user = await h1.pb.collection("users").create({
+      email: `pre-rename-empty-${Date.now()}@test.local`,
+      password: "password12345",
+      passwordConfirm: "password12345",
+      tier: "",
+      monthly_quota_used: 0,
+    });
+    await h1.stop();
+
+    copyFileSync(join(MIGRATIONS_SRC, RENAME_FILE), join(migrationsDir, RENAME_FILE));
+    const h2 = await startEphemeralPb({ dir: dataDir, migrationsDir });
+    const reread = await h2.pb.collection("users").getOne(user.id);
+    expect(reread.tier).toBe("standard");
+    await h2.stop();
   }, 30000);
 });
