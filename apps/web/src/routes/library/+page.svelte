@@ -32,14 +32,40 @@
   // Article delete error — cleared on each attempt, shown inline if delete fails
   let articleError = $state("");
 
+  // Archived view toggle — library shows non-archived by default.
+  let archived = $state(false);
+
   let visible = $derived(
     selectedTag === null ? articles : articles.filter((a) => taggedArticleIds.has(a.id)),
   );
 
   async function load() {
-    const list = await pb.collection("articles").getList(1, 100, { sort: "-created", expand: "content" });
+    const filter = archived
+      ? pb.filter("status = {:s}", { s: "archived" })
+      : pb.filter("status != {:s}", { s: "archived" });
+    const list = await pb.collection("articles").getList(1, 100, { sort: "-created", expand: "content", filter });
     articles = list.items as ArticleRecord[];
     loading = false;
+  }
+
+  async function toggleArchived() {
+    archived = !archived;
+    loading = true;
+    await load();
+  }
+
+  async function addToCollection(articleId: string, collectionId: string) {
+    await pb.collection("collection_items").create({ collection: collectionId, article: articleId, order: 0 });
+  }
+
+  async function archiveArticle(id: string) {
+    await pb.collection("articles").update(id, { status: "archived" });
+    await load();
+  }
+
+  async function unarchiveArticle(id: string) {
+    await pb.collection("articles").update(id, { status: "unread" });
+    await load();
   }
 
   async function loadTags() {
@@ -138,6 +164,14 @@
         {/each}
       </nav>
     {/if}
+    <button
+      class="tag-chip archived-toggle"
+      class:selected={archived}
+      aria-pressed={archived}
+      onclick={toggleArchived}
+    >
+      <Tag>archived</Tag>
+    </button>
     <CollectionsPanel
       {collections}
       error={collectionError}
@@ -163,7 +197,14 @@
       <CardGrid>
         {#each visible as a, i (a.id)}
           <div use:reveal={{ delay: Math.min(i, 8) * 40 }}>
-            <ArticleCard article={a} onDelete={handleDelete} />
+            <ArticleCard
+              article={a}
+              {collections}
+              onAddToCollection={addToCollection}
+              onArchive={archiveArticle}
+              onUnarchive={unarchiveArticle}
+              onDelete={handleDelete}
+            />
           </div>
         {/each}
       </CardGrid>
@@ -212,4 +253,6 @@
   }
 
   .article-error { margin: 0 0 var(--space-3); font-size: var(--text-sm); color: var(--color-accent); }
+
+  .archived-toggle { margin: 0.25rem 0 1.25rem; }
 </style>
