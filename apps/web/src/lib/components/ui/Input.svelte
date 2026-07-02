@@ -4,19 +4,21 @@
     placeholder = "",
     type = "text",
     oninput,
+    "aria-label": ariaLabel,
   }: {
     value?: string;
     placeholder?: string;
     type?: string;
     oninput?: (e: Event) => void;
+    "aria-label"?: string;
   } = $props();
 </script>
 
-<input {type} {placeholder} bind:value {oninput} />
+<input {type} {placeholder} bind:value {oninput} aria-label={ariaLabel} />
 
 <style>
   input {
-    font-family: var(--font-display);
+    font-family: var(--font-ui);
     font-size: 1rem;
     color: var(--color-text);
     background: var(--color-surface);

@@ -9,4 +9,11 @@ describe("HighlightPopover", () => {
     await fireEvent.click(screen.getByRole("button", { name: /amber/i }));
     expect(onpick).toHaveBeenCalledWith("amber", "");
   });
+
+  it("fires oncancel when Escape is pressed", async () => {
+    const oncancel = vi.fn();
+    render(HighlightPopover, { x: 10, y: 10, onpick: vi.fn(), oncancel });
+    await fireEvent.keyDown(document.body, { key: "Escape" });
+    expect(oncancel).toHaveBeenCalledOnce();
+  });
 });

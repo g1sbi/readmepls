@@ -26,12 +26,12 @@
 
 <style>
   .connectors {
-    max-width: 48rem;
+    max-width: var(--width-narrow);
     margin: 0 auto;
     padding: var(--space-6) var(--space-5);
   }
   h1 {
-    font-family: var(--font-display);
+    font-family: var(--font-ui);
     font-size: var(--text-xl);
     color: var(--color-text);
   }
@@ -59,7 +59,7 @@
     opacity: 0.55;
   }
   .name {
-    font-family: var(--font-display);
+    font-family: var(--font-ui);
     color: var(--color-text);
     text-transform: lowercase;
   }

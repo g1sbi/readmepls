@@ -9,12 +9,14 @@ const article = (content: unknown) => ({
 });
 
 describe("ArticleCard", () => {
-  it("shows the title and tags when ready", () => {
+  it("links the whole card to the reader when ready", () => {
     render(ArticleCard, {
-      article: article({ extract_status: "ok", title: "Hello", ai_tags_json: ["ai", "ml"] }),
+      article: article({ extract_status: "ok", title: "Hello", ai_tags_json: ["ai"] }),
     });
-    expect(screen.getByText("Hello")).toBeInTheDocument();
+    const link = screen.getByRole("link", { name: /hello/i });
+    expect(link).toHaveAttribute("href", "/read/a1");
     expect(screen.getByText("ai")).toBeInTheDocument();
+    expect(screen.queryByRole("button", { name: /read/i })).not.toBeInTheDocument();
   });
 
   it("shows a processing indicator when not yet extracted", () => {
@@ -32,4 +34,36 @@ describe("ArticleCard", () => {
     await fireEvent.click(screen.getByRole("button", { name: /retry/i }));
     expect(onRetry).toHaveBeenCalledWith("a1");
   });
+
+  it("does not render a delete button without an onDelete handler", () => {
+    render(ArticleCard, {
+      article: article({ extract_status: "ok", title: "Hello", ai_tags_json: [] }),
+    });
+    expect(screen.queryByRole("button", { name: "delete article" })).not.toBeInTheDocument();
+  });
+
+  it("opens a confirm dialog and fires onDelete when confirmed", async () => {
+    const onDelete = vi.fn();
+    render(ArticleCard, {
+      article: article({ extract_status: "ok", title: "Hello", ai_tags_json: [] }),
+      onDelete,
+    });
+    await fireEvent.click(screen.getByRole("button", { name: "delete article" }));
+    expect(screen.getByText(/can't be undone/i)).toBeInTheDocument();
+    await fireEvent.click(screen.getByRole("button", { name: "delete" }));
+    expect(onDelete).toHaveBeenCalledWith("a1");
+  });
+
+  it("shows the hostname (not the full path) while processing", () => {
+    render(ArticleCard, {
+      article: {
+        id: "a2",
+        url: "https://example.com/some/very/long/path?x=1",
+        expand: undefined,
+      },
+    });
+    expect(screen.getByText("example.com")).toBeInTheDocument();
+    expect(screen.queryByText(/some\/very\/long\/path/)).not.toBeInTheDocument();
+  });
+
 });

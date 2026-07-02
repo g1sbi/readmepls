@@ -1,8 +1,10 @@
 <script lang="ts">
   import "$lib/styles/fonts.css";
   import "$lib/styles/tokens.css";
+  import "../app.css";
   import { onMount, setContext } from "svelte";
-  import { goto } from "$app/navigation";
+  import { goto, onNavigate } from "$app/navigation";
+  import { shouldAnimateNavigation } from "$lib/view-transition.js";
   import { page } from "$app/stores";
   import { browserPb } from "$lib/pb.js";
   import { resolveTheme, applyTheme, readStoredTheme, type Theme } from "$lib/theme/theme.js";
@@ -17,6 +19,21 @@
   setContext("theme", {
     get current() { return theme; },
     set: (t: Theme) => setTheme(t),
+  });
+
+  // Cross-route view transition (global cross-fade). Feature-detected and
+  // reduced-motion-guarded by shouldAnimateNavigation; resolves per the
+  // SvelteKit onNavigate + startViewTransition pattern.
+  onNavigate((navigation) => {
+    if (typeof document === "undefined") return;
+    const mql = window.matchMedia("(prefers-reduced-motion: reduce)");
+    if (!shouldAnimateNavigation(document, mql)) return;
+    return new Promise((resolve) => {
+      document.startViewTransition(async () => {
+        resolve();
+        await navigation.complete;
+      });
+    });
   });
 
   // Chrome (TopBar + paper bg) is hidden on the standalone login screen.
@@ -55,9 +72,9 @@
   .app { min-height: 100dvh; background: var(--color-bg-gradient); position: relative; }
   .app::before {
     content: ""; position: fixed; inset: 0; pointer-events: none; z-index: 0;
-    background-image: var(--texture-grain); opacity: 0.04; mix-blend-mode: multiply;
+    background-image: var(--texture-grain); opacity: var(--grain-opacity); mix-blend-mode: multiply;
   }
-  .page { position: relative; z-index: 1; max-width: 1100px; margin: 0 auto; padding: 1.5rem 1.25rem; animation: reveal var(--dur-slow) var(--ease-paper) both; }
+  .page { position: relative; z-index: 1; max-width: var(--width-page); margin: 0 auto; padding: 1.5rem 1.25rem; animation: reveal var(--dur-slow) var(--ease-paper) both; }
   @keyframes reveal { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: none; } }
   @media (prefers-reduced-motion: reduce) { .page { animation: none; } }
 </style>

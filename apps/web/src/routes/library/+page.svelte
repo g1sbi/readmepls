@@ -1,13 +1,19 @@
 <script lang="ts">
   import { onMount, onDestroy } from "svelte";
-  import { goto } from "$app/navigation";
   import { browserPb } from "$lib/pb.js";
   import { slugify } from "@readmepls/core";
   import { ClientResponseError } from "pocketbase";
   import type { ArticleRecord } from "$lib/article/record.js";
+  import { deleteArticle } from "$lib/article/delete.js";
   import ArticleCard from "$lib/components/ArticleCard.svelte";
   import CardGrid from "$lib/components/ui/CardGrid.svelte";
   import Tag from "$lib/components/ui/Tag.svelte";
+  import PaperCorner from "$lib/components/ui/PaperCorner.svelte";
+  import Card from "$lib/components/ui/Card.svelte";
+  import Skeleton from "$lib/components/ui/Skeleton.svelte";
+  import Rail from "$lib/components/ui/Rail.svelte";
+  import CollectionsPanel from "$lib/components/CollectionsPanel.svelte";
+  import { reveal } from "$lib/actions/reveal.js";
 
   const pb = browserPb();
   let articles = $state<ArticleRecord[]>([]);
@@ -21,10 +27,10 @@
 
   // Collections state
   let collections = $state<{ id: string; name: string; slug: string }[]>([]);
-  let newCollectionName = $state("");
-  let renameTarget = $state<string | null>(null);
-  let renameDraft = $state("");
   let collectionError = $state("");
+
+  // Article delete error — cleared on each attempt, shown inline if delete fails
+  let articleError = $state("");
 
   let visible = $derived(
     selectedTag === null ? articles : articles.filter((a) => taggedArticleIds.has(a.id)),
@@ -59,20 +65,13 @@
     taggedArticleIds = new Set(links.map((l) => l.article as string));
   }
 
-  async function createCollection(e: SubmitEvent) {
-    e.preventDefault();
-    const name = newCollectionName.trim();
-    if (!name) return;
+  async function createCollection(name: string) {
     const uid = pb.authStore.model?.id;
     if (!uid) return;
     const slug = slugify(name);
     collectionError = "";
     try {
-      await pb.collection("collections").create({
-        user: uid, name, slug, parent: "", order: 0,
-      });
-      newCollectionName = "";
-      collectionError = "";
+      await pb.collection("collections").create({ user: uid, name, slug, parent: "", order: 0 });
       await loadCollections();
     } catch (err) {
       if (!(err instanceof ClientResponseError)) throw err;
@@ -81,23 +80,19 @@
     }
   }
 
-  function startRename(id: string, currentName: string) {
-    renameTarget = id;
-    renameDraft = currentName;
+  async function renameCollection(id: string, name: string) {
+    await pb.collection("collections").update(id, { name, slug: slugify(name) });
+    await loadCollections();
   }
 
-  async function submitRename(e: SubmitEvent) {
-    e.preventDefault();
-    if (!renameTarget) return;
-    const name = renameDraft.trim();
-    if (!name) return;
-    // Use pb.filter binding for id — never raw interpolation
-    await pb.collection("collections").update(renameTarget, {
-      name, slug: slugify(name),
-    });
-    renameTarget = null;
-    renameDraft = "";
-    await loadCollections();
+  async function handleDelete(id: string) {
+    articleError = "";
+    try {
+      await deleteArticle(pb, id);
+      // grid refreshes via the existing articles realtime subscription
+    } catch {
+      articleError = "couldn't delete that. try again.";
+    }
   }
 
   async function deleteCollection(id: string) {
@@ -115,102 +110,81 @@
 
 <h1>your library</h1>
 
-{#if tags.length > 0}
-  <nav class="tag-rail" aria-label="Filter by tag">
-    <button
-      class="tag-chip"
-      class:selected={selectedTag === null}
-      onclick={() => selectTag(null)}
-      aria-pressed={selectedTag === null}
-    >
-      <Tag>all</Tag>
-    </button>
-    {#each tags as t (t.id)}
-      <button
-        class="tag-chip"
-        class:selected={selectedTag === t.id}
-        onclick={() => selectTag(t.id)}
-        aria-pressed={selectedTag === t.id}
-      >
-        <Tag>{t.name}</Tag>
-      </button>
-    {/each}
-  </nav>
+{#if articleError}
+  <p class="article-error" role="alert">{articleError}</p>
 {/if}
 
-{#if loading}
-  <CardGrid>
-    {#each Array(6) as _}
-      <div class="skeleton" aria-hidden="true"></div>
-    {/each}
-  </CardGrid>
-{:else if articles.length === 0}
-  <div class="empty">
-    <p>nothing saved yet. paste a link on the <a href="/">extract page</a> ☝</p>
-  </div>
-{:else}
-  <CardGrid>
-    {#each visible as a (a.id)}
-      <ArticleCard article={a} onOpen={(id) => goto(`/read/${id}`)} />
-    {/each}
-  </CardGrid>
-{/if}
-
-<section class="collections-section">
-  <h2 class="collections-heading">collections</h2>
-  {#if collections.length > 0}
-    <nav class="collections-rail" aria-label="Collections">
-      {#each collections as col (col.id)}
-        <div class="collection-item">
-          {#if renameTarget === col.id}
-            <form class="rename-form" onsubmit={submitRename}>
-              <input
-                aria-label="rename collection"
-                bind:value={renameDraft}
-                class="rename-input"
-              />
-              <button type="submit" class="action-btn">save</button>
-              <button type="button" class="action-btn" onclick={() => (renameTarget = null)}>cancel</button>
-            </form>
-          {:else}
-            <a class="collection-chip" href="/collections/{col.slug}">{col.name}</a>
-            <button class="action-btn" onclick={() => startRename(col.id, col.name)} aria-label="rename {col.name}">rename</button>
-            <button class="action-btn danger" onclick={() => deleteCollection(col.id)} aria-label="delete {col.name}">delete</button>
-          {/if}
-        </div>
-      {/each}
-    </nav>
-  {/if}
-  <form class="new-collection-form" onsubmit={createCollection}>
-    <input
-      aria-label="new collection name"
-      placeholder="new collection…"
-      bind:value={newCollectionName}
-      class="new-collection-input"
+<div class="library-layout">
+  <Rail label="filters and collections">
+    {#if tags.length > 0}
+      <nav class="tag-rail" aria-label="Filter by tag">
+        <button
+          class="tag-chip"
+          class:selected={selectedTag === null}
+          onclick={() => selectTag(null)}
+          aria-pressed={selectedTag === null}
+        >
+          <Tag>all</Tag>
+        </button>
+        {#each tags as t (t.id)}
+          <button
+            class="tag-chip"
+            class:selected={selectedTag === t.id}
+            onclick={() => selectTag(t.id)}
+            aria-pressed={selectedTag === t.id}
+          >
+            <Tag>{t.name}</Tag>
+          </button>
+        {/each}
+      </nav>
+    {/if}
+    <CollectionsPanel
+      {collections}
+      error={collectionError}
+      oncreate={createCollection}
+      onrename={renameCollection}
+      ondelete={deleteCollection}
     />
-    <button type="submit" class="action-btn">create</button>
-  </form>
-  {#if collectionError}
-    <p class="collection-error" role="alert">{collectionError}</p>
-  {/if}
-</section>
+  </Rail>
+
+  <div class="library-main">
+    {#if loading}
+      <CardGrid>
+        {#each Array(6) as _}
+          <Card><Skeleton lines={3} /></Card>
+        {/each}
+      </CardGrid>
+    {:else if articles.length === 0}
+      <div class="empty">
+        <PaperCorner />
+        <p>nothing saved yet. paste a link on your <a href="/">home page</a> ☝</p>
+      </div>
+    {:else}
+      <CardGrid>
+        {#each visible as a, i (a.id)}
+          <div use:reveal={{ delay: Math.min(i, 8) * 40 }}>
+            <ArticleCard article={a} onDelete={handleDelete} />
+          </div>
+        {/each}
+      </CardGrid>
+    {/if}
+  </div>
+</div>
 
 <style>
-  h1 { font-family: var(--font-display); color: var(--color-text); font-size: 1.6rem; margin: 0 0 1.25rem; }
-  .skeleton { height: 9rem; border-radius: var(--radius-lg); background: var(--color-surface-sunken); animation: pulse var(--dur-slow) var(--ease-out) infinite alternate; }
-  @keyframes pulse { to { opacity: 0.5; } }
-  @media (prefers-reduced-motion: reduce) { .skeleton { animation: none; } }
+  h1 { font-family: var(--font-ui); font-size: var(--text-xl); font-weight: var(--weight-semibold); color: var(--color-text); margin: 0 0 var(--space-5); }
+
+  .library-layout { display: grid; grid-template-columns: 1fr; gap: var(--space-5); }
+  @media (min-width: 1024px) {
+    .library-layout { grid-template-columns: 16rem minmax(0, 1fr); align-items: start; }
+  }
+  .library-main { min-width: 0; }
+
   .empty {
-    text-align: center; padding: 3rem 1rem; background: var(--color-surface);
-    border-radius: var(--radius-xl); box-shadow: var(--shadow-sm); position: relative;
+    text-align: center; padding: var(--space-7) var(--space-4); background: var(--color-surface);
+    border-radius: var(--radius-xl); box-shadow: var(--shadow-sm); position: relative; overflow: hidden;
   }
-  /* dog-ear fold */
-  .empty::after {
-    content: ""; position: absolute; top: 0; right: 0; width: 40px; height: 40px;
-    background: var(--color-fold); clip-path: polygon(100% 0, 0 0, 100% 100%);
-    border-top-right-radius: var(--radius-xl);
-  }
-  .empty p { font-family: var(--font-display); color: var(--color-text-muted); }
+  .empty p { font-family: var(--font-ui); color: var(--color-text-muted); }
   .empty a { color: var(--color-accent); }
 
   .tag-rail {
@@ -226,38 +200,16 @@
     cursor: pointer;
     transition: all 0.15s;
   }
-  .tag-chip:hover :global(.tag) {
+  .tag-chip:hover :global(.chip) {
     border-color: var(--color-accent);
     color: var(--color-accent);
   }
-  .tag-chip.selected :global(.tag) {
+  .tag-chip:focus-visible { outline: var(--focus-ring-width) solid var(--color-ring); outline-offset: var(--focus-ring-offset); }
+  .tag-chip.selected :global(.chip) {
     background: var(--color-accent);
     border-color: var(--color-accent);
     color: var(--color-surface);
   }
 
-  .collections-section { margin-top: 2rem; }
-  .collections-heading { font-family: var(--font-display); color: var(--color-text); font-size: 1.1rem; margin: 0 0 0.75rem; }
-  .collections-rail { display: flex; flex-direction: column; gap: 0.4rem; margin: 0 0 0.75rem; }
-  .collection-item { display: flex; align-items: center; gap: 0.5rem; flex-wrap: wrap; }
-  .collection-chip {
-    font-family: var(--font-display); color: var(--color-text);
-    background: var(--color-surface-sunken); border-radius: var(--radius-pill);
-    padding: 0.2rem 0.75rem; text-decoration: none; font-size: var(--text-sm);
-    border: 1px solid var(--color-border); transition: border-color 0.15s;
-  }
-  .collection-chip:hover { border-color: var(--color-accent); color: var(--color-accent); }
-  .action-btn {
-    background: none; border: none; cursor: pointer; font: inherit; font-size: var(--text-sm);
-    color: var(--color-text-muted); padding: 0.1rem 0.4rem;
-  }
-  .action-btn:hover { color: var(--color-text); }
-  .action-btn.danger:hover { color: var(--color-accent); }
-  .rename-form { display: flex; align-items: center; gap: 0.4rem; }
-  .rename-input, .new-collection-input {
-    border: none; border-bottom: 1px solid var(--color-border);
-    background: transparent; font: inherit; font-size: var(--text-sm); color: var(--color-text);
-  }
-  .new-collection-form { display: flex; align-items: center; gap: 0.5rem; }
-  .collection-error { margin: 0.3rem 0 0; font-size: var(--text-sm); color: var(--color-accent); }
+  .article-error { margin: 0 0 var(--space-3); font-size: var(--text-sm); color: var(--color-accent); }
 </style>

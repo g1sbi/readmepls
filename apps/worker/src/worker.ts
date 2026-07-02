@@ -73,10 +73,17 @@ export async function processJob(
       content: content.id,
     });
   } catch (err) {
+    // PocketBase validation failures carry field-level detail on
+    // err.response.data; err.message alone ("Failed to create record.") hides
+    // which field was rejected. Surface the full payload so a stuck job can be
+    // diagnosed from last_error without re-running the worker.
+    const data = (err as { response?: { data?: unknown } })?.response?.data;
+    const detail = data ? ` ${JSON.stringify(data)}` : "";
+    const msg = (err instanceof Error ? err.message : String(err)) + detail;
     await pb.collection("jobs").update(jobId, {
       status: "failed",
       attempts: job.attempts + 1,
-      last_error: err instanceof Error ? err.message : String(err),
+      last_error: msg,
     });
   }
 }

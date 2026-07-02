@@ -58,6 +58,38 @@ describe("processJob", () => {
     expect(content.ai_tags_json).toEqual(["hello"]);
   });
 
+  it("records the field-level reason when the content write is rejected", async () => {
+    // A duplicate canonical_url collides with content's unique index. The bare
+    // PocketBase message is "Failed to create record." — useless for diagnosis.
+    // last_error must carry the field-level detail so a stuck job is debuggable.
+    const url = "https://example.com/dup-content";
+    await h.pb.collection("content").create({
+      canonical_url: url,
+      content_hash: "preexisting",
+      source_type: "article",
+      extract_status: "ok",
+    });
+    const job = await h.pb.collection("jobs").create({
+      user: "u1",
+      canonical_url: url,
+      type: "extract",
+      status: "running",
+      attempts: 0,
+    });
+
+    await processJob(h.pb, job.id, {
+      io: ioWith(html),
+      registry,
+      ai: new MockAIProvider({ tags: ["x"], summary: "s" }),
+      classify: classifySource,
+    });
+
+    const after = await h.pb.collection("jobs").getOne(job.id);
+    expect(after.status).toBe("failed");
+    expect(after.last_error).toContain("canonical_url");
+    expect(after.last_error).toContain("validation_not_unique");
+  });
+
   it("marks job failed and increments attempts when extraction fails", async () => {
     const job = await h.pb.collection("jobs").create({
       user: "u1",
