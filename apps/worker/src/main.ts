@@ -14,6 +14,7 @@ import { runLoopOnce } from "./run-loop.js";
 import { ExtractorRegistry } from "./extract/registry.js";
 import type { ExtractIO } from "./extract/extractor.js";
 import type { ProcessDeps } from "./worker.js";
+import { backfillSources } from "./source/backfill-sources.js";
 
 function requireEnv(name: string): string {
   const v = process.env[name];
@@ -74,6 +75,11 @@ async function main(): Promise<void> {
     classify: classifySource,
     fetchBytes,
   };
+
+  if (process.env.BACKFILL_SOURCES === "1") {
+    const { linked } = await backfillSources(pb, { fetchHtml, fetchBytes });
+    console.log(`[worker ${workerId}] backfilled ${linked} content rows with sources`);
+  }
 
   console.log(`[worker ${workerId}] polling ${pbUrl} every ${pollMs}ms`);
   // eslint-disable-next-line no-constant-condition
