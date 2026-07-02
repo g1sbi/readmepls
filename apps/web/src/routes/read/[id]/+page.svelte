@@ -22,6 +22,8 @@
   import Skeleton from "$lib/components/ui/Skeleton.svelte";
   import HighlightPopover from "$lib/components/HighlightPopover.svelte";
   import HighlightsSidebar from "$lib/components/HighlightsSidebar.svelte";
+  import SourcePill from "$lib/components/ui/SourcePill.svelte";
+  import { sourceView } from "$lib/source/source-view.js";
 
   // Global theme context provided by +layout.svelte. May be undefined when
   // the reader is rendered in isolation (e.g. unit tests without the layout).
@@ -168,6 +170,7 @@
   // Derive the active theme: prefer the live global context (keeps article in
   // sync when TopBar changes theme) and fall back to local prefs for isolation.
   const activeTheme = $derived(themeCtx ? themeCtx.current : prefs.theme);
+  const source = $derived(sourceView(pb, content));
 
   let progressTimer: ReturnType<typeof setTimeout> | undefined;
   function onScroll() {
@@ -183,7 +186,7 @@
   onMount(async () => {
     const id = $page.params.id;
     if (!id) return;
-    article = await pb.collection("articles").getOne(id, { expand: "content" });
+    article = await pb.collection("articles").getOne(id, { expand: "content.source" });
     // article is always non-null here — getOne throws on not-found
     content = article!.expand?.content ?? null;
 
@@ -286,6 +289,9 @@
         <!-- Svelte emits an a11y warning for onmouseup on a non-interactive <article>; accepted for text-selection in the reader. -->
         <article data-theme={activeTheme} class="reader" onmouseup={onMouseUp}>
           <h1>{content.title}</h1>
+          {#if source}
+            <div class="reader-source"><SourcePill name={source.name} host={source.host} iconUrl={source.iconUrl} /></div>
+          {/if}
           <!-- content_html is sanitized in the worker (Task 2) before storage -->
           <!-- bind:this anchors the highlight anchoring scope to the article body -->
           <div bind:this={bodyEl}>
@@ -362,4 +368,5 @@
   }
   @media (prefers-reduced-motion: reduce) { .progress { transition: none; } }
   .delete-error { margin: 0 0 0.75rem; font-size: var(--text-sm); color: var(--color-accent); }
+  .reader-source { margin: 0 0 var(--space-4); }
 </style>

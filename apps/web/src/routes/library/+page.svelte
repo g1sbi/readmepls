@@ -43,7 +43,7 @@
     const filter = archived
       ? pb.filter("status = {:s}", { s: "archived" })
       : pb.filter("status != {:s}", { s: "archived" });
-    const list = await pb.collection("articles").getList(1, 100, { sort: "-created", expand: "content", filter });
+    const list = await pb.collection("articles").getList(1, 100, { sort: "-created", expand: "content.source", filter });
     articles = list.items as ArticleRecord[];
     loading = false;
   }
@@ -129,7 +129,7 @@
 
   onMount(async () => {
     await Promise.all([load(), loadTags(), loadCollections()]);
-    unsub = await pb.collection("articles").subscribe("*", () => load(), { expand: "content" });
+    unsub = await pb.collection("articles").subscribe("*", () => load(), { expand: "content.source" });
   });
   onDestroy(() => unsub?.());
 </script>

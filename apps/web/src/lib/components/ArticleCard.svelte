@@ -3,11 +3,14 @@
   import Tag from "./ui/Tag.svelte";
   import Button from "./ui/Button.svelte";
   import Spinner from "./ui/Spinner.svelte";
+  import SourcePill from "./ui/SourcePill.svelte";
   import ConfirmDialog from "./ui/ConfirmDialog.svelte";
   import DropdownMenu from "./ui/DropdownMenu.svelte";
   import MenuItem from "./ui/MenuItem.svelte";
   import { RotateCw, Trash2, MoreHorizontal, Archive, ArchiveRestore, FolderPlus } from "@lucide/svelte";
   import { deriveCardState } from "$lib/article/card-state.js";
+  import { sourceView } from "$lib/source/source-view.js";
+  import { browserPb } from "$lib/pb.js";
   import { page } from "$app/stores";
 
   let {
@@ -31,8 +34,10 @@
 
   let confirming = $state(false);
 
+  const pb = browserPb();
   const content = $derived(article.expand?.content ?? null);
   const state = $derived(deriveCardState(content));
+  const source = $derived(sourceView(pb, content));
   // AI tags are a Pro feature — a standard-tier viewer never sees them, even if
   // this shared content row has them (a pro-tier user may have captured the URL
   // first). See docs/superpowers/specs/2026-07-02-phase-8-tiering-entitlements-design.md §3.
@@ -61,6 +66,9 @@
          link's accessible name is the article title, not generic "open" -->
     <a class="card-link" href={`/read/${article.id}`} aria-label={content?.title ?? article.url}></a>
     <h3>{content?.title ?? article.url}</h3>
+    {#if source}
+      <div class="card-source"><SourcePill name={source.name} host={source.host} iconUrl={source.iconUrl} /></div>
+    {/if}
     <div class="tags">
       {#each tags as t}<Tag>{t}</Tag>{/each}
     </div>
@@ -120,6 +128,7 @@
   .card-link { position: absolute; inset: 0; z-index: 1; border-radius: inherit; }
   .card-link:focus-visible { outline: var(--focus-ring-width) solid var(--color-ring); outline-offset: 2px; }
   h3, .tags { position: relative; z-index: 2; pointer-events: none; } /* text/tags don't block the overlay */
+  .card-source { position: relative; z-index: 2; pointer-events: none; }
 
   .card-menu { position: relative; z-index: 3; align-self: flex-end; }
   .card-menu :global(.dropdown__trigger) {
