@@ -17,6 +17,9 @@ body {
   /* Match the app gradient so rubber-band/over-scroll shows paper, not canvas.
      The gradient itself is re-applied on .app for the in-flow fill. */
   background: var(--color-bg);
+  /* Bind the themed text color so otherwise-unstyled text (e.g. card titles)
+     follows light/dark/sepia instead of falling back to the UA default. */
+  color: var(--color-text);
   min-height: 100dvh;
 }
 
