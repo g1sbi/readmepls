@@ -14,6 +14,15 @@ export interface SourceView {
 }
 
 /**
+ * Build a favicon file URL for a source row. All sources live in the "sources"
+ * collection, so we pass collectionName explicitly — pb.files.getUrl returns ""
+ * unless the record carries id + collectionId/collectionName.
+ */
+export function sourceFaviconUrl(pb: PocketBase, id: string, favicon: string): string | null {
+  return favicon ? pb.files.getUrl({ id, collectionName: "sources" } as { id: string; collectionName: string }, favicon) : null;
+}
+
+/**
  * View-model for a content row's source. Prefers the expanded source record,
  * validated with the Source schema since it's data read back from PocketBase;
  * falls back to deriving the host from canonical_url (on missing source or a
@@ -29,7 +38,7 @@ export function sourceView(pb: PocketBase, content: ContentLike | null | undefin
       return {
         host: src.host,
         name: src.name ?? null,
-        iconUrl: src.favicon ? pb.files.getUrl(src, src.favicon) : null,
+        iconUrl: sourceFaviconUrl(pb, src.id, src.favicon),
       };
     }
   }

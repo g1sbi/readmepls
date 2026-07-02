@@ -3,6 +3,7 @@
   import { Star } from "@lucide/svelte";
   import { browserPb } from "$lib/pb.js";
   import type { SourceFacet } from "$lib/source/library-sources.js";
+  import { sourceFaviconUrl } from "$lib/source/source-view.js";
 
   let { facets, selected, onToggle, onToggleFavorite }: {
     facets: SourceFacet[];
@@ -13,9 +14,7 @@
 
   const pb = browserPb();
   function iconUrl(f: SourceFacet): string | null {
-    // SourceFacet already has the { id, favicon } shape getUrl needs; its param
-    // type is a plain string-keyed record, which SourceFacet satisfies directly.
-    return f.favicon ? pb.files.getUrl(f, f.favicon) : null;
+    return sourceFaviconUrl(pb, f.id, f.favicon);
   }
 </script>
 
