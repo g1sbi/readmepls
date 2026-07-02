@@ -1,7 +1,7 @@
 <script lang="ts">
   import { goto } from "$app/navigation";
   import { THEMES, type Theme } from "$lib/theme/theme.js";
-  import { Search, Library, Sun, Moon, Coffee, LogOut } from "@lucide/svelte";
+  import { Search, Library, User, Sun, Moon, Coffee, LogOut } from "@lucide/svelte";
 
   // Theme → icon map; theme text label stays the accessible name.
   const themeIcon = { light: Sun, dark: Moon, sepia: Coffee } as const;
@@ -14,6 +14,7 @@
   <a class="brand" href="/">readme<span>pls</span></a>
   <nav>
     <a href="/library"><Library class="icon-sm" aria-hidden="true" />library</a>
+    <a href="/profile"><User class="icon-sm" aria-hidden="true" />profile</a>
   </nav>
   <form class="search" onsubmit={(e) => { e.preventDefault(); if (q.trim()) goto(`/search?q=${encodeURIComponent(q)}`); }}>
     <Search class="icon-sm search-icon" aria-hidden="true" />
