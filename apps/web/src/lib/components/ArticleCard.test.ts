@@ -1,5 +1,6 @@
-import { describe, it, expect, vi } from "vitest";
+import { describe, it, expect, vi, beforeEach } from "vitest";
 import { render, screen, fireEvent } from "@testing-library/svelte";
+import { page } from "$app/stores";
 import ArticleCard from "./ArticleCard.svelte";
 
 const article = (content: unknown) => ({
@@ -7,6 +8,21 @@ const article = (content: unknown) => ({
   url: "https://example.com/p",
   expand: content ? { content } : undefined,
 });
+
+const basePageValue = {
+  params: {} as Record<string, string>,
+  url: new URL("http://localhost/"),
+  route: { id: null as string | null },
+  status: 200,
+  error: null,
+  data: {} as Record<string, unknown>,
+  form: null,
+  state: {} as Record<string, unknown>,
+};
+
+// Most of these tests are about card states/actions unrelated to tiering —
+// default to pro so their existing assertions (AI tags visible) don't change.
+beforeEach(() => page.set({ ...basePageValue, data: { tier: "pro" } }));
 
 describe("ArticleCard", () => {
   it("links the whole card to the reader when ready", () => {
@@ -66,4 +82,20 @@ describe("ArticleCard", () => {
     expect(screen.queryByText(/some\/very\/long\/path/)).not.toBeInTheDocument();
   });
 
+  it("hides AI tags for a standard-tier viewer even when content has them", () => {
+    page.set({ ...basePageValue, data: { tier: "standard" } });
+    render(ArticleCard, {
+      article: article({ extract_status: "ok", title: "Hello", ai_tags_json: ["ai", "ml"] }),
+    });
+    expect(screen.queryByText("ai")).not.toBeInTheDocument();
+    expect(screen.queryByText("ml")).not.toBeInTheDocument();
+  });
+
+  it("shows AI tags for a pro-tier viewer", () => {
+    page.set({ ...basePageValue, data: { tier: "pro" } });
+    render(ArticleCard, {
+      article: article({ extract_status: "ok", title: "Hello", ai_tags_json: ["ai"] }),
+    });
+    expect(screen.getByText("ai")).toBeInTheDocument();
+  });
 });
