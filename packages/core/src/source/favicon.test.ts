@@ -35,4 +35,12 @@ describe("pickFaviconCandidates", () => {
     const got = pickFaviconCandidates(html, base);
     expect(got).toEqual(["https://example.com/favicon.ico"]);
   });
+
+  it("resolves path-relative hrefs against the full baseUrl path, not the origin", () => {
+    const html = `<html><head>
+      <link rel="icon" href="icons/fav.png">
+    </head></html>`;
+    const got = pickFaviconCandidates(html, "https://example.com/blog/post");
+    expect(got).toContain("https://example.com/blog/icons/fav.png");
+  });
 });

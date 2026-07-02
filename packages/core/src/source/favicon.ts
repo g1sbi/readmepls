@@ -28,7 +28,6 @@ export function pickFaviconCandidates(html: string, baseUrl: string): string[] {
     .map((el) => el.getAttribute("href"))
     .filter((h): h is string => !!h);
 
-  const origin = new URL(baseUrl).origin;
   const ordered = [...icons.map((i) => i.href), ...apple, "/favicon.ico"];
 
   const seen = new Set<string>();
@@ -36,7 +35,7 @@ export function pickFaviconCandidates(html: string, baseUrl: string): string[] {
   for (const href of ordered) {
     let abs: string;
     try {
-      abs = new URL(href, origin).toString();
+      abs = new URL(href, baseUrl).toString();
     } catch {
       continue;
     }
