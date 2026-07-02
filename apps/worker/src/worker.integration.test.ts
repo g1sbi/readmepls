@@ -6,6 +6,7 @@ import { classifySource } from "@readmepls/core";
 import { processJob } from "./worker.js";
 import { ArticleExtractor } from "./extract/article-extractor.js";
 import { MockAIProvider } from "./ai/mock-provider.js";
+import { NullAIProvider } from "./ai/null-provider.js";
 import { ExtractorRegistry } from "./extract/registry.js";
 import type { ExtractIO } from "./extract/extractor.js";
 
@@ -109,5 +110,32 @@ describe("processJob", () => {
     const after = await h.pb.collection("jobs").getOne(job.id);
     expect(after.status).toBe("failed");
     expect(after.attempts).toBe(1);
+  });
+
+  it("completes extraction with empty tags/summary when no AI provider is configured", async () => {
+    const job = await h.pb.collection("jobs").create({
+      user: "u1",
+      canonical_url: "https://example.com/no-ai",
+      type: "extract",
+      status: "running",
+      attempts: 0,
+    });
+
+    await processJob(h.pb, job.id, {
+      io: ioWith(html),
+      registry,
+      ai: new NullAIProvider(),
+      classify: classifySource,
+    });
+
+    const done = await h.pb.collection("jobs").getOne(job.id);
+    expect(done.status).toBe("done");
+
+    const content = await h.pb.collection("content").getOne(done.content);
+    expect(content.ai_tags_json).toEqual([]);
+    // excerpt falls back to the extractor's own excerpt, not an AI summary,
+    // since ai.summary is "" (falsy) — worker.ts:44 `ai.summary || result.excerpt`.
+    expect(content.excerpt).toBeTruthy();
+    expect(content.title).toBe("Hello World Article");
   });
 });
