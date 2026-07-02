@@ -30,4 +30,11 @@ describe("ReaderControls", () => {
     expect(screen.getByRole("button", { name: "decrease text size" })).toBeInTheDocument();
     expect(screen.getByRole("button", { name: "increase text size" })).toBeInTheDocument();
   });
+
+  it("renders the three controls as one segmented group", () => {
+    const { container } = render(ReaderControls, { prefs, onChange: vi.fn() });
+    const group = container.querySelector(".controls");
+    expect(group).not.toBeNull();
+    expect(group!.querySelectorAll("button.seg")).toHaveLength(3);
+  });
 });

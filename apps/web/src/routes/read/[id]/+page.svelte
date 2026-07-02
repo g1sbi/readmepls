@@ -321,12 +321,6 @@
   .bar .back { display: inline-flex; align-items: center; gap: var(--space-1); font-family: var(--font-ui); color: var(--color-text-muted); text-decoration: none; }
   .bar .back:hover { color: var(--color-text); }
 
-  /* controls read as a pill inside the rail */
-  .reader-layout :global(.controls) {
-    padding: var(--space-2) var(--space-3);
-    background: var(--color-surface); border-radius: var(--radius-pill); box-shadow: var(--shadow-sm);
-  }
-
   .article-actions { display: flex; gap: var(--space-2); }
   .article-actions :global(.dropdown__trigger),
   .action-icon {
