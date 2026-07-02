@@ -47,6 +47,7 @@ describe("processJob", () => {
       registry,
       ai: new MockAIProvider({ tags: ["hello"], summary: "A test." }),
       classify: classifySource,
+      fetchBytes: async () => null,
     });
 
     const done = await h.pb.collection("jobs").getOne(job.id);
@@ -83,6 +84,7 @@ describe("processJob", () => {
       registry,
       ai: new MockAIProvider({ tags: ["x"], summary: "s" }),
       classify: classifySource,
+      fetchBytes: async () => null,
     });
 
     const after = await h.pb.collection("jobs").getOne(job.id);
@@ -105,6 +107,7 @@ describe("processJob", () => {
       registry,
       ai: new MockAIProvider(),
       classify: classifySource,
+      fetchBytes: async () => null,
     });
 
     const after = await h.pb.collection("jobs").getOne(job.id);
@@ -126,6 +129,7 @@ describe("processJob", () => {
       registry,
       ai: new NullAIProvider(),
       classify: classifySource,
+      fetchBytes: async () => null,
     });
 
     const done = await h.pb.collection("jobs").getOne(job.id);

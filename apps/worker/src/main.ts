@@ -9,7 +9,7 @@ import { YoutubeExtractor } from "./extract/youtube-extractor.js";
 import { defaultRunYtDlp } from "./extract/yt-dlp.js";
 import { ClaudeProvider } from "./ai/claude-provider.js";
 import { selectAiProvider } from "./ai/select-provider.js";
-import { createSafeFetchHtml } from "./fetch/safe-fetch.js";
+import { createSafeFetchHtml, createSafeFetchBytes } from "./fetch/safe-fetch.js";
 import { runLoopOnce } from "./run-loop.js";
 import { ExtractorRegistry } from "./extract/registry.js";
 import type { ExtractIO } from "./extract/extractor.js";
@@ -47,6 +47,11 @@ async function main(): Promise<void> {
     return new ClaudeProvider(anthropic, model);
   });
 
+  const fetchBytes = createSafeFetchBytes({
+    lookup: async (host) => (await dnsLookup(host, { all: true })).map((a) => a.address),
+    fetchFn: (url) => fetch(url, { redirect: "manual" }),
+  });
+
   const fetchJson = async (url: string): Promise<unknown> =>
     JSON.parse(await fetchHtml(url));
 
@@ -67,6 +72,7 @@ async function main(): Promise<void> {
     registry,
     ai,
     classify: classifySource,
+    fetchBytes,
   };
 
   console.log(`[worker ${workerId}] polling ${pbUrl} every ${pollMs}ms`);

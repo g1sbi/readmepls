@@ -4,12 +4,15 @@ import type { ExtractIO } from "./extract/extractor.js";
 import type { ExtractorRegistry } from "./extract/registry.js";
 import type { AIProvider } from "./ai/provider.js";
 import type { SourceType } from "@readmepls/types";
+import { deriveSourceHost } from "@readmepls/core";
+import { ensureSource } from "./source/ensure-source.js";
 
 export interface ProcessDeps {
   io: ExtractIO;
   registry: ExtractorRegistry;
   ai: AIProvider;
   classify: (url: string) => SourceType;
+  fetchBytes: (url: string) => Promise<{ bytes: Uint8Array; contentType: string } | null>;
 }
 
 export async function processJob(
@@ -53,6 +56,21 @@ export async function processJob(
       extract_status: result.status,
       failure_reason: result.failureReason,
     });
+
+    // Link the content to its source website. Best-effort: a favicon or source
+    // failure must never fail an otherwise-successful extraction job.
+    try {
+      const host = deriveSourceHost(job.canonical_url);
+      if (host) {
+        const sourceId = await ensureSource(pb, host, result.siteName, {
+          fetchHtml: deps.io.fetchHtml,
+          fetchBytes: deps.fetchBytes,
+        });
+        await pb.collection("content").update(content.id, { source: sourceId });
+      }
+    } catch (err) {
+      console.error(`[worker] source linking failed for ${job.canonical_url}:`, err);
+    }
 
     // Link every content-less article that captured this URL to the freshly
     // extracted content. Public extractions are shared, so these become readable.

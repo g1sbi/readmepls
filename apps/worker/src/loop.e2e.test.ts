@@ -43,6 +43,7 @@ describe("phase-1 end-to-end loop", () => {
       registry,
       ai: new MockAIProvider({ tags: ["hello"], summary: "A test." }),
       classify: classifySource,
+      fetchBytes: async () => null,
     });
 
     const done = await h.pb.collection("jobs").getOne(job!.id);

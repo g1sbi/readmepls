@@ -32,6 +32,7 @@ const deps = {
   registry: new ExtractorRegistry([new ArticleExtractor()]),
   ai: new MockAIProvider({ tags: ["hello"], summary: "A test." }),
   classify: classifySource,
+  fetchBytes: async () => null,
 };
 
 describe("runLoopOnce", () => {

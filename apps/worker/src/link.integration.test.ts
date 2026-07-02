@@ -51,6 +51,7 @@ describe("processJob article linking", () => {
       registry,
       ai: new MockAIProvider({ tags: ["t"], summary: "s" }),
       classify: classifySource,
+      fetchBytes: async () => null,
     });
 
     const done = await h.pb.collection("jobs").getOne(job.id);

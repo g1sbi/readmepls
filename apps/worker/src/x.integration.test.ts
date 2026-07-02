@@ -44,6 +44,7 @@ describe("processJob routes X urls to the X extractor", () => {
       registry: new ExtractorRegistry([new ArticleExtractor(), new XExtractor()]),
       ai: new MockAIProvider({ tags: ["x"], summary: "tweet." }),
       classify: classifySource,
+      fetchBytes: async () => null,
     });
 
     const done = await h.pb.collection("jobs").getOne(job.id);
