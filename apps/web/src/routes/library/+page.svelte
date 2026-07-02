@@ -16,6 +16,7 @@
   import SourceFilter from "$lib/components/SourceFilter.svelte";
   import { deriveLibrarySources, filterBySources, type SourceFacet } from "$lib/source/library-sources.js";
   import { reveal } from "$lib/actions/reveal.js";
+  import { SourceFavorite } from "@readmepls/types";
 
   const pb = browserPb();
   let articles = $state<ArticleRecord[]>([]);
@@ -146,7 +147,7 @@
 
   async function loadFavorites() {
     const rows = await pb.collection("source_favorites").getFullList();
-    favoriteSourceIds = new Set(rows.map((r) => r.source as string));
+    favoriteSourceIds = new Set(rows.map((r) => SourceFavorite.parse(r).source));
   }
 
   async function toggleFavorite(facet: SourceFacet) {

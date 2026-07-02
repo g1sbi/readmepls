@@ -1,6 +1,8 @@
+import { Source } from "@readmepls/types";
+
 interface ArticleLike {
   id: string;
-  expand?: { content?: { expand?: { source?: { id: string; host: string; name: string | null; favicon: string } } } };
+  expand?: { content?: { expand?: { source?: unknown } } };
 }
 
 export interface SourceFacet {
@@ -16,8 +18,11 @@ export interface SourceFacet {
 export function deriveLibrarySources(articles: ArticleLike[], favoriteIds: Set<string>): SourceFacet[] {
   const map = new Map<string, SourceFacet>();
   for (const a of articles) {
-    const src = a.expand?.content?.expand?.source;
-    if (!src) continue;
+    const raw = a.expand?.content?.expand?.source;
+    if (!raw) continue;
+    const parsed = Source.safeParse(raw);
+    if (!parsed.success) continue;
+    const src = parsed.data;
     const existing = map.get(src.id);
     if (existing) {
       existing.count++;
@@ -39,7 +44,7 @@ export function deriveLibrarySources(articles: ArticleLike[], favoriteIds: Set<s
 export function filterBySources<T extends ArticleLike>(articles: T[], selectedIds: Set<string>): T[] {
   if (selectedIds.size === 0) return articles;
   return articles.filter((a) => {
-    const id = a.expand?.content?.expand?.source?.id;
-    return id ? selectedIds.has(id) : false;
+    const parsed = Source.safeParse(a.expand?.content?.expand?.source);
+    return parsed.success ? selectedIds.has(parsed.data.id) : false;
   });
 }

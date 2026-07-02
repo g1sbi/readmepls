@@ -3,7 +3,9 @@ import { deriveLibrarySources, filterBySources } from "./library-sources.js";
 
 const art = (id: string, sourceId: string | null, host = "h.com", name: string | null = null) => ({
   id, url: "u", status: "unread", progress: 0,
-  expand: sourceId ? { content: { expand: { source: { id: sourceId, host, name, favicon: "" } } } } : { content: {} },
+  expand: sourceId
+    ? { content: { expand: { source: { id: sourceId, host, name, favicon: "", favicon_status: "none" } } } }
+    : { content: {} },
 });
 
 describe("deriveLibrarySources", () => {

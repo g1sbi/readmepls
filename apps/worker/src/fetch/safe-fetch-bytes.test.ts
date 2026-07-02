@@ -42,4 +42,14 @@ describe("createSafeFetchBytes", () => {
     });
     await expect(fetchBytes("https://internal/favicon.ico")).rejects.toThrow(/blocked address/);
   });
+
+  it("refuses a redirect hop that points at a private address", async () => {
+    const fetchBytes = createSafeFetchBytes({
+      lookup: async (host: string) =>
+        host === "example.com" ? publicIp : ["127.0.0.1"],
+      fetchFn: async () =>
+        resLike(302, new Uint8Array(), { location: "http://internal.evil.com/favicon.ico" }),
+    });
+    await expect(fetchBytes("https://example.com/favicon.ico")).rejects.toThrow(/blocked address/);
+  });
 });

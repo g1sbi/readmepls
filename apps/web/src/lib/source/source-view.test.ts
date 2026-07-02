@@ -1,7 +1,7 @@
 import { describe, it, expect } from "vitest";
 import { sourceView } from "./source-view.js";
 
-// Minimal pb stub: only files.getURL is used.
+// Minimal pb stub: only files.getUrl is used.
 const pb = { files: { getUrl: (rec: { id: string }, file: string) => `https://pb/${rec.id}/${file}` } } as any;
 
 describe("sourceView", () => {
