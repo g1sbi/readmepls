@@ -141,4 +141,18 @@ describe("reader page — delete error path", () => {
     // Navigation must NOT have been attempted on failure
     expect(goto).not.toHaveBeenCalled();
   });
+
+  it("no longer offers to create collections from the reader", async () => {
+    render(ReaderPage);
+    await waitFor(() => expect(screen.getByText("Test Article")).toBeInTheDocument());
+    expect(screen.queryByLabelText(/new collection/i)).not.toBeInTheDocument();
+    expect(screen.getByRole("button", { name: "add to collection" })).toBeInTheDocument();
+  });
+
+  it("archives the article and navigates to the library", async () => {
+    render(ReaderPage);
+    await waitFor(() => expect(screen.getByText("Test Article")).toBeInTheDocument());
+    await fireEvent.click(screen.getByRole("button", { name: "archive article" }));
+    await waitFor(() => expect(goto).toHaveBeenCalledWith("/library"));
+  });
 });

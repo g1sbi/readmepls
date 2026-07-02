@@ -15,9 +15,10 @@
   import ReaderControls from "$lib/components/ReaderControls.svelte";
   import ConfirmDialog from "$lib/components/ui/ConfirmDialog.svelte";
   import TagEditor from "$lib/components/TagEditor.svelte";
-  import AddToCollection from "$lib/components/AddToCollection.svelte";
   import Rail from "$lib/components/ui/Rail.svelte";
-  import { ArrowLeft, Archive, Trash2 } from "@lucide/svelte";
+  import DropdownMenu from "$lib/components/ui/DropdownMenu.svelte";
+  import MenuItem from "$lib/components/ui/MenuItem.svelte";
+  import { ArrowLeft, Archive, Trash2, FolderPlus } from "@lucide/svelte";
   import Skeleton from "$lib/components/ui/Skeleton.svelte";
   import HighlightPopover from "$lib/components/HighlightPopover.svelte";
   import HighlightsSidebar from "$lib/components/HighlightsSidebar.svelte";
@@ -47,8 +48,8 @@
   let collections = $state<{ id: string; name: string }[]>([]);
 
   let confirmingDelete = $state(false);
-  // No pre-existing inline error pattern on this page; introduced here for delete failures.
-  let deleteError = $state("");
+  // Shared inline error for reader actions (archive / delete).
+  let actionError = $state("");
 
   async function loadHighlights(articleId: string) {
     const raw = await pb.collection("highlights").getFullList({
@@ -208,7 +209,14 @@
   });
 
   async function archive() {
-    if (article) await pb.collection("articles").update(article.id, { status: "archived" });
+    if (!article) return;
+    actionError = "";
+    try {
+      await pb.collection("articles").update(article.id, { status: "archived" });
+      await goto("/library");
+    } catch {
+      actionError = "couldn't archive that. try again.";
+    }
   }
 
   async function loadCollections() {
@@ -223,25 +231,15 @@
     });
   }
 
-  async function createCollection(name: string) {
-    const uid = pb.authStore.model?.id;
-    if (!uid) return;
-    const c = await pb.collection("collections").create({
-      user: uid, name, slug: slugify(name), parent: "", order: 0,
-    });
-    await addToCollection(c.id);
-    await loadCollections();
-  }
-
   async function confirmDelete() {
     if (!article) return;
     confirmingDelete = false;
-    deleteError = "";
+    actionError = "";
     try {
       await deleteArticle(pb, article.id);
       await goto("/library");
     } catch {
-      deleteError = "couldn't delete that. try again.";
+      actionError = "couldn't delete that. try again.";
     }
   }
 </script>
@@ -253,8 +251,8 @@
     <a class="back" href="/library"><ArrowLeft class="icon-sm" aria-hidden="true" /> library</a>
   </div>
 
-  {#if deleteError}
-    <p class="delete-error" role="alert">{deleteError}</p>
+  {#if actionError}
+    <p class="delete-error" role="alert">{actionError}</p>
   {/if}
 
   {#if !content}
@@ -264,8 +262,20 @@
       <Rail label="reading tools">
         <ReaderControls {prefs} onChange={savePrefs} />
         <TagEditor tags={manualTags.map(t => ({ id: t.id, name: t.name }))} onadd={addTag} onremove={removeTag} />
-        <AddToCollection {collections} onadd={addToCollection} oncreate={createCollection} />
         <div class="article-actions" role="group" aria-label="article actions">
+          <DropdownMenu label="add to collection" align="start">
+            {#snippet trigger()}<FolderPlus class="icon-md" aria-hidden="true" />{/snippet}
+            {#snippet children()}
+              <div class="menu-label">add to collection</div>
+              {#if collections.length > 0}
+                {#each collections as c (c.id)}
+                  <MenuItem onSelect={() => addToCollection(c.id)}>{c.name}</MenuItem>
+                {/each}
+              {:else}
+                <div class="menu-empty">no collections yet</div>
+              {/if}
+            {/snippet}
+          </DropdownMenu>
           <button class="action-icon" onclick={archive} aria-label="archive article"><Archive class="icon-md" aria-hidden="true" /></button>
           <button class="action-icon" onclick={() => (confirmingDelete = true)} aria-label="delete article"><Trash2 class="icon-md" aria-hidden="true" /></button>
         </div>
@@ -318,6 +328,7 @@
   }
 
   .article-actions { display: flex; gap: var(--space-2); }
+  .article-actions :global(.dropdown__trigger),
   .action-icon {
     display: inline-flex; align-items: center; justify-content: center;
     width: 2.25rem; height: 2.25rem; padding: 0;
@@ -325,9 +336,13 @@
     border-radius: var(--radius-md); color: var(--color-text-muted); cursor: pointer;
     transition: color var(--dur-fast) var(--ease-out), box-shadow var(--dur-fast) var(--ease-out);
   }
+  .article-actions :global(.dropdown__trigger):hover,
   .action-icon:hover { color: var(--color-accent); box-shadow: var(--shadow-sm); }
+  .article-actions :global(.dropdown__trigger):focus-visible,
   .action-icon:focus-visible { outline: var(--focus-ring-width) solid var(--color-ring); outline-offset: var(--focus-ring-offset); }
-  @media (prefers-reduced-motion: reduce) { .action-icon { transition: none; } }
+  @media (prefers-reduced-motion: reduce) {
+    .article-actions :global(.dropdown__trigger), .action-icon { transition: none; }
+  }
 
   .reader {
     background: var(--reading-bg); color: var(--reading-text);
