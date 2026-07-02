@@ -26,7 +26,12 @@ async function fetchFavicon(host: string, io: SourceIO): Promise<File | null> {
     }
     if (res && res.bytes.length > 0 && res.contentType.startsWith("image/")) {
       const ext = url.split(".").pop()?.split(/[?#]/)[0] || "ico";
-      return new File([res.bytes], `favicon.${ext}`, { type: res.contentType });
+      // res.bytes genuinely comes from `new Uint8Array(arrayBuffer)` in
+      // safe-fetch.ts, so its buffer is a real ArrayBuffer — but TS 5.7 widens
+      // Uint8Array's buffer type to ArrayBufferLike, which BlobPart rejects.
+      return new File([res.bytes as Uint8Array<ArrayBuffer>], `favicon.${ext}`, {
+        type: res.contentType,
+      });
     }
   }
   return null;

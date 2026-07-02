@@ -7,7 +7,11 @@ function resLike(status: number, body: Uint8Array, headers: Record<string, strin
   return {
     status,
     headers: { get: (n: string) => headers[n.toLowerCase()] ?? null },
-    arrayBuffer: async () => body.buffer.slice(body.byteOffset, body.byteOffset + body.byteLength),
+    // body.buffer is always a real ArrayBuffer here (from `new Uint8Array(...)`
+    // literals below), but TS 5.7 widens Uint8Array's buffer type to
+    // ArrayBufferLike, so .slice() types as ArrayBuffer | SharedArrayBuffer.
+    arrayBuffer: async () =>
+      body.buffer.slice(body.byteOffset, body.byteOffset + body.byteLength) as ArrayBuffer,
   };
 }
 

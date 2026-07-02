@@ -158,6 +158,9 @@ importers:
       '@readmepls/types':
         specifier: workspace:*
         version: link:../types
+      jsdom:
+        specifier: ^25.0.0
+        version: 25.0.1
       pocketbase:
         specifier: ^0.21.0
         version: 0.21.5
