@@ -13,7 +13,9 @@
 
   const pb = browserPb();
   function iconUrl(f: SourceFacet): string | null {
-    return f.favicon ? pb.files.getUrl({ id: f.id, favicon: f.favicon } as never, f.favicon) : null;
+    // SourceFacet already has the { id, favicon } shape getUrl needs; its param
+    // type is a plain string-keyed record, which SourceFacet satisfies directly.
+    return f.favicon ? pb.files.getUrl(f, f.favicon) : null;
   }
 </script>
 
@@ -23,10 +25,11 @@
       <Chip selected={selected.size === 0}>all</Chip>
     </button>
     {#each facets as f (f.id)}
+      {@const url = iconUrl(f)}
       <span class="source-chip">
         <button class="chip-btn" aria-pressed={selected.has(f.id)} onclick={() => onToggle(f.id)}>
           <Chip selected={selected.has(f.id)}>
-            {#if iconUrl(f)}<img class="chip-favicon" src={iconUrl(f)} alt="" width="14" height="14" />{/if}
+            {#if url}<img class="chip-favicon" src={url} alt="" width="14" height="14" />{/if}
             {f.name || f.host}
             {#snippet trailing()}<span class="count">{f.count}</span>{/snippet}
           </Chip>
