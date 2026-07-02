@@ -1,7 +1,7 @@
 import { z } from "zod";
 import type PocketBase from "pocketbase";
 import type { ArticleExport } from "@readmepls/core";
-import { Highlight, Content, ArticleStatus } from "@readmepls/types";
+import { Highlight, Content, ArticleStatus, Tier } from "@readmepls/types";
 
 export type Scope =
   | { kind: "single"; id: string }
@@ -71,7 +71,11 @@ const ContentPartial = Content.partial().nullable().optional();
  *  tags, mapping to the pure ArticleExport DTO. Ids the caller cannot read
  *  (getOne 404 under API rules) are silently skipped — tenant isolation.
  *  Highlights and tags are fetched in two batched queries (not N×2). */
-export async function loadArticleExports(pb: PocketBase, ids: string[]): Promise<ArticleExport[]> {
+export async function loadArticleExports(
+  pb: PocketBase,
+  ids: string[],
+  tier: Tier,
+): Promise<ArticleExport[]> {
   // Step 1: per-article getOne (preserves silent-skip on 404/permission deny).
   // Zod-validate the article record and content at the PB boundary.
   type Readable = {
@@ -161,8 +165,8 @@ export async function loadArticleExports(pb: PocketBase, ids: string[]): Promise
       capturedAt: a.created,
       status: a.status,
       tags,
-      aiTags: Array.isArray(c?.ai_tags_json) ? (c!.ai_tags_json as string[]) : [],
-      summary: (c?.excerpt as string) ?? "",
+      aiTags: tier === "pro" && Array.isArray(c?.ai_tags_json) ? (c!.ai_tags_json as string[]) : [],
+      summary: tier === "pro" ? ((c?.excerpt as string) ?? "") : "",
       contentHtml: (c?.content_html as string) ?? "",
       highlights,
     });

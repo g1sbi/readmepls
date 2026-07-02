@@ -58,7 +58,7 @@ export async function handleCapture(
   // quota check (worker uses our key; BYO bypasses)
   const user = await pb.collection("users").getOne(userId);
   const quota = checkQuota(
-    { tier: user.tier ?? "free", used: user.monthly_quota_used ?? 0 },
+    { tier: user.tier ?? "standard", used: user.monthly_quota_used ?? 0 },
     Boolean(user.ai_key_enc)
   );
   if (!quota.ok) return { status: 402, body: { error: "quota exceeded" } };

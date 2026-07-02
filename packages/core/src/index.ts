@@ -15,3 +15,4 @@ export * from "./source/youtube/video-id.js";
 export * from "./source/youtube/transcript.js";
 export * from "./connector/plugin.js";
 export * from "./connector/registry.js";
+export * from "./tier/resolve-tier.js";

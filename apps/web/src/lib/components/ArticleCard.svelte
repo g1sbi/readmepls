@@ -6,6 +6,7 @@
   import ConfirmDialog from "./ui/ConfirmDialog.svelte";
   import { RotateCw, Trash2 } from "@lucide/svelte";
   import { deriveCardState } from "$lib/article/card-state.js";
+  import { page } from "$app/stores";
 
   let {
     article,
@@ -22,7 +23,11 @@
 
   const content = $derived(article.expand?.content ?? null);
   const state = $derived(deriveCardState(content));
-  const tags = $derived<string[]>(content?.ai_tags_json ?? []);
+  // AI tags are a Pro feature — a standard-tier viewer never sees them, even
+  // if this shared content row has them (e.g. a different, pro-tier user
+  // captured this URL first). See docs/superpowers/specs/2026-07-02-phase-8-tiering-entitlements-design.md §3.
+  const isPro = $derived($page.data.tier === "pro");
+  const tags = $derived<string[]>(isPro ? (content?.ai_tags_json ?? []) : []);
 
   // Show a clean hostname while processing; fall back to the raw URL if it
   // can't be parsed (e.g. malformed input mid-capture).

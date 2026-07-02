@@ -15,7 +15,7 @@ function fakePb(jobsCreate: () => Promise<unknown>): PocketBase {
         return { getFirstListItem: async () => Promise.reject(new Error("not found")) };
       }
       if (name === "users") {
-        return { getOne: async () => ({ tier: "free", monthly_quota_used: 0 }) };
+        return { getOne: async () => ({ tier: "standard", monthly_quota_used: 0 }) };
       }
       if (name === "jobs") {
         return { create: jobsCreate };

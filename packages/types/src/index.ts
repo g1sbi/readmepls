@@ -8,3 +8,4 @@ export * from "./reader.js";
 export * from "./highlight.js";
 export * from "./collection.js";
 export * from "./search.js";
+export * from "./tier.js";
