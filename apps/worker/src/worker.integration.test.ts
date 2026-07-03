@@ -134,6 +134,38 @@ describe("processJob", () => {
     expect(linkedArticle.content).toBe(content.id);
   });
 
+  it("does not clear is_private on a linked article when extraction fails", async () => {
+    const url = "https://example.com/private-empty";
+    const userId = await makeTestUser(h.pb);
+    const article = await h.pb.collection("articles").create({
+      user: userId,
+      url,
+      canonical_url: url,
+      status: "unread",
+      progress: 0,
+      is_private: true,
+    });
+    const job = await h.pb.collection("jobs").create({
+      user: userId,
+      canonical_url: url,
+      type: "extract",
+      status: "running",
+      attempts: 0,
+    });
+
+    await processJob(h.pb, job.id, {
+      io: ioWith("<html></html>"),
+      registry,
+      ai: new MockAIProvider(),
+      classify: classifySource,
+      fetchBytes: async () => null,
+    });
+
+    const linkedArticle = await h.pb.collection("articles").getOne(article.id);
+    expect(linkedArticle.content).toBeTruthy();
+    expect(linkedArticle.is_private).toBe(true);
+  });
+
   it("completes extraction with empty tags/summary when no AI provider is configured", async () => {
     const job = await h.pb.collection("jobs").create({
       user: "u1",

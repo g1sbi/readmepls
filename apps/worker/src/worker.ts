@@ -79,16 +79,21 @@ export async function processJob(
     // (re)written content — including on failure, so a permanently-spinning
     // "processing" card (apps/web/src/lib/article/card-state.ts) can reach
     // "failed" state and offer a retry, instead of spinning forever.
+    // is_private only clears on a successful extraction: a failure (e.g. a
+    // paywall/login wall) tells us nothing about whether the source is
+    // public, so clearing it here would wrongly expose a private capture.
     const toLink = await pb.collection("articles").getFullList({
       filter: pb.filter("canonical_url = {:url} && content = ''", {
         url: job.canonical_url,
       }),
     });
     for (const a of toLink) {
-      await pb.collection("articles").update(a.id, {
-        content: content.id,
-        is_private: false,
-      });
+      await pb.collection("articles").update(
+        a.id,
+        result.status === "failed"
+          ? { content: content.id }
+          : { content: content.id, is_private: false }
+      );
     }
 
     if (result.status === "failed") {
