@@ -1,6 +1,6 @@
 import type PocketBase from "pocketbase";
 import { ClientResponseError } from "pocketbase";
-import { pickFaviconCandidates } from "@readmepls/core";
+import { pickFaviconCandidates } from "@readmepls/core/server";
 
 export interface SourceIO {
   fetchHtml(url: string): Promise<string>;
