@@ -6,6 +6,7 @@ import type { AIProvider } from "./ai/provider.js";
 import type { SourceType } from "@readmepls/types";
 import { deriveSourceHost } from "@readmepls/core";
 import { ensureSource } from "./source/ensure-source.js";
+import { upsertContent } from "./content/upsert-content.js";
 
 export interface ProcessDeps {
   io: ExtractIO;
@@ -26,18 +27,20 @@ export async function processJob(
     const extractor = deps.registry.for(source);
     const result = await extractor.extract(job.canonical_url, deps.io);
 
-    if (result.status === "failed") {
-      await pb.collection("jobs").update(jobId, {
-        status: "failed",
-        attempts: job.attempts + 1,
-        last_error: result.failureReason ?? "extract failed",
-      });
-      return;
-    }
+    // AI tagging only makes sense for text that was actually extracted —
+    // skip the call entirely on a failed extraction (empty contentText).
+    const ai =
+      result.status === "failed"
+        ? { tags: [], summary: "" }
+        : await deps.ai.tagAndSummarize(result.contentText);
 
-    const ai = await deps.ai.tagAndSummarize(result.contentText);
-    const content = await pb.collection("content").create({
-      canonical_url: job.canonical_url,
+    // Upsert, not create: a retried job (via /api/retry, which resets a job
+    // to queued without touching content) re-runs extraction against a
+    // canonical_url that may already have a content row from a prior failed
+    // attempt — content.canonical_url has a unique index, so a blind
+    // create() would collide. Every outcome (ok/partial/failed) writes the
+    // same content row, updated in place on retry.
+    const content = await upsertContent(pb, job.canonical_url, {
       content_hash: createHash("sha256").update(result.contentText).digest("hex"),
       source_type: result.sourceType,
       title: result.title,
@@ -72,8 +75,10 @@ export async function processJob(
       console.error(`[worker] source linking failed for ${job.canonical_url}:`, err);
     }
 
-    // Link every content-less article that captured this URL to the freshly
-    // extracted content. Public extractions are shared, so these become readable.
+    // Link every content-less article that captured this URL to the
+    // (re)written content — including on failure, so a permanently-spinning
+    // "processing" card (apps/web/src/lib/article/card-state.ts) can reach
+    // "failed" state and offer a retry, instead of spinning forever.
     const toLink = await pb.collection("articles").getFullList({
       filter: pb.filter("canonical_url = {:url} && content = ''", {
         url: job.canonical_url,
@@ -84,6 +89,16 @@ export async function processJob(
         content: content.id,
         is_private: false,
       });
+    }
+
+    if (result.status === "failed") {
+      await pb.collection("jobs").update(jobId, {
+        status: "failed",
+        attempts: job.attempts + 1,
+        last_error: result.failureReason ?? "extract failed",
+        content: content.id,
+      });
+      return;
     }
 
     await pb.collection("jobs").update(jobId, {
