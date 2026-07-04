@@ -10,3 +10,4 @@ export * from "./highlight.js";
 export * from "./collection.js";
 export * from "./search.js";
 export * from "./tier.js";
+export * from "./library.js";
