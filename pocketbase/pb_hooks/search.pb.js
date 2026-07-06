@@ -52,7 +52,7 @@ routerAdd("GET", "/api/search", (e) => {
       "FROM content_fts cf " +
       "JOIN articles a ON a.content = cf.content_id " +
       "WHERE content_fts MATCH {:q} AND a.user = {:uid} " +
-      "ORDER BY rank LIMIT 50"
+      "ORDER BY rank LIMIT 200"
     )
     .bind({ q: matchExpr, uid: uid })
     .all(rows);

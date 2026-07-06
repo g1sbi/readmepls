@@ -20,3 +20,4 @@ export * from "./tier/resolve-tier.js";
 export * from "./library/params.js";
 export * from "./library/query.js";
 export * from "./library/facet-options.js";
+export * from "./library/fetch.js";
