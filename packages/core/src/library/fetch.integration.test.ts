@@ -78,3 +78,19 @@ describe("fetchFacetOptions", () => {
     expect(options.authors).toContain("Jane");
   });
 });
+
+describe("fetchLibraryPage + fetchFacetOptions run together", () => {
+  // The /library route loads both with Promise.all on the same pb client.
+  // Both hit the "articles" collection; the PocketBase SDK's default
+  // auto-cancellation keys on method+path only (ignoring query params), so
+  // without explicit requestKeys the second call aborts the first.
+  it("does not auto-cancel each other when run concurrently on one client", async () => {
+    const a = await user(`combo-a${Date.now()}@t.local`);
+    const c = await content({ title: "T", read_time: 5 });
+    await article(a.pb, a.id, c.id);
+
+    await expect(
+      Promise.all([fetchLibraryPage(a.pb, P({})), fetchFacetOptions(a.pb)])
+    ).resolves.toBeDefined();
+  });
+});

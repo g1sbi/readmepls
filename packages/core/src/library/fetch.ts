@@ -23,7 +23,7 @@ export async function fetchLibraryPage(
   // favsrc: fold favorited source ids into the source facet (union with any explicit selection).
   let effective = params;
   if (params.favsrc) {
-    const favs = await pb.collection("source_favorites").getFullList();
+    const favs = await pb.collection("source_favorites").getFullList({ requestKey: null });
     const favIds = favs.map((f) => f.source as string);
     effective = { ...params, source: [...new Set([...params.source, ...favIds])] };
   }
@@ -43,7 +43,10 @@ export async function fetchLibraryPage(
   }
 
   const filter = expr ? pb.filter(expr, bind) : "";
-  const opts = { expand: "content.source", filter };
+  // requestKey: null -- this runs alongside fetchFacetOptions's own "articles" query
+  // on the same pb client; without it the SDK's default auto-cancellation (keyed on
+  // method+path, ignoring query params) aborts whichever request loses the race.
+  const opts = { expand: "content.source", filter, requestKey: null };
 
   // Relevance sort: fetch the bounded candidate matches and order by FTS rank in memory.
   if (params.sort === "relevance" && rankOrder) {
@@ -65,10 +68,14 @@ export async function fetchFacetOptions(pb: PocketBase): Promise<{
   collections: { id: string; name: string; slug: string }[];
   options: FacetOptions;
 }> {
+  // requestKey: null on the "articles"/"source_favorites" calls -- fetchLibraryPage
+  // queries the same collections concurrently on the same pb client (see fetch.ts's
+  // fetchLibraryPage), and the SDK's default auto-cancellation would otherwise abort
+  // whichever request loses the race.
   const [tagRows, colRows, favRows, artRows] = await Promise.all([
     pb.collection("tags").getFullList({ sort: "name" }),
     pb.collection("collections").getFullList({ sort: "name" }),
-    pb.collection("source_favorites").getFullList(),
+    pb.collection("source_favorites").getFullList({ requestKey: null }),
     pb.collection("articles").getFullList({
       expand: "content.source",
       // Project only what deriveFacetOptions reads (lang/author/nested source) --
@@ -78,6 +85,7 @@ export async function fetchFacetOptions(pb: PocketBase): Promise<{
         "expand.content.expand.source.id,expand.content.expand.source.host," +
         "expand.content.expand.source.name,expand.content.expand.source.favicon," +
         "expand.content.expand.source.favicon_status",
+      requestKey: null,
     }),
   ]);
   const favoriteIds = new Set(favRows.map((f) => f.source as string));

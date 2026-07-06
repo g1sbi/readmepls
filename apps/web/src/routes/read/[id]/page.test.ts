@@ -3,9 +3,25 @@ import { render, screen, fireEvent, waitFor } from "@testing-library/svelte";
 
 // --- mocks (vi.mock calls are hoisted by vitest above all imports) ----------
 
-// Controlled delete spy — individual tests use mockRejectedValueOnce to
-// trigger the error path; default is success so the happy path doesn't
-// accidentally reject during the load sequence.
+const defaultArticle = () => ({
+  id: "art1",
+  url: "https://example.com/p",
+  status: "unread",
+  progress: 0,
+  expand: {
+    content: {
+      id: "c1",
+      title: "Test Article",
+      content_html: "<p>hello world</p>",
+      extract_status: "ok",
+    },
+  },
+});
+
+// Shared spies so individual tests can override resolved/rejected values
+// with mockResolvedValueOnce/mockRejectedValueOnce before render().
+const articleGetOne = vi.fn().mockResolvedValue(defaultArticle());
+const articleUpdate = vi.fn().mockResolvedValue({});
 const articleDelete = vi.fn().mockResolvedValue(undefined);
 
 vi.mock("$lib/pb.js", () => ({
@@ -15,22 +31,8 @@ vi.mock("$lib/pb.js", () => ({
     collection: (name: string) => {
       if (name === "articles") {
         return {
-          getOne: vi.fn().mockResolvedValue({
-            id: "art1",
-            url: "https://example.com/p",
-            status: "unread",
-            progress: 0,
-            expand: {
-              content: {
-                id: "c1",
-                title: "Test Article",
-                content_html: "<p>hello world</p>",
-                extract_status: "ok",
-              },
-            },
-          }),
-          update: vi.fn().mockResolvedValue({}),
-          // shared spy — tests flip this to rejected to exercise the error path
+          getOne: articleGetOne,
+          update: articleUpdate,
           delete: articleDelete,
           getFullList: vi.fn().mockResolvedValue([]),
         };
@@ -87,6 +89,8 @@ vi.mock("@readmepls/core", () => ({
   },
   rangeOver: vi.fn(() => document.createRange()),
   slugify: (s: string) => s.toLowerCase().replace(/\s+/g, "-"),
+  STARTED_THRESHOLD: 0.02,
+  FINISHED_THRESHOLD: 0.98,
 }));
 
 // Stub DOM highlight helpers. unmarkAll is always called (even with 0
@@ -102,6 +106,7 @@ vi.mock("$lib/highlight/render", () => ({
 // after mocks are registered so the same reference is available for assertions.
 import ReaderPage from "./+page.svelte";
 import { goto } from "$app/navigation";
+import { unmarkAll } from "$lib/highlight/render";
 
 // ---------------------------------------------------------------------------
 
@@ -154,5 +159,168 @@ describe("reader page — delete error path", () => {
     await waitFor(() => expect(screen.getByText("Test Article")).toBeInTheDocument());
     await fireEvent.click(screen.getByRole("button", { name: "archive article" }));
     await waitFor(() => expect(goto).toHaveBeenCalledWith("/library"));
+  });
+
+  it("does not flush a progress write on teardown after a successful delete", async () => {
+    // computeProgress() still runs during the onDestroy flush attempt; give it
+    // real geometry so it doesn't throw, even though the point is that the
+    // update call should never reach articles.update at all.
+    Object.defineProperty(document.body, "scrollHeight", { value: 2000, configurable: true });
+    Object.defineProperty(window, "innerHeight", { value: 800, configurable: true });
+
+    const { unmount } = render(ReaderPage);
+    await waitFor(() => expect(screen.getByText("Test Article")).toBeInTheDocument());
+
+    await fireEvent.click(screen.getByRole("button", { name: "delete article" }));
+    await fireEvent.click(screen.getByRole("button", { name: "delete" }));
+
+    await waitFor(() => expect(goto).toHaveBeenCalledWith("/library"));
+
+    articleUpdate.mockClear(); // ignore any pre-delete writes (e.g. mount-time status update)
+
+    unmount();
+
+    expect(articleUpdate).not.toHaveBeenCalledWith("art1", expect.objectContaining({ progress: expect.anything() }));
+  });
+});
+
+describe("reader page — progress", () => {
+  beforeEach(() => {
+    vi.clearAllMocks();
+    articleGetOne.mockResolvedValue(defaultArticle());
+    articleUpdate.mockResolvedValue({});
+  });
+
+  it("seeds the progress bar from the loaded article before any scroll", async () => {
+    articleGetOne.mockResolvedValueOnce({ ...defaultArticle(), progress: 0.42 });
+    const { container } = render(ReaderPage);
+    await waitFor(() => expect(screen.getByText("Test Article")).toBeInTheDocument());
+    const bar = container.querySelector(".progress");
+    expect(bar?.getAttribute("style")).toContain("--p: 0.42");
+  });
+
+  it("saves progress after the debounced scroll delay", async () => {
+    Object.defineProperty(document.body, "scrollHeight", { value: 2000, configurable: true });
+    Object.defineProperty(window, "innerHeight", { value: 800, configurable: true });
+
+    render(ReaderPage);
+    await waitFor(() => expect(screen.getByText("Test Article")).toBeInTheDocument());
+
+    // Switch to fake timers only after the initial render/network resolution
+    // has settled — waitFor's internal polling relies on real timers, so
+    // enabling fake timers earlier would deadlock it.
+    vi.useFakeTimers();
+    Object.defineProperty(window, "scrollY", { value: 600, configurable: true });
+    await fireEvent.scroll(window);
+    expect(articleUpdate).not.toHaveBeenCalledWith("art1", { progress: 0.5 });
+
+    await vi.advanceTimersByTimeAsync(400);
+    expect(articleUpdate).toHaveBeenCalledWith("art1", { progress: 0.5 });
+
+    vi.useRealTimers();
+  });
+
+  it("flushes the pending save immediately when the component unmounts", async () => {
+    Object.defineProperty(document.body, "scrollHeight", { value: 2000, configurable: true });
+    Object.defineProperty(window, "innerHeight", { value: 800, configurable: true });
+
+    const { unmount } = render(ReaderPage);
+    await waitFor(() => expect(screen.getByText("Test Article")).toBeInTheDocument());
+    articleUpdate.mockClear(); // ignore the mount-time "status: reading" write
+
+    // max = 2000 - 800 = 1200; scrollY 300 -> progress 0.25
+    Object.defineProperty(window, "scrollY", { value: 300, configurable: true });
+    await fireEvent.scroll(window); // debounce timer now pending, hasn't fired
+
+    unmount();
+    expect(articleUpdate).toHaveBeenCalledWith("art1", { progress: 0.25 });
+  });
+
+  it("flushes the pending save when the tab is hidden", async () => {
+    Object.defineProperty(document.body, "scrollHeight", { value: 2000, configurable: true });
+    Object.defineProperty(window, "innerHeight", { value: 800, configurable: true });
+
+    render(ReaderPage);
+    await waitFor(() => expect(screen.getByText("Test Article")).toBeInTheDocument());
+    articleUpdate.mockClear();
+
+    // max = 2000 - 800 = 1200; scrollY 1200 -> progress 1 (clamped, reached bottom)
+    Object.defineProperty(window, "scrollY", { value: 1200, configurable: true });
+    await fireEvent.scroll(window); // debounce timer now pending
+
+    Object.defineProperty(document, "hidden", { value: true, configurable: true });
+    document.dispatchEvent(new Event("visibilitychange"));
+
+    expect(articleUpdate).toHaveBeenCalledWith("art1", { progress: 1 });
+  });
+
+  it("resumes scroll to the saved position for an in-progress article", async () => {
+    articleGetOne.mockResolvedValueOnce({ ...defaultArticle(), progress: 0.5 });
+    Object.defineProperty(document.body, "scrollHeight", { value: 2000, configurable: true });
+    Object.defineProperty(window, "innerHeight", { value: 800, configurable: true });
+    window.scrollTo = vi.fn();
+
+    render(ReaderPage);
+    await waitFor(() => expect(screen.getByText("Test Article")).toBeInTheDocument());
+
+    // max = 2000 - 800 = 1200; target = 0.5 * 1200 = 600
+    // Svelte's tick() resolves one microtask after its internal flushSync (see
+    // svelte/internal/client/runtime.js), one tick later than the DOM mutation
+    // testing-library's MutationObserver-backed waitFor above reacts to — so
+    // this check needs its own waitFor rather than a bare assertion.
+    await waitFor(() => expect(window.scrollTo).toHaveBeenCalledWith(0, 600));
+  });
+
+  it("does not resume a barely-started article", async () => {
+    articleGetOne.mockResolvedValueOnce({ ...defaultArticle(), progress: 0.01 });
+    Object.defineProperty(document.body, "scrollHeight", { value: 2000, configurable: true });
+    Object.defineProperty(window, "innerHeight", { value: 800, configurable: true });
+    window.scrollTo = vi.fn();
+
+    render(ReaderPage);
+    await waitFor(() => expect(screen.getByText("Test Article")).toBeInTheDocument());
+
+    // resolveInitialScroll() runs synchronously before loadHighlights() is
+    // awaited in onMount, and unmarkAll() is the first thing loadHighlights'
+    // renderMarks() does (see +page.svelte). Waiting for it confirms
+    // resolveInitialScroll has already had its chance to call scrollTo —
+    // without this, the assertion below would resolve one microtask too
+    // early (same race documented on the sibling "resumes scroll..." test
+    // above) and pass vacuously regardless of whether the STARTED_THRESHOLD
+    // gate is implemented correctly.
+    await waitFor(() => expect(unmarkAll).toHaveBeenCalled());
+
+    expect(window.scrollTo).not.toHaveBeenCalled();
+  });
+
+  it("does not resume a finished article", async () => {
+    articleGetOne.mockResolvedValueOnce({ ...defaultArticle(), progress: 0.99 });
+    Object.defineProperty(document.body, "scrollHeight", { value: 2000, configurable: true });
+    Object.defineProperty(window, "innerHeight", { value: 800, configurable: true });
+    window.scrollTo = vi.fn();
+
+    render(ReaderPage);
+    await waitFor(() => expect(screen.getByText("Test Article")).toBeInTheDocument());
+
+    // Same race as "does not resume a barely-started article" above — wait for
+    // unmarkAll (called inside loadHighlights, which runs right after
+    // resolveInitialScroll in onMount) so the assertion below doesn't resolve
+    // one microtask too early and pass vacuously.
+    await waitFor(() => expect(unmarkAll).toHaveBeenCalled());
+
+    expect(window.scrollTo).not.toHaveBeenCalled();
+  });
+
+  it("marks a short article finished immediately, with no scroll required", async () => {
+    articleGetOne.mockResolvedValueOnce({ ...defaultArticle(), progress: 0 });
+    Object.defineProperty(document.body, "scrollHeight", { value: 400, configurable: true });
+    Object.defineProperty(window, "innerHeight", { value: 800, configurable: true });
+
+    const { container } = render(ReaderPage);
+    await waitFor(() => expect(screen.getByText("Test Article")).toBeInTheDocument());
+
+    await waitFor(() => expect(articleUpdate).toHaveBeenCalledWith("art1", { progress: 1 }));
+    const bar = container.querySelector(".progress");
+    expect(bar?.getAttribute("style")).toContain("--p: 1");
   });
 });

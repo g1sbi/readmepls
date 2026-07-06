@@ -1,4 +1,5 @@
 import type { LibraryParams, DatePreset } from "@readmepls/types";
+import { FINISHED_THRESHOLD } from "./progress.js";
 
 export interface LibraryQuery {
   filterExpr: string;
@@ -9,7 +10,6 @@ export interface LibraryQuery {
 }
 
 const PER_PAGE = 24;
-const FINISHED_THRESHOLD = 0.98;
 
 const SORT_MAP: Record<LibraryParams["sort"], string> = {
   "-created": "-created", created: "created",

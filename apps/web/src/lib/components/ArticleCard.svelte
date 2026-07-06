@@ -12,6 +12,7 @@
   import { sourceView } from "$lib/source/source-view.js";
   import { browserPb } from "$lib/pb.js";
   import { page } from "$app/stores";
+  import { STARTED_THRESHOLD, FINISHED_THRESHOLD } from "@readmepls/core";
 
   let {
     article,
@@ -23,7 +24,7 @@
     onUnarchive,
   }: {
     // any: PocketBase SDK returns expand records as loosely-typed RecordModel; narrowing here would duplicate the full content schema.
-    article: { id: string; url: string; status?: string; expand?: { content?: any } };
+    article: { id: string; url: string; status?: string; progress?: number; expand?: { content?: any } };
     onRetry?: (id: string) => void;
     onDelete?: (id: string) => void;
     collections?: { id: string; name: string }[];
@@ -45,6 +46,9 @@
   const tags = $derived<string[]>(isPro ? (content?.ai_tags_json ?? []) : []);
   const isArchived = $derived(article.status === "archived");
   const hasMenu = $derived(!!(onAddToCollection || onArchive || onUnarchive || onDelete));
+  const showProgress = $derived(
+    (article.progress ?? 0) > STARTED_THRESHOLD && (article.progress ?? 0) < FINISHED_THRESHOLD,
+  );
 
   // Show a clean hostname while processing; fall back to the raw URL if it
   // can't be parsed (e.g. malformed input mid-capture).
@@ -72,6 +76,9 @@
     <div class="tags">
       {#each tags as t}<Tag>{t}</Tag>{/each}
     </div>
+    {#if showProgress}
+      <div class="progress-bar" style="--p: {article.progress}" aria-hidden="true"></div>
+    {/if}
   {/if}
 
   {#if hasMenu}
@@ -152,5 +159,12 @@
     overflow-wrap: anywhere;
     color: var(--color-text-muted);
     font-size: var(--text-sm);
+  }
+
+  .progress-bar {
+    position: absolute; left: 0; bottom: 0;
+    height: 3px; width: calc(var(--p) * 100%);
+    background: var(--color-accent);
+    z-index: 2; pointer-events: none; /* don't block clicks to card-link overlay */
   }
 </style>
