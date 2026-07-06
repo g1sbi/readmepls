@@ -64,7 +64,8 @@
   @media (max-width: 640px) {
     .search { flex-basis: 100%; order: 1; min-height: 44px; }
     .filters-btn { order: 2; min-height: 44px; }
-    select { order: 3; min-height: 44px; }
+    .sort { order: 3; }
+    select { min-height: 44px; }
     .count { order: 4; }
   }
 </style>
