@@ -2,7 +2,7 @@
   import { onMount, onDestroy, getContext, tick } from "svelte";
   import { page } from "$app/stores";
   import { browserPb } from "$lib/pb.js";
-  import { withReaderDefaults, anchoring, rangeOver, slugify, STARTED_THRESHOLD } from "@readmepls/core";
+  import { withReaderDefaults, anchoring, rangeOver, slugify, STARTED_THRESHOLD, FINISHED_THRESHOLD } from "@readmepls/core";
   import { Highlight, type ReaderPrefs, type HighlightColor } from "@readmepls/types";
   import type { Theme } from "$lib/theme/theme.js";
   import type { ArticleRecord } from "$lib/article/record.js";
@@ -212,7 +212,7 @@
       flushSave();
       return;
     }
-    if (progress > STARTED_THRESHOLD) {
+    if (progress > STARTED_THRESHOLD && progress < FINISHED_THRESHOLD) {
       window.scrollTo(0, progress * max);
     }
   }

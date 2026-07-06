@@ -90,6 +90,7 @@ vi.mock("@readmepls/core", () => ({
   rangeOver: vi.fn(() => document.createRange()),
   slugify: (s: string) => s.toLowerCase().replace(/\s+/g, "-"),
   STARTED_THRESHOLD: 0.02,
+  FINISHED_THRESHOLD: 0.98,
 }));
 
 // Stub DOM highlight helpers. unmarkAll is always called (even with 0
@@ -287,6 +288,24 @@ describe("reader page — progress", () => {
     // early (same race documented on the sibling "resumes scroll..." test
     // above) and pass vacuously regardless of whether the STARTED_THRESHOLD
     // gate is implemented correctly.
+    await waitFor(() => expect(unmarkAll).toHaveBeenCalled());
+
+    expect(window.scrollTo).not.toHaveBeenCalled();
+  });
+
+  it("does not resume a finished article", async () => {
+    articleGetOne.mockResolvedValueOnce({ ...defaultArticle(), progress: 0.99 });
+    Object.defineProperty(document.body, "scrollHeight", { value: 2000, configurable: true });
+    Object.defineProperty(window, "innerHeight", { value: 800, configurable: true });
+    window.scrollTo = vi.fn();
+
+    render(ReaderPage);
+    await waitFor(() => expect(screen.getByText("Test Article")).toBeInTheDocument());
+
+    // Same race as "does not resume a barely-started article" above — wait for
+    // unmarkAll (called inside loadHighlights, which runs right after
+    // resolveInitialScroll in onMount) so the assertion below doesn't resolve
+    // one microtask too early and pass vacuously.
     await waitFor(() => expect(unmarkAll).toHaveBeenCalled());
 
     expect(window.scrollTo).not.toHaveBeenCalled();
