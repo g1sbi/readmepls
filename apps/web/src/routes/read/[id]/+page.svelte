@@ -281,6 +281,9 @@
     actionError = "";
     try {
       await deleteArticle(pb, article.id);
+      // Clear the reference so onDestroy's flushSave (which fires on teardown
+      // after this navigation) doesn't write progress to a now-deleted record.
+      article = null;
       await goto("/library");
     } catch {
       actionError = "couldn't delete that. try again.";

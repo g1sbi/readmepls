@@ -159,6 +159,28 @@ describe("reader page — delete error path", () => {
     await fireEvent.click(screen.getByRole("button", { name: "archive article" }));
     await waitFor(() => expect(goto).toHaveBeenCalledWith("/library"));
   });
+
+  it("does not flush a progress write on teardown after a successful delete", async () => {
+    // computeProgress() still runs during the onDestroy flush attempt; give it
+    // real geometry so it doesn't throw, even though the point is that the
+    // update call should never reach articles.update at all.
+    Object.defineProperty(document.body, "scrollHeight", { value: 2000, configurable: true });
+    Object.defineProperty(window, "innerHeight", { value: 800, configurable: true });
+
+    const { unmount } = render(ReaderPage);
+    await waitFor(() => expect(screen.getByText("Test Article")).toBeInTheDocument());
+
+    await fireEvent.click(screen.getByRole("button", { name: "delete article" }));
+    await fireEvent.click(screen.getByRole("button", { name: "delete" }));
+
+    await waitFor(() => expect(goto).toHaveBeenCalledWith("/library"));
+
+    articleUpdate.mockClear(); // ignore any pre-delete writes (e.g. mount-time status update)
+
+    unmount();
+
+    expect(articleUpdate).not.toHaveBeenCalledWith("art1", expect.objectContaining({ progress: expect.anything() }));
+  });
 });
 
 describe("reader page — progress", () => {
