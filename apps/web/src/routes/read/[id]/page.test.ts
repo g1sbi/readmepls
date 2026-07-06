@@ -3,9 +3,25 @@ import { render, screen, fireEvent, waitFor } from "@testing-library/svelte";
 
 // --- mocks (vi.mock calls are hoisted by vitest above all imports) ----------
 
-// Controlled delete spy — individual tests use mockRejectedValueOnce to
-// trigger the error path; default is success so the happy path doesn't
-// accidentally reject during the load sequence.
+const defaultArticle = () => ({
+  id: "art1",
+  url: "https://example.com/p",
+  status: "unread",
+  progress: 0,
+  expand: {
+    content: {
+      id: "c1",
+      title: "Test Article",
+      content_html: "<p>hello world</p>",
+      extract_status: "ok",
+    },
+  },
+});
+
+// Shared spies so individual tests can override resolved/rejected values
+// with mockResolvedValueOnce/mockRejectedValueOnce before render().
+const articleGetOne = vi.fn().mockResolvedValue(defaultArticle());
+const articleUpdate = vi.fn().mockResolvedValue({});
 const articleDelete = vi.fn().mockResolvedValue(undefined);
 
 vi.mock("$lib/pb.js", () => ({
@@ -15,22 +31,8 @@ vi.mock("$lib/pb.js", () => ({
     collection: (name: string) => {
       if (name === "articles") {
         return {
-          getOne: vi.fn().mockResolvedValue({
-            id: "art1",
-            url: "https://example.com/p",
-            status: "unread",
-            progress: 0,
-            expand: {
-              content: {
-                id: "c1",
-                title: "Test Article",
-                content_html: "<p>hello world</p>",
-                extract_status: "ok",
-              },
-            },
-          }),
-          update: vi.fn().mockResolvedValue({}),
-          // shared spy — tests flip this to rejected to exercise the error path
+          getOne: articleGetOne,
+          update: articleUpdate,
           delete: articleDelete,
           getFullList: vi.fn().mockResolvedValue([]),
         };
@@ -154,5 +156,21 @@ describe("reader page — delete error path", () => {
     await waitFor(() => expect(screen.getByText("Test Article")).toBeInTheDocument());
     await fireEvent.click(screen.getByRole("button", { name: "archive article" }));
     await waitFor(() => expect(goto).toHaveBeenCalledWith("/library"));
+  });
+});
+
+describe("reader page — progress", () => {
+  beforeEach(() => {
+    vi.clearAllMocks();
+    articleGetOne.mockResolvedValue(defaultArticle());
+    articleUpdate.mockResolvedValue({});
+  });
+
+  it("seeds the progress bar from the loaded article before any scroll", async () => {
+    articleGetOne.mockResolvedValueOnce({ ...defaultArticle(), progress: 0.42 });
+    const { container } = render(ReaderPage);
+    await waitFor(() => expect(screen.getByText("Test Article")).toBeInTheDocument());
+    const bar = container.querySelector(".progress");
+    expect(bar?.getAttribute("style")).toContain("--p: 0.42");
   });
 });

@@ -189,6 +189,7 @@
     article = await pb.collection("articles").getOne(id, { expand: "content.source" });
     // article is always non-null here — getOne throws on not-found
     content = article!.expand?.content ?? null;
+    progress = article!.progress ?? 0;
 
     const uid = pb.authStore.model?.id;
     if (uid) {
