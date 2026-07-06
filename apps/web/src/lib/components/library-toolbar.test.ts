@@ -41,4 +41,20 @@ describe("LibraryToolbar", () => {
     await fireEvent.click(getByText("filters"));
     expect(onOpenFilters).toHaveBeenCalled();
   });
+
+  it("autofocuses the search input when focusSearch is set", () => {
+    const { getByLabelText } = render(LibraryToolbar, {
+      params: base, total: 0, focusSearch: true,
+      onSearch: () => {}, onSort: () => {}, onOpenFilters: () => {},
+    });
+    expect(document.activeElement).toBe(getByLabelText("search your library"));
+  });
+
+  it("does not steal focus when focusSearch is absent", () => {
+    const { getByLabelText } = render(LibraryToolbar, {
+      params: base, total: 0,
+      onSearch: () => {}, onSort: () => {}, onOpenFilters: () => {},
+    });
+    expect(document.activeElement).not.toBe(getByLabelText("search your library"));
+  });
 });

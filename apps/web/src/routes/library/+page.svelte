@@ -107,6 +107,7 @@
 <LibraryToolbar
   params={data.params}
   total={data.page.totalItems}
+  focusSearch={data.focusSearch}
   onSearch={(q) => patch({ q })}
   onSort={(s: Sort) => patch({ sort: s })}
   onOpenFilters={() => (drawerOpen = true)}

@@ -3,13 +3,16 @@
   import { SlidersHorizontal } from "@lucide/svelte";
   import { untrack } from "svelte";
 
-  let { params, total, onSearch, onSort, onOpenFilters }: {
-    params: LibraryParams; total: number;
+  let { params, total, focusSearch = false, onSearch, onSort, onOpenFilters }: {
+    params: LibraryParams; total: number; focusSearch?: boolean;
     onSearch: (q: string) => void; onSort: (s: Sort) => void; onOpenFilters: () => void;
   } = $props();
 
   let query = $state(untrack(() => params.q));
   $effect(() => { query = params.q; });
+
+  let searchEl = $state<HTMLInputElement | null>(null);
+  $effect(() => { if (focusSearch) searchEl?.focus(); });
 
   const SORT_LABELS: { value: Sort; label: string }[] = [
     { value: "-created", label: "newest saved" },
@@ -29,6 +32,7 @@
     type="search"
     aria-label="search your library"
     placeholder="search…"
+    bind:this={searchEl}
     bind:value={query}
     onkeydown={(e) => { if (e.key === "Enter") onSearch(query.trim()); }}
   />
@@ -56,4 +60,11 @@
   select { padding: 0.5rem; border: 1px solid var(--color-border); border-radius: var(--radius-md); background: var(--color-surface); font-family: var(--font-ui); color: var(--color-text); }
   .count { font-family: var(--font-ui); font-size: var(--text-sm); color: var(--color-text-muted); margin-left: auto; }
   .sr-only { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); }
+
+  @media (max-width: 640px) {
+    .search { flex-basis: 100%; order: 1; min-height: 44px; }
+    .filters-btn { order: 2; min-height: 44px; }
+    select { order: 3; min-height: 44px; }
+    .count { order: 4; }
+  }
 </style>

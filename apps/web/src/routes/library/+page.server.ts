@@ -7,5 +7,5 @@ export const load: PageServerLoad = async ({ url, locals }) => {
     fetchLibraryPage(locals.pb, params),
     fetchFacetOptions(locals.pb),
   ]);
-  return { params, page, facets };
+  return { params, page, facets, focusSearch: url.searchParams.get("focus") === "search" };
 };
