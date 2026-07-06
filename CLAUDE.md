@@ -38,6 +38,13 @@ design phase does not add features.
   a token. This keeps the design phase able to retheme without touching components.
 - **Reusable components.** Shared UI primitives in `$lib/components/ui/`; feature
   components compose them. No duplicated markup or CSS.
+- **Mobile-first, always responsive.** This is a reader app — most reading happens
+  on phones. Design and build for the smallest viewport first, then enhance upward.
+  Every component must be usable and uncluttered at 360px wide: no horizontal
+  overflow, tap targets ≥44px, no layout that only works on desktop. Responsiveness
+  is **not** deferred to the design phase — it is a structural requirement in every
+  phase. Use fluid layouts and token-driven breakpoints, never fixed pixel widths
+  that assume a desktop.
 
 ## Stack
 
