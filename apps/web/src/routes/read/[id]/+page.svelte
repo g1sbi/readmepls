@@ -2,7 +2,7 @@
   import { onMount, onDestroy, getContext, tick } from "svelte";
   import { page } from "$app/stores";
   import { browserPb } from "$lib/pb.js";
-  import { withReaderDefaults, anchoring, rangeOver, slugify } from "@readmepls/core";
+  import { withReaderDefaults, anchoring, rangeOver, slugify, STARTED_THRESHOLD } from "@readmepls/core";
   import { Highlight, type ReaderPrefs, type HighlightColor } from "@readmepls/types";
   import type { Theme } from "$lib/theme/theme.js";
   import type { ArticleRecord } from "$lib/article/record.js";
@@ -202,6 +202,21 @@
     if (document.hidden) flushSave();
   }
 
+  // Runs once on load, after content is in the DOM: restores scroll position
+  // for an in-progress article, or — if the content fits the viewport with
+  // no scrollbar — marks it finished immediately (no scroll event will ever
+  // fire to do this later).
+  function resolveInitialScroll() {
+    const max = document.body.scrollHeight - window.innerHeight;
+    if (max <= 0) {
+      flushSave();
+      return;
+    }
+    if (progress > STARTED_THRESHOLD) {
+      window.scrollTo(0, progress * max);
+    }
+  }
+
   onMount(async () => {
     const id = $page.params.id;
     if (!id) return;
@@ -220,6 +235,7 @@
     }
     // Load highlights and manual tags after article HTML is in the DOM (next tick).
     await tick();
+    resolveInitialScroll();
     await loadHighlights(id);
     await loadTags(id);
     await loadCollections();

@@ -89,6 +89,7 @@ vi.mock("@readmepls/core", () => ({
   },
   rangeOver: vi.fn(() => document.createRange()),
   slugify: (s: string) => s.toLowerCase().replace(/\s+/g, "-"),
+  STARTED_THRESHOLD: 0.02,
 }));
 
 // Stub DOM highlight helpers. unmarkAll is always called (even with 0
@@ -227,5 +228,47 @@ describe("reader page — progress", () => {
     document.dispatchEvent(new Event("visibilitychange"));
 
     expect(articleUpdate).toHaveBeenCalledWith("art1", { progress: 1 });
+  });
+
+  it("resumes scroll to the saved position for an in-progress article", async () => {
+    articleGetOne.mockResolvedValueOnce({ ...defaultArticle(), progress: 0.5 });
+    Object.defineProperty(document.body, "scrollHeight", { value: 2000, configurable: true });
+    Object.defineProperty(window, "innerHeight", { value: 800, configurable: true });
+    window.scrollTo = vi.fn();
+
+    render(ReaderPage);
+    await waitFor(() => expect(screen.getByText("Test Article")).toBeInTheDocument());
+
+    // max = 2000 - 800 = 1200; target = 0.5 * 1200 = 600
+    // Svelte's tick() resolves one microtask after its internal flushSync (see
+    // svelte/internal/client/runtime.js), one tick later than the DOM mutation
+    // testing-library's MutationObserver-backed waitFor above reacts to — so
+    // this check needs its own waitFor rather than a bare assertion.
+    await waitFor(() => expect(window.scrollTo).toHaveBeenCalledWith(0, 600));
+  });
+
+  it("does not resume a barely-started article", async () => {
+    articleGetOne.mockResolvedValueOnce({ ...defaultArticle(), progress: 0.01 });
+    Object.defineProperty(document.body, "scrollHeight", { value: 2000, configurable: true });
+    Object.defineProperty(window, "innerHeight", { value: 800, configurable: true });
+    window.scrollTo = vi.fn();
+
+    render(ReaderPage);
+    await waitFor(() => expect(screen.getByText("Test Article")).toBeInTheDocument());
+
+    expect(window.scrollTo).not.toHaveBeenCalled();
+  });
+
+  it("marks a short article finished immediately, with no scroll required", async () => {
+    articleGetOne.mockResolvedValueOnce({ ...defaultArticle(), progress: 0 });
+    Object.defineProperty(document.body, "scrollHeight", { value: 400, configurable: true });
+    Object.defineProperty(window, "innerHeight", { value: 800, configurable: true });
+
+    const { container } = render(ReaderPage);
+    await waitFor(() => expect(screen.getByText("Test Article")).toBeInTheDocument());
+
+    await waitFor(() => expect(articleUpdate).toHaveBeenCalledWith("art1", { progress: 1 }));
+    const bar = container.querySelector(".progress");
+    expect(bar?.getAttribute("style")).toContain("--p: 1");
   });
 });
