@@ -10,7 +10,9 @@ const options = { sources: [], languages: ["en"], authors: ["Jane"] };
 const props = (over = {}) => ({
   open: true, onClose: () => {}, params: LibraryParams.parse({}),
   options, tags: [{ id: "t1", name: "Dev" }], collections: [{ id: "c1", name: "Read later", slug: "read-later" }],
-  onChange: () => {}, onToggleFavorite: () => {}, ...over,
+  onChange: () => {}, onToggleFavorite: () => {},
+  onCreateCollection: () => {}, onRenameCollection: () => {}, onDeleteCollection: () => {},
+  ...over,
 });
 
 describe("FilterDrawer", () => {
@@ -24,7 +26,7 @@ describe("FilterDrawer", () => {
   it("toggling a read value emits the additive patch", async () => {
     const onChange = vi.fn();
     const { getByLabelText } = render(FilterDrawer, props({ onChange }));
-    await fireEvent.click(getByLabelText("unread"));
+    await fireEvent.click(getByLabelText("read: unread"));
     expect(onChange).toHaveBeenCalledWith({ read: ["unread"] });
   });
 
@@ -33,7 +35,7 @@ describe("FilterDrawer", () => {
     const { getByLabelText } = render(FilterDrawer, props({
       params: LibraryParams.parse({ read: ["unread"] }), onChange,
     }));
-    await fireEvent.click(getByLabelText("unread"));
+    await fireEvent.click(getByLabelText("read: unread"));
     expect(onChange).toHaveBeenCalledWith({ read: [] });
   });
 

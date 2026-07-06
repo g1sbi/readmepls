@@ -2,7 +2,7 @@
   import Chip from "./ui/Chip.svelte";
   import { Star } from "@lucide/svelte";
   import { browserPb } from "$lib/pb.js";
-  import type { SourceFacet } from "$lib/source/library-sources.js";
+  import type { SourceFacet } from "@readmepls/core";
   import { sourceFaviconUrl } from "$lib/source/source-view.js";
 
   let { facets, selected, onToggle, onToggleFavorite }: {

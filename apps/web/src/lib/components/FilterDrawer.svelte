@@ -6,12 +6,20 @@
   import Sheet from "./ui/Sheet.svelte";
   import Chip from "./ui/Chip.svelte";
   import SourceFilter from "./SourceFilter.svelte";
+  import CollectionsPanel from "./CollectionsPanel.svelte";
 
   type Patch = Partial<LibraryParams>;
-  let { open, onClose, params, options, tags, collections, onChange, onToggleFavorite }: {
+  let {
+    open, onClose, params, options, tags, collections, onChange, onToggleFavorite,
+    collectionError = "", onCreateCollection, onRenameCollection, onDeleteCollection,
+  }: {
     open: boolean; onClose: () => void; params: LibraryParams; options: FacetOptions;
     tags: { id: string; name: string }[]; collections: { id: string; name: string; slug: string }[];
     onChange: (patch: Patch) => void; onToggleFavorite: (f: SourceFacet) => void;
+    collectionError?: string;
+    onCreateCollection: (name: string) => void;
+    onRenameCollection: (id: string, name: string) => void;
+    onDeleteCollection: (id: string) => void;
   } = $props();
 
   const TIME_LABELS: Record<TimeBucket, string> = { quick: "quick (<5m)", medium: "medium (5–15m)", long: "long (>15m)" };
@@ -34,7 +42,7 @@
 <Sheet {open} {onClose} title="filters">
   <fieldset><legend>read</legend>
     {#each READ_STATES as v (v)}
-      <button aria-label={v} aria-pressed={params.read.includes(v as ReadState)} onclick={() => toggleList<ReadState>("read", v)}>
+      <button aria-label={`read: ${v}`} aria-pressed={params.read.includes(v as ReadState)} onclick={() => toggleList<ReadState>("read", v)}>
         <Chip selected={params.read.includes(v as ReadState)}>{v}</Chip>
       </button>
     {/each}
@@ -42,7 +50,7 @@
 
   <fieldset><legend>reading time</legend>
     {#each TIME_BUCKETS as v (v)}
-      <button aria-label={v} aria-pressed={params.time.includes(v as TimeBucket)} onclick={() => toggleList<TimeBucket>("time", v)}>
+      <button aria-label={`reading time: ${TIME_LABELS[v as TimeBucket]}`} aria-pressed={params.time.includes(v as TimeBucket)} onclick={() => toggleList<TimeBucket>("time", v)}>
         <Chip selected={params.time.includes(v as TimeBucket)}>{TIME_LABELS[v as TimeBucket]}</Chip>
       </button>
     {/each}
@@ -63,6 +71,14 @@
       </button>
     {/each}
   </fieldset>
+
+  <CollectionsPanel
+    {collections}
+    error={collectionError}
+    oncreate={onCreateCollection}
+    onrename={onRenameCollection}
+    ondelete={onDeleteCollection}
+  />
 
   <fieldset><legend>source</legend>
     <button aria-label="favorite sources only" aria-pressed={params.favsrc} onclick={() => onChange({ favsrc: !params.favsrc })}>
@@ -94,7 +110,7 @@
 
   <fieldset><legend>language</legend>
     {#each options.languages as l (l)}
-      <button aria-label={l} aria-pressed={params.lang.includes(l)} onclick={() => toggleList("lang", l)}>
+      <button aria-label={`language: ${l}`} aria-pressed={params.lang.includes(l)} onclick={() => toggleList("lang", l)}>
         <Chip selected={params.lang.includes(l)}>{l}</Chip>
       </button>
     {/each}
@@ -102,7 +118,7 @@
 
   <fieldset><legend>author</legend>
     {#each options.authors as a (a)}
-      <button aria-label={a} aria-pressed={params.author.includes(a)} onclick={() => toggleList("author", a)}>
+      <button aria-label={`author: ${a}`} aria-pressed={params.author.includes(a)} onclick={() => toggleList("author", a)}>
         <Chip selected={params.author.includes(a)}>{a}</Chip>
       </button>
     {/each}
@@ -110,7 +126,7 @@
 
   <fieldset><legend>has</legend>
     {#each HAS_FLAGS as v (v)}
-      <button aria-label={v} aria-pressed={params.has.includes(v as HasFlag)} onclick={() => toggleList<HasFlag>("has", v)}>
+      <button aria-label={`has: ${v}`} aria-pressed={params.has.includes(v as HasFlag)} onclick={() => toggleList<HasFlag>("has", v)}>
         <Chip selected={params.has.includes(v as HasFlag)}>{v}</Chip>
       </button>
     {/each}
@@ -118,7 +134,7 @@
 
   <fieldset><legend>needs attention</legend>
     {#each ATTENTION as v (v)}
-      <button aria-label={v} aria-pressed={params.attention.includes(v as Attention)} onclick={() => toggleList<Attention>("attention", v)}>
+      <button aria-label={`needs attention: ${v}`} aria-pressed={params.attention.includes(v as Attention)} onclick={() => toggleList<Attention>("attention", v)}>
         <Chip selected={params.attention.includes(v as Attention)}>{v}</Chip>
       </button>
     {/each}
