@@ -165,6 +165,6 @@
     position: absolute; left: 0; bottom: 0;
     height: 3px; width: calc(var(--p) * 100%);
     background: var(--color-accent);
-    z-index: 2;
+    z-index: 2; pointer-events: none; /* don't block clicks to card-link overlay */
   }
 </style>
