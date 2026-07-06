@@ -173,4 +173,59 @@ describe("reader page — progress", () => {
     const bar = container.querySelector(".progress");
     expect(bar?.getAttribute("style")).toContain("--p: 0.42");
   });
+
+  it("saves progress after the debounced scroll delay", async () => {
+    Object.defineProperty(document.body, "scrollHeight", { value: 2000, configurable: true });
+    Object.defineProperty(window, "innerHeight", { value: 800, configurable: true });
+
+    render(ReaderPage);
+    await waitFor(() => expect(screen.getByText("Test Article")).toBeInTheDocument());
+
+    // Switch to fake timers only after the initial render/network resolution
+    // has settled — waitFor's internal polling relies on real timers, so
+    // enabling fake timers earlier would deadlock it.
+    vi.useFakeTimers();
+    Object.defineProperty(window, "scrollY", { value: 600, configurable: true });
+    await fireEvent.scroll(window);
+    expect(articleUpdate).not.toHaveBeenCalledWith("art1", { progress: 0.5 });
+
+    await vi.advanceTimersByTimeAsync(400);
+    expect(articleUpdate).toHaveBeenCalledWith("art1", { progress: 0.5 });
+
+    vi.useRealTimers();
+  });
+
+  it("flushes the pending save immediately when the component unmounts", async () => {
+    Object.defineProperty(document.body, "scrollHeight", { value: 2000, configurable: true });
+    Object.defineProperty(window, "innerHeight", { value: 800, configurable: true });
+
+    const { unmount } = render(ReaderPage);
+    await waitFor(() => expect(screen.getByText("Test Article")).toBeInTheDocument());
+    articleUpdate.mockClear(); // ignore the mount-time "status: reading" write
+
+    // max = 2000 - 800 = 1200; scrollY 300 -> progress 0.25
+    Object.defineProperty(window, "scrollY", { value: 300, configurable: true });
+    await fireEvent.scroll(window); // debounce timer now pending, hasn't fired
+
+    unmount();
+    expect(articleUpdate).toHaveBeenCalledWith("art1", { progress: 0.25 });
+  });
+
+  it("flushes the pending save when the tab is hidden", async () => {
+    Object.defineProperty(document.body, "scrollHeight", { value: 2000, configurable: true });
+    Object.defineProperty(window, "innerHeight", { value: 800, configurable: true });
+
+    render(ReaderPage);
+    await waitFor(() => expect(screen.getByText("Test Article")).toBeInTheDocument());
+    articleUpdate.mockClear();
+
+    // max = 2000 - 800 = 1200; scrollY 1200 -> progress 1 (clamped, reached bottom)
+    Object.defineProperty(window, "scrollY", { value: 1200, configurable: true });
+    await fireEvent.scroll(window); // debounce timer now pending
+
+    Object.defineProperty(document, "hidden", { value: true, configurable: true });
+    document.dispatchEvent(new Event("visibilitychange"));
+
+    expect(articleUpdate).toHaveBeenCalledWith("art1", { progress: 1 });
+  });
 });

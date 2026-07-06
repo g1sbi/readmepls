@@ -173,14 +173,33 @@
   const source = $derived(sourceView(pb, content));
 
   let progressTimer: ReturnType<typeof setTimeout> | undefined;
+
+  // max<=0 means the content fits the viewport with no scrollbar — treat
+  // that as fully read rather than 0, since scroll position can't express it.
+  function computeProgress(): number {
+    const max = document.body.scrollHeight - window.innerHeight;
+    return max > 0 ? Math.min(1, Math.max(0, window.scrollY / max)) : 1;
+  }
+
   function onScroll() {
     clearTimeout(progressTimer);
     progressTimer = setTimeout(() => {
-      const max = document.body.scrollHeight - window.innerHeight;
-      const p = max > 0 ? Math.min(1, window.scrollY / max) : 0;
-      progress = p;
-      if (article) pb.collection("articles").update(article.id, { progress: p });
+      progress = computeProgress();
+      if (article) pb.collection("articles").update(article.id, { progress });
     }, 400);
+  }
+
+  // Writes the current progress immediately, bypassing the debounce — used
+  // when the component is about to disappear (navigation, tab close/hide)
+  // and a pending debounced write would otherwise be lost.
+  function flushSave() {
+    clearTimeout(progressTimer);
+    progress = computeProgress();
+    if (article) pb.collection("articles").update(article.id, { progress });
+  }
+
+  function onVisibilityChange() {
+    if (document.hidden) flushSave();
   }
 
   onMount(async () => {
@@ -205,11 +224,16 @@
     await loadTags(id);
     await loadCollections();
     window.addEventListener("scroll", onScroll, { passive: true });
+    document.addEventListener("visibilitychange", onVisibilityChange);
   });
 
-  // An async onMount can't register a cleanup; tear down the listener here.
+  // An async onMount can't register a cleanup; tear down listeners here and
+  // flush any pending debounced save so navigating away doesn't lose it.
   onDestroy(() => {
-    if (typeof window !== "undefined") window.removeEventListener("scroll", onScroll);
+    if (typeof window === "undefined") return;
+    window.removeEventListener("scroll", onScroll);
+    document.removeEventListener("visibilitychange", onVisibilityChange);
+    flushSave();
   });
 
   async function archive() {
