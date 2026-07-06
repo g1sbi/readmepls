@@ -2,7 +2,7 @@
   import { onMount, onDestroy, getContext, tick } from "svelte";
   import { page } from "$app/stores";
   import { browserPb } from "$lib/pb.js";
-  import { withReaderDefaults, anchoring, rangeOver, slugify } from "@readmepls/core";
+  import { withReaderDefaults, anchoring, rangeOver, slugify, STARTED_THRESHOLD, FINISHED_THRESHOLD } from "@readmepls/core";
   import { Highlight, type ReaderPrefs, type HighlightColor } from "@readmepls/types";
   import type { Theme } from "$lib/theme/theme.js";
   import type { ArticleRecord } from "$lib/article/record.js";
@@ -173,14 +173,48 @@
   const source = $derived(sourceView(pb, content));
 
   let progressTimer: ReturnType<typeof setTimeout> | undefined;
+
+  // max<=0 means the content fits the viewport with no scrollbar — treat
+  // that as fully read rather than 0, since scroll position can't express it.
+  function computeProgress(): number {
+    const max = document.body.scrollHeight - window.innerHeight;
+    return max > 0 ? Math.min(1, Math.max(0, window.scrollY / max)) : 1;
+  }
+
   function onScroll() {
     clearTimeout(progressTimer);
     progressTimer = setTimeout(() => {
-      const max = document.body.scrollHeight - window.innerHeight;
-      const p = max > 0 ? Math.min(1, window.scrollY / max) : 0;
-      progress = p;
-      if (article) pb.collection("articles").update(article.id, { progress: p });
+      progress = computeProgress();
+      if (article) pb.collection("articles").update(article.id, { progress });
     }, 400);
+  }
+
+  // Writes the current progress immediately, bypassing the debounce — used
+  // when the component is about to disappear (navigation, tab close/hide)
+  // and a pending debounced write would otherwise be lost.
+  function flushSave() {
+    clearTimeout(progressTimer);
+    progress = computeProgress();
+    if (article) pb.collection("articles").update(article.id, { progress });
+  }
+
+  function onVisibilityChange() {
+    if (document.hidden) flushSave();
+  }
+
+  // Runs once on load, after content is in the DOM: restores scroll position
+  // for an in-progress article, or — if the content fits the viewport with
+  // no scrollbar — marks it finished immediately (no scroll event will ever
+  // fire to do this later).
+  function resolveInitialScroll() {
+    const max = document.body.scrollHeight - window.innerHeight;
+    if (max <= 0) {
+      flushSave();
+      return;
+    }
+    if (progress > STARTED_THRESHOLD && progress < FINISHED_THRESHOLD) {
+      window.scrollTo(0, progress * max);
+    }
   }
 
   onMount(async () => {
@@ -189,6 +223,7 @@
     article = await pb.collection("articles").getOne(id, { expand: "content.source" });
     // article is always non-null here — getOne throws on not-found
     content = article!.expand?.content ?? null;
+    progress = article!.progress ?? 0;
 
     const uid = pb.authStore.model?.id;
     if (uid) {
@@ -200,15 +235,21 @@
     }
     // Load highlights and manual tags after article HTML is in the DOM (next tick).
     await tick();
+    resolveInitialScroll();
     await loadHighlights(id);
     await loadTags(id);
     await loadCollections();
     window.addEventListener("scroll", onScroll, { passive: true });
+    document.addEventListener("visibilitychange", onVisibilityChange);
   });
 
-  // An async onMount can't register a cleanup; tear down the listener here.
+  // An async onMount can't register a cleanup; tear down listeners here and
+  // flush any pending debounced save so navigating away doesn't lose it.
   onDestroy(() => {
-    if (typeof window !== "undefined") window.removeEventListener("scroll", onScroll);
+    if (typeof window === "undefined") return;
+    window.removeEventListener("scroll", onScroll);
+    document.removeEventListener("visibilitychange", onVisibilityChange);
+    flushSave();
   });
 
   async function archive() {
@@ -240,6 +281,9 @@
     actionError = "";
     try {
       await deleteArticle(pb, article.id);
+      // Clear the reference so onDestroy's flushSave (which fires on teardown
+      // after this navigation) doesn't write progress to a now-deleted record.
+      article = null;
       await goto("/library");
     } catch {
       actionError = "couldn't delete that. try again.";

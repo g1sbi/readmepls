@@ -121,4 +121,34 @@ describe("ArticleCard", () => {
     render(ArticleCard, { article: ready() });
     expect(screen.getByText("ai")).toBeInTheDocument();
   });
+
+  it("shows a bottom progress bar for an in-progress article", () => {
+    const { container } = render(ArticleCard, {
+      article: article({ extract_status: "ok", title: "Hello", ai_tags_json: [] }, { progress: 0.45 }),
+    });
+    const bar = container.querySelector(".progress-bar");
+    expect(bar).toBeInTheDocument();
+    expect(bar?.getAttribute("style")).toContain("--p: 0.45");
+  });
+
+  it("hides the progress bar for an unread article", () => {
+    const { container } = render(ArticleCard, {
+      article: article({ extract_status: "ok", title: "Hello", ai_tags_json: [] }, { progress: 0 }),
+    });
+    expect(container.querySelector(".progress-bar")).not.toBeInTheDocument();
+  });
+
+  it("hides the progress bar for a finished article", () => {
+    const { container } = render(ArticleCard, {
+      article: article({ extract_status: "ok", title: "Hello", ai_tags_json: [] }, { progress: 0.99 }),
+    });
+    expect(container.querySelector(".progress-bar")).not.toBeInTheDocument();
+  });
+
+  it("hides the progress bar while processing, even if progress is set", () => {
+    const { container } = render(ArticleCard, {
+      article: article(null, { progress: 0.5 }),
+    });
+    expect(container.querySelector(".progress-bar")).not.toBeInTheDocument();
+  });
 });
