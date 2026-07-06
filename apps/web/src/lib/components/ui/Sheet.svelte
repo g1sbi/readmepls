@@ -21,7 +21,7 @@
   >
     <header class="sheet-head">
       <h2>{title}</h2>
-      <button class="close" aria-label="close filters" onclick={onClose}>✕</button>
+      <button class="close" aria-label={`close ${title}`} onclick={onClose}>✕</button>
     </header>
     <div class="sheet-body">{#if children}{@render children()}{/if}</div>
   </div>
