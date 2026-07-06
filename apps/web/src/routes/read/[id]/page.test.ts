@@ -105,6 +105,7 @@ vi.mock("$lib/highlight/render", () => ({
 // after mocks are registered so the same reference is available for assertions.
 import ReaderPage from "./+page.svelte";
 import { goto } from "$app/navigation";
+import { unmarkAll } from "$lib/highlight/render";
 
 // ---------------------------------------------------------------------------
 
@@ -255,6 +256,16 @@ describe("reader page — progress", () => {
 
     render(ReaderPage);
     await waitFor(() => expect(screen.getByText("Test Article")).toBeInTheDocument());
+
+    // resolveInitialScroll() runs synchronously before loadHighlights() is
+    // awaited in onMount, and unmarkAll() is the first thing loadHighlights'
+    // renderMarks() does (see +page.svelte). Waiting for it confirms
+    // resolveInitialScroll has already had its chance to call scrollTo —
+    // without this, the assertion below would resolve one microtask too
+    // early (same race documented on the sibling "resumes scroll..." test
+    // above) and pass vacuously regardless of whether the STARTED_THRESHOLD
+    // gate is implemented correctly.
+    await waitFor(() => expect(unmarkAll).toHaveBeenCalled());
 
     expect(window.scrollTo).not.toHaveBeenCalled();
   });
