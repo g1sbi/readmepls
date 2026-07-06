@@ -9,6 +9,7 @@
   import { browserPb } from "$lib/pb.js";
   import { resolveTheme, applyTheme, readStoredTheme, type Theme } from "$lib/theme/theme.js";
   import TopBar from "$lib/components/TopBar.svelte";
+  import BottomNav from "$lib/components/BottomNav.svelte";
 
   let { children } = $props();
   const pb = browserPb();
@@ -66,6 +67,9 @@
     <TopBar {theme} onTheme={setTheme} onSignOut={signOut} />
   {/if}
   <div class="page">{@render children()}</div>
+  {#if chrome}
+    <BottomNav pathname={$page.url.pathname} />
+  {/if}
 </div>
 
 <style>
@@ -77,4 +81,7 @@
   .page { position: relative; z-index: 1; max-width: var(--width-page); margin: 0 auto; padding: 1.5rem 1.25rem; animation: reveal var(--dur-slow) var(--ease-paper) both; }
   @keyframes reveal { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: none; } }
   @media (prefers-reduced-motion: reduce) { .page { animation: none; } }
+  @media (max-width: 640px) {
+    .page { padding-bottom: calc(56px + env(safe-area-inset-bottom) + 1rem); }
+  }
 </style>
