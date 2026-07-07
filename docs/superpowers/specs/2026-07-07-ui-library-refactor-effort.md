@@ -106,3 +106,139 @@ tied to either "shadcn has no layout/decorative-motif primitive for this" or
 "the closest shadcn analog is disproportionately heavier than what this does."
 `PaperCorner` is the only High-risk row, and it's High specifically *because*
 it's kept bespoke — consistent with the Step 4 cross-check. No TBDs.
+
+## 3. Synthesis & recommendation
+
+### Effort tallies
+
+Recounted row-for-row from the Section 2 table, not from memory:
+
+**15 components total: 11 migrate, 4 stay bespoke.**
+
+The Size column uses "S" for two different things — an actually-small
+migration and a zero-cost bespoke keep — so the two must be split by reading
+each row's rationale, not just the letter:
+
+- **Keep bespoke (4, all labeled S "zero migration cost"):** `CardGrid`,
+  `PaperCorner`, `Rail`, `SourcePill`. None of these move — no shadcn
+  equivalent exists, or the equivalent is strictly heavier than the current
+  component.
+- **Migrate (11): 5 S / 6 M / 0 L.**
+  - **S (5):** `Input`, `MenuItem`, `Sheet`, `Spinner`, `Tag`.
+  - **M (6):** `Button`, `Card`, `Chip`, `ConfirmDialog`, `DropdownMenu`,
+    `Skeleton`.
+  - **L (0):** none — no row in Section 2 carries an L size.
+
+So the honest total: **11 migrate, 4 stay bespoke; of the 11: 5S / 6M / 0L.**
+
+### Migration order
+
+De-risk by doing the cheapest, most-isolated swap first, then widen:
+
+**1. Proof-of-concept: `Tag`.** This is the safest possible first probe
+because it stacks every favorable property at once: 1 import site (smallest
+blast radius in the whole inventory), a color-only remap (`--secondary`/
+`--secondary-foreground` → `--color-surface-sunken`/`--color-text-muted`,
+values that do differ across `default`/`dark`/`sepia` — so it genuinely
+exercises a theme sweep, not a no-op), no radius override needed (`Badge`'s
+default `rounded-full` already matches), zero new behavior to build
+(`Tag` is a static, non-interactive label), and an existing test
+(`primitives.test.ts`'s `getByText("ai")` assertion) that survives unchanged
+as a tripwire. It proves the install works, the root CSS-var remap is picked
+up by all three themes, and the copy-in file replaces the old one cleanly —
+before anything harder is layered on.
+
+**2. Rest of the S bucket, in order of what each newly proves:**
+- `Input` next — introduces the first radius override decision
+  (`--radius-md`) and touches 3 import sites, validating that a slightly
+  wider blast radius still swaps cleanly.
+- `Sheet` next — the closest thing to a 1:1 swap in the set, but with real
+  stakes: `sheet.test.ts`'s Escape-key and timed-backdrop-dismiss assertions
+  must survive the swap to `shadcn`'s `Sheet` (same underlying bits-ui
+  `Dialog`), so this is the first row where "port as-is" is actually tested
+  end-to-end rather than assumed.
+- `Spinner` next — a different retheming mode entirely: shadcn's `Spinner`
+  has no `--background`/`--primary` CSS var to remap at all, so this proves
+  the "override the copied component's classes directly" path, not just the
+  "remap a var" path used by every S/M row so far.
+- `MenuItem` **is the one exception to strict size-bucket ordering.**
+  Although Section 2 sizes it S ("zero migration cost — the wrapper
+  disappears entirely"), its replacement isn't a standalone shadcn
+  component — it's `DropdownMenu`'s own `Item` export. `MenuItem` cannot
+  actually migrate until `DropdownMenu` (an M) migrates, so it should be
+  sequenced together with `DropdownMenu`, not earlier with the rest of S.
+
+**3. M bucket** (once `Tag`/`Input`/`Sheet`/`Spinner` have proven install +
+color remap + radius override + non-var-override paths all work):
+`DropdownMenu` (+ `MenuItem` alongside it), then `Button`, `Chip`,
+`ConfirmDialog`, `Card`, `Skeleton` — each adds one new wrinkle (a harness
+rewrite, a selected/trailing behavior addition, a danger-color decision, a
+grain-overlay re-add, a shimmer-sweep re-add) on top of a by-then-proven base.
+
+**4. L bucket:** empty — nothing to sequence here.
+
+### Incremental vs. big-bang: **incremental**
+
+shadcn-svelte is copy-in — there's no package version to bump and no
+compatibility lock between "old" and "new" components, so a hand-rolled
+`Card.svelte` and a shadcn-derived `Button.svelte` can sit side by side in
+`apps/web/src/lib/components/ui/` indefinitely with zero conflict. That
+removes the only real argument for big-bang (avoiding a long-lived
+mixed state), so incremental wins outright: migrate one component at a time
+behind its existing import path, run its tests, and only delete the old
+`.svelte` file once the replacement passes. Each row's small blast radius
+(1–5 import sites, confirmed in Section 1) means a bad swap is cheap to spot
+and cheap to revert — the opposite of the coordination big-bang would force
+across all 15 components' ~30 total import sites at once.
+
+**One-time upfront cost, before `Tag` (the first component) can move at
+all:**
+1. Adopt Tailwind v4 in `apps/web` (shadcn-svelte hard-requires it — see
+   below).
+2. Install the shadcn-svelte CLI and its scaffolding: `components.json`, the
+   `cn()` helper, `clsx`/`tailwind-merge`, `cva`.
+3. Seed the shared shadcn CSS-var block (the `@theme inline` root block) by
+   remapping it once to `tokens.css`'s `--color-*` semantic layer — this is
+   the one-time step Section 2 confirmed is picked up correctly by all three
+   themes (`default`/`dark`/`sepia`) with no further per-theme work.
+
+This cost is paid exactly once, not per component — every row after `Tag`
+inherits it for free.
+
+### Open risks / unknowns
+
+- **Candidate-choice contradiction (surfacing only, not re-deciding here).**
+  This repo has **zero Tailwind** today, and shadcn-svelte **hard-requires**
+  Tailwind v4 (confirmed in Section 2: no `tailwind` in
+  `apps/web/package.json`, no `tailwind.config`/`components.json` anywhere).
+  The design spec (`docs/superpowers/specs/2026-07-07-ui-library-refactor-design.md`)
+  dinged Skeleton (the other candidate) specifically for requiring Tailwind,
+  while treating shadcn-svelte as the lighter "no stack change" option. That
+  differentiation doesn't hold: both top candidates require adopting
+  Tailwind from scratch. This doesn't unwind the decision made here — but
+  it's a real input the human should weigh before the migration plan is
+  written, since the design spec's stated reason for preferring shadcn-svelte
+  over Skeleton is undermined by this finding.
+- **shadcn-svelte / bits-ui version compatibility.** The repo already has
+  `bits-ui ^2.18.1` installed, and shadcn-svelte builds on bits-ui — but
+  the exact peer-dependency range shadcn-svelte's current release expects
+  wasn't verified against `^2.18.1` specifically. Confirm this before running
+  the install step, not after.
+- **Fredoka / IBM Plex font wiring.** shadcn ships no `--font-*` CSS vars —
+  fonts are applied via Tailwind utility classes per component. How the
+  existing Fredoka-display/IBM-Plex-UI split gets wired into Tailwind's own
+  theme (so copied components pick it up automatically instead of needing a
+  font class hand-added to every copied file) is undecided.
+- **Radius-scale mismatch (restated as a system-level open question, not
+  just a per-row note).** shadcn derives `--radius-sm/md/lg/xl` from a
+  single `--radius` via fixed ±2px/±4px offsets (~8px total span);
+  `tokens.css`'s ramp spans 6px → 40px in wider, non-linear steps. Section 2
+  worked around this per-component with explicit overrides, but the
+  migration plan should decide once, system-wide: keep doing per-component
+  radius overrides indefinitely, or extend Tailwind's theme so
+  `--radius-sm/md/lg/xl` each point independently at `tokens.css` values,
+  bypassing shadcn's linked-ramp formula entirely.
+- **Shadow ramp, same shape of question as radius.** `--shadow-*` isn't a
+  shadcn CSS var either (applied via Tailwind utility classes); whether to
+  extend Tailwind's theme to carry `tokens.css`'s `--shadow-sm..xl` ramp
+  globally, or hand-edit class strings per copied component, is undecided.
