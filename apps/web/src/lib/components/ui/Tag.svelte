@@ -1,9 +1,11 @@
 <script lang="ts">
   import type { Snippet } from "svelte";
-  import Chip from "./Chip.svelte";
+  import { Badge } from "./badge";
   let { children }: { children?: Snippet } = $props();
 </script>
 
 {#if children}
-  <Chip {children} />
+  <Badge variant="secondary">
+    {@render children()}
+  </Badge>
 {/if}

@@ -2,6 +2,7 @@
   import "$lib/styles/fonts.css";
   import "$lib/styles/tokens.css";
   import "../app.css";
+  import "$lib/styles/shadcn-bridge.css";
   import { onMount, setContext } from "svelte";
   import { goto, onNavigate } from "$app/navigation";
   import { shouldAnimateNavigation } from "$lib/view-transition.js";

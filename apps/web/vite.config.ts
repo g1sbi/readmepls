@@ -1,8 +1,9 @@
 import { sveltekit } from "@sveltejs/kit/vite";
 import { defineConfig } from "vite";
+import tailwindcss from "@tailwindcss/vite";
 
 export default defineConfig({
-  plugins: [sveltekit()],
+  plugins: [tailwindcss(), sveltekit()],
   resolve: {
     // optimal-select@4.0.1 (transitive via @apache-annotator/dom, used by
     // highlight anchoring) declares `module: src/index.js` but ships no src/

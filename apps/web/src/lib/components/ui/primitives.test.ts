@@ -26,6 +26,13 @@ describe("ui primitives", () => {
     expect(screen.getByText("ai")).toBeInTheDocument();
   });
 
+  it("Tag renders its label through the shadcn Badge", () => {
+    render(Tag, { props: { children: createRawSnippet(() => ({ render: () => "ai" })) } });
+    const el = screen.getByText("ai");
+    // shadcn Badge renders a data-slot="badge" attribute on its root element.
+    expect(el.closest('[data-slot="badge"]')).not.toBeNull();
+  });
+
   it("Spinner exposes an accessible label", () => {
     render(Spinner, { label: "Loading" });
     expect(screen.getByLabelText("Loading")).toBeInTheDocument();
