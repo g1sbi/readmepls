@@ -52,6 +52,9 @@
 
   // Chrome (TopBar + paper bg) is hidden on the standalone login screen.
   const chrome = $derived($page.url.pathname !== "/login");
+  // The reader's own 3-column layout (rail + article + highlights) needs more
+  // room than card-grid pages, which stay at --width-page so cards don't stretch.
+  const isReader = $derived($page.url.pathname.startsWith("/read/"));
 
   onMount(() => {
     const prefTheme = pb.authStore.model?.reader_prefs?.theme ?? null;
@@ -82,7 +85,7 @@
   {#if $page.url.pathname.startsWith("/read/")}
     <div class="progress" style="--p: {readProgress}" aria-hidden="true"></div>
   {/if}
-  <div class="page" use:releaseTransformContainingBlock>{@render children()}</div>
+  <div class="page" class:page--wide={isReader} use:releaseTransformContainingBlock>{@render children()}</div>
   {#if chrome}
     <BottomNav pathname={$page.url.pathname} />
   {/if}
@@ -95,6 +98,7 @@
     background-image: var(--texture-grain); opacity: var(--grain-opacity); mix-blend-mode: multiply;
   }
   .page { position: relative; z-index: 1; max-width: var(--width-page); margin: 0 auto; padding: 1.5rem 1.25rem; animation: reveal var(--dur-slow) var(--ease-paper) both; }
+  .page--wide { max-width: var(--width-reader); }
   @keyframes reveal { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: none; } }
   /* z-index above TopBar's sticky header (20) -- both sit at top:0, and the
      reading-progress strip is meant to overlay the chrome, not hide behind it. */

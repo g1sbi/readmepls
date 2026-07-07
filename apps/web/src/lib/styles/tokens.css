@@ -103,6 +103,7 @@
   --width-page:   1100px; /* card grids, library, home */
   --width-prose:  900px;  /* reading-adjacent lists, collections, search */
   --width-narrow: 768px;  /* forms, settings */
+  --width-reader: 1440px; /* reader 3-col shell (rail + article + highlights) on desktop */
 
   /* ---- 1. PRIMITIVES — radii (generous; from 64px icon, 40px dog-ear) --- */
   --radius-xs:  6px;

@@ -427,7 +427,7 @@
   /* single-column by default: rail (controls+actions) above article, highlights below */
   .reader-layout { display: grid; grid-template-columns: 1fr; gap: var(--space-5); }
   @media (min-width: 1024px) {
-    .reader-shell { max-width: var(--width-page); }
+    .reader-shell { max-width: var(--width-reader); }
     .reader-layout { grid-template-columns: 14rem minmax(0, 1fr) 16rem; align-items: start; }
     .reader-layout :global(.hl-sidebar) { position: sticky; top: var(--space-4); }
   }
