@@ -33,7 +33,7 @@ Notes on the data above:
 
 - **LOC** is `wc -l` on each `.svelte` file (`apps/web/src/lib/components/ui/*.svelte`), template + script + style included.
 - **Test file** naming is inconsistent in this directory — some components have a dedicated PascalCase (`DropdownMenu.test.ts`) or kebab-case (`confirm-dialog.test.ts`) file, others (Button, Tag, Spinner) are covered together in `primitives.test.ts`, and four components (Card, CardGrid, Input, MenuItem) have no test coverage at all.
-- **# import sites** counts distinct feature files (outside `components/ui/`) that import the component, via `grep -rl "ui/<Component>\.svelte" apps/web/src --include=*.svelte --include=*.ts | grep -v "/components/ui/"`. This is a variant of the brief's example command: the literal example (`grep -rl "components/ui/Button"`) only matches `$lib`-style absolute imports and misses relative imports (e.g. `ArticleCard.svelte` imports `Card` via `"./ui/Card.svelte"`), which would have undercounted Card's blast radius as 0. Matching on `ui/<Component>\.svelte` catches both import styles; each count was cross-checked by listing the actual matching files (see task report for the full per-component file lists).
+- **# import sites** counts distinct feature files (outside `components/ui/`) that import the component, via `grep -rl "ui/<Component>\.svelte" apps/web/src --include=*.svelte --include=*.ts | grep -v "/components/ui/"`. The literal grep pattern (`grep -rl "components/ui/Button"`) only matches `$lib`-style absolute imports and misses relative imports (e.g. `ArticleCard.svelte` imports `Card` via `"./ui/Card.svelte"`), which would have undercounted Card's blast radius as 0. To capture both import styles, import counts were gathered by matching on `ui/<Component>\.svelte`; each count was cross-checked by listing the actual matching files.
 
 ## 2. Migration mapping
 
@@ -104,8 +104,8 @@ Every component from Section 1 appears above. Four are kept bespoke
 (`CardGrid`, `PaperCorner`, `Rail`, `SourcePill`), each with a one-line reason
 tied to either "shadcn has no layout/decorative-motif primitive for this" or
 "the closest shadcn analog is disproportionately heavier than what this does."
-`PaperCorner` is the only High-risk row, and it's High specifically *because*
-it's kept bespoke — consistent with the Step 4 cross-check. No TBDs.
+`PaperCorner` is the only High-risk row, and it's High specifically because
+it's kept bespoke to preserve the banner's dog-ear visual-identity motif. No TBDs.
 
 ## 3. Synthesis & recommendation
 
