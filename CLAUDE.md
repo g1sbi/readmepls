@@ -13,7 +13,9 @@ before implementing a feature.
 ## Commands
 
 - Install: `pnpm install`
-- Test: `pnpm test` · watch mode: `pnpm test:watch`
+- Test: `pnpm test` (whole workspace) · watch mode: `pnpm test:watch` · subset:
+  `pnpm exec vitest run <pattern>`. **`pnpm --filter <pkg> test` does NOT work here**
+  — it's a single vitest workspace, not per-package test scripts.
 - Typecheck: `pnpm typecheck` · Lint: `pnpm lint`
 - Web dev server: `pnpm --filter @readmepls/web dev`
 - Worker (build + run): `pnpm --filter @readmepls/worker build && pnpm --filter @readmepls/worker start`
@@ -53,8 +55,18 @@ design phase does not add features.
 - **Tokens live in one file** (`apps/web/src/lib/styles/tokens.css`): colors, fonts,
   radii, shadows. **Never hardcode a color or font name in a component** — reference
   a token. This keeps the design phase able to retheme without touching components.
+- **shadcn ↔ tokens bridge** (`apps/web/src/lib/styles/shadcn-bridge.css`): maps
+  shadcn alias vars (`--primary`, `--secondary`, …) **onto** `tokens.css` `--color-*`
+  once in `:root` — never a second palette. Dark is `@custom-variant dark
+  ([data-theme="dark"] &)`, NOT shadcn's `.dark`. **Preflight is deliberately
+  excluded** (layered `@import "tailwindcss/theme.css"` + `utilities.css`, no
+  `preflight.css`) — `app.css` owns the reset, and preflight would strip the
+  reader's un-scoped `{@html}` article prose. Do not switch to a bare
+  `@import "tailwindcss"`.
 - **Reusable components.** Shared UI primitives in `$lib/components/ui/`; feature
-  components compose them. No duplicated markup or CSS.
+  components compose them. No duplicated markup or CSS. This mixes generated
+  shadcn-svelte components (e.g. `ui/badge/`) with surviving hand-rolled ones —
+  migration is incremental, so both coexist. `cn()` (`$lib/utils`) merges classes.
 - **Mobile-first, always responsive.** This is a reader app — most reading happens
   on phones. Design and build for the smallest viewport first, then enhance upward.
   Every component must be usable and uncluttered at 360px wide: no horizontal
@@ -65,7 +77,8 @@ design phase does not add features.
 
 ## Stack
 
-- **Frontend:** SvelteKit (reader UI + thin server/BFF routes).
+- **Frontend:** SvelteKit (reader UI + thin server/BFF routes), Tailwind v4 +
+  shadcn-svelte, bridged onto `tokens.css` (see Design language).
 - **Backend:** PocketBase (auth, SQLite data, files, realtime, API rules).
 - **Worker:** Node/TypeScript service — extraction + AI, polls a PB `jobs` collection.
 - **AI:** pluggable provider; default `claude-haiku-4-5`.
