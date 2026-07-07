@@ -90,6 +90,8 @@ embeddings   id, user, article (ref), chunk_index, char_start, char_end,
 - `vector` stored as a JSON float array (portable across PocketBase's SQLite driver;
   no binary-blob coupling). Revisit to a packed blob only if row size becomes a
   measured problem.
+- Vectors are **stored L2-normalized**, so query-time similarity is a plain dot
+  product (no per-query normalization). See §12.
 
 ## 5. Pipeline
 
@@ -125,7 +127,8 @@ embeddings   id, user, article (ref), chunk_index, char_start, char_end,
   dim: number }` — a **single** `LocalEmbedder` implementation (ONNX
   `multilingual-e5-small`). The interface exists for dependency injection and
   testing (a deterministic fake embedder in unit tests), per the repo's interface-
-  seam house style — not to ship a second provider.
+  seam house style — not to ship a second provider. `LocalEmbedder` loads the
+  **int8-quantized** ONNX model (see §12) and returns L2-normalized vectors.
 - `cosineRank(queryVec: number[], rows: EmbeddingRow[], k: number):
   RankedHit[]` — pure, no IO.
 
@@ -155,7 +158,46 @@ embeddings   id, user, article (ref), chunk_index, char_start, char_end,
 - **Offline guarantee:** no test performs network I/O — the local model in
   integration, a fake embedder in units.
 
-## 12. Risks
+## 12. Capacity & cost (cheapest Hetzner box)
+
+Target host: Hetzner CX22 (2 shared vCPU, 4 GB RAM) or equivalent. The embedding
+**math is cheap**; the real constraints on a small box are RAM and shared-vCPU
+contention, not the cosine search. Nothing here runs on the request path —
+indexing is async in the worker, so it can never slow the UI; the only user-visible
+effect of overload is **index lag** (a just-captured article is briefly not yet
+searchable).
+
+**Indexing (per capture, async, batched):** article ≈ 2000 tokens ≈ ~4 chunks,
+≈ **1–2 s CPU/article** off the request path. One worker sustains order
+**hundreds–low-thousands of articles/hour** while sharing the box with extraction and
+SSR.
+
+**Query (interactive):** dominated by embedding the query (~1 chunk, ≈ **100 ms**).
+Because vectors are stored L2-normalized, similarity is a dot product: ~10k vectors
+< 5 ms, ~100k vectors ~30–50 ms. The search itself is a non-issue at personal scale.
+
+**RAM (the binding constraint):** int8 model resident ≈ **50–75 MB** (fp32 would be
+~100–150 MB) plus the per-user vector cache. Alongside PocketBase, the worker, and
+SvelteKit SSR the total lands ≈ 1 GB — comfortable on 4 GB, tight on any 2 GB box.
+
+**When it bites:** not a fixed user count — it is *sustained capture rate × spare
+vCPU*. At a typical ~10 saves/day/user, ~1000 users ≈ ~7 articles/min average against
+a worker doing ~30–60/min, so the box is comfortable into the **low thousands of
+users** before backlog; the wall hit first is CPU/RAM contention, not the algorithm.
+
+**Decisions baked in from day one (near-free wins):**
+- **int8-quantized ONNX model** — ~2–4× faster CPU, ~half the RAM vs fp32.
+- **Store L2-normalized vectors** — query similarity is a bare dot product.
+- **Batch all of an article's chunks in one inference call.**
+- **Warm the model at worker boot;** worker concurrency 1–2 (do not oversubscribe
+  2 vCPU).
+
+**Scale path (when the threshold is reached):** move the worker to its own box — it is
+already a separate process, so this is a deploy split, not a rewrite. An ANN index
+behind the `cosineRank`/search seam is a later, separate lever if per-user corpora
+ever grow large.
+
+## 13. Risks
 
 - **Brute-force ceiling:** comfortable to low-thousands of chunks per user; instrument
   query latency and corpus size (`log()`), revisit an ANN impl behind the interface
@@ -169,7 +211,7 @@ embeddings   id, user, article (ref), chunk_index, char_start, char_end,
 - **Multilingual quality:** `multilingual-e5-small` chosen because library content
   will not all be English; validate retrieval quality on a mixed-language fixture set.
 
-## 13. Sequencing
+## 14. Sequencing
 
 1. Core pure units first (TDD): `chunk()`, `cosineRank()`.
 2. `EmbeddingProvider` interface + `LocalEmbedder` (model load, warm-up).
