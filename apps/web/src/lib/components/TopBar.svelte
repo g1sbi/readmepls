@@ -61,7 +61,7 @@
     padding: var(--space-3) var(--space-5);
     background: var(--color-surface);
     border-bottom: 1px solid var(--color-border);
-    position: sticky; top: 0; z-index: 20; /* above the reader progress bar (z-index: 10) */
+    position: sticky; top: 0; z-index: 20; /* below the reading-progress strip (z-index: 21), which overlays the chrome */
   }
   .brand { font-family: var(--font-display); font-size: 1.3rem; font-weight: 600; color: var(--color-text); text-decoration: none; }
   .brand span { color: var(--color-accent); }

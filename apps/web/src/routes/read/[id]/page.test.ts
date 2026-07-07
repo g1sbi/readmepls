@@ -193,10 +193,14 @@ describe("reader page — progress", () => {
 
   it("seeds the progress bar from the loaded article before any scroll", async () => {
     articleGetOne.mockResolvedValueOnce({ ...defaultArticle(), progress: 0.42 });
-    const { container } = render(ReaderPage);
+    // The progress strip itself renders in +layout.svelte (see release-transform-
+    // containing-block.ts for why); this component only pushes into the
+    // "readProgress" context it's given, so assert against that instead of a
+    // local DOM node.
+    const setProgress = vi.fn();
+    render(ReaderPage, { context: new Map([["readProgress", { set: setProgress }]]) });
     await waitFor(() => expect(screen.getByText("Test Article")).toBeInTheDocument());
-    const bar = container.querySelector(".progress");
-    expect(bar?.getAttribute("style")).toContain("--p: 0.42");
+    expect(setProgress).toHaveBeenCalledWith(0.42);
   });
 
   it("saves progress after the debounced scroll delay", async () => {
@@ -205,6 +209,11 @@ describe("reader page — progress", () => {
 
     render(ReaderPage);
     await waitFor(() => expect(screen.getByText("Test Article")).toBeInTheDocument());
+    // The scroll listener attaches after resolveInitialScroll but before
+    // loadHighlights/loadTags/loadCollections; unmarkAll (called inside
+    // loadHighlights) is the first reliable signal it's live — "Test Article"
+    // appears several awaits earlier and races the listener attachment.
+    await waitFor(() => expect(unmarkAll).toHaveBeenCalled());
 
     // Switch to fake timers only after the initial render/network resolution
     // has settled — waitFor's internal polling relies on real timers, so
@@ -226,6 +235,9 @@ describe("reader page — progress", () => {
 
     const { unmount } = render(ReaderPage);
     await waitFor(() => expect(screen.getByText("Test Article")).toBeInTheDocument());
+    // See "saves progress after the debounced scroll delay" — the scroll
+    // listener attaches later than the article content renders.
+    await waitFor(() => expect(unmarkAll).toHaveBeenCalled());
     articleUpdate.mockClear(); // ignore the mount-time "status: reading" write
 
     // max = 2000 - 800 = 1200; scrollY 300 -> progress 0.25
@@ -236,12 +248,43 @@ describe("reader page — progress", () => {
     expect(articleUpdate).toHaveBeenCalledWith("art1", { progress: 0.25 });
   });
 
+  it("does not corrupt progress using the destination page's geometry when torn down mid-navigation", async () => {
+    Object.defineProperty(document.body, "scrollHeight", { value: 2000, configurable: true });
+    Object.defineProperty(window, "innerHeight", { value: 800, configurable: true });
+
+    const { unmount } = render(ReaderPage);
+    await waitFor(() => expect(screen.getByText("Test Article")).toBeInTheDocument());
+    // See "saves progress after the debounced scroll delay" — the scroll
+    // listener attaches later than the article content renders.
+    await waitFor(() => expect(unmarkAll).toHaveBeenCalled());
+    articleUpdate.mockClear();
+
+    // max = 2000 - 800 = 1200; scrollY 600 -> progress 0.5
+    Object.defineProperty(window, "scrollY", { value: 600, configurable: true });
+    await fireEvent.scroll(window);
+
+    // In a real SPA navigation, SvelteKit swaps the outgoing page's DOM for
+    // the destination page's (e.g. the short library list) before/while this
+    // component's onDestroy fires. Simulate that by shrinking scrollHeight
+    // out from under the component right before unmount: a naive re-measure
+    // at teardown would see max <= 0 and wrongly mark the article "finished".
+    Object.defineProperty(document.body, "scrollHeight", { value: 100, configurable: true });
+
+    unmount();
+
+    expect(articleUpdate).toHaveBeenCalledWith("art1", { progress: 0.5 });
+    expect(articleUpdate).not.toHaveBeenCalledWith("art1", { progress: 1 });
+  });
+
   it("flushes the pending save when the tab is hidden", async () => {
     Object.defineProperty(document.body, "scrollHeight", { value: 2000, configurable: true });
     Object.defineProperty(window, "innerHeight", { value: 800, configurable: true });
 
     render(ReaderPage);
     await waitFor(() => expect(screen.getByText("Test Article")).toBeInTheDocument());
+    // See "saves progress after the debounced scroll delay" — the scroll
+    // listener attaches later than the article content renders.
+    await waitFor(() => expect(unmarkAll).toHaveBeenCalled());
     articleUpdate.mockClear();
 
     // max = 2000 - 800 = 1200; scrollY 1200 -> progress 1 (clamped, reached bottom)
@@ -316,11 +359,11 @@ describe("reader page — progress", () => {
     Object.defineProperty(document.body, "scrollHeight", { value: 400, configurable: true });
     Object.defineProperty(window, "innerHeight", { value: 800, configurable: true });
 
-    const { container } = render(ReaderPage);
+    const setProgress = vi.fn();
+    render(ReaderPage, { context: new Map([["readProgress", { set: setProgress }]]) });
     await waitFor(() => expect(screen.getByText("Test Article")).toBeInTheDocument());
 
     await waitFor(() => expect(articleUpdate).toHaveBeenCalledWith("art1", { progress: 1 }));
-    const bar = container.querySelector(".progress");
-    expect(bar?.getAttribute("style")).toContain("--p: 1");
+    expect(setProgress).toHaveBeenCalledWith(1);
   });
 });

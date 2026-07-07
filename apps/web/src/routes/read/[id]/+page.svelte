@@ -28,6 +28,10 @@
   // Global theme context provided by +layout.svelte. May be undefined when
   // the reader is rendered in isolation (e.g. unit tests without the layout).
   const themeCtx = getContext<{ current: Theme; set: (t: Theme) => void } | undefined>("theme");
+  // The progress strip itself renders in +layout.svelte, outside .page --
+  // .page's transform-keyframed animation makes it a stacking context, which
+  // would cap the strip below TopBar no matter its z-index (see layout).
+  const progressCtx = getContext<{ set: (p: number) => void } | undefined>("readProgress");
 
   const pb = browserPb();
   let article = $state<ArticleRecord | null>(null);
@@ -35,6 +39,13 @@
   let prefs = $state<ReaderPrefs>(withReaderDefaults());
 
   let progress = $state(0);
+  // Last measurement taken while THIS page's DOM was known to be live. In an
+  // SPA navigation, SvelteKit swaps the outgoing page's DOM for the
+  // destination's before/while onDestroy fires, so re-measuring
+  // document.body at teardown time can read the WRONG (often much shorter)
+  // page and wrongly collapse to "finished". Every flush path reuses this
+  // instead of re-querying the DOM.
+  let pendingProgress = 0;
 
   // Highlight state
   // eslint-disable-next-line prefer-const — reassigned by bind:this, not Svelte reactivity
@@ -172,6 +183,9 @@
   const activeTheme = $derived(themeCtx ? themeCtx.current : prefs.theme);
   const source = $derived(sourceView(pb, content));
 
+  // Push every local progress change up to the layout-rendered strip.
+  $effect(() => { progressCtx?.set(progress); });
+
   let progressTimer: ReturnType<typeof setTimeout> | undefined;
 
   // max<=0 means the content fits the viewport with no scrollbar — treat
@@ -182,20 +196,24 @@
   }
 
   function onScroll() {
+    // Measure now, while this page's DOM is definitely still the live one —
+    // not inside the debounced callback, which may run (or be pre-empted by
+    // flushSave) after navigation has already started swapping the DOM.
+    pendingProgress = computeProgress();
     clearTimeout(progressTimer);
     progressTimer = setTimeout(() => {
-      progress = computeProgress();
-      if (article) pb.collection("articles").update(article.id, { progress });
+      progress = pendingProgress;
+      if (article) pb.collection("articles").update(article.id, { progress: pendingProgress });
     }, 400);
   }
 
-  // Writes the current progress immediately, bypassing the debounce — used
-  // when the component is about to disappear (navigation, tab close/hide)
-  // and a pending debounced write would otherwise be lost.
+  // Writes the last known-good measurement immediately, bypassing the
+  // debounce — used when the component is about to disappear (navigation,
+  // tab close/hide) and a pending debounced write would otherwise be lost.
   function flushSave() {
     clearTimeout(progressTimer);
-    progress = computeProgress();
-    if (article) pb.collection("articles").update(article.id, { progress });
+    progress = pendingProgress;
+    if (article) pb.collection("articles").update(article.id, { progress: pendingProgress });
   }
 
   function onVisibilityChange() {
@@ -209,6 +227,7 @@
   function resolveInitialScroll() {
     const max = document.body.scrollHeight - window.innerHeight;
     if (max <= 0) {
+      pendingProgress = 1;
       flushSave();
       return;
     }
@@ -224,6 +243,7 @@
     // article is always non-null here — getOne throws on not-found
     content = article!.expand?.content ?? null;
     progress = article!.progress ?? 0;
+    pendingProgress = progress;
 
     const uid = pb.authStore.model?.id;
     if (uid) {
@@ -236,16 +256,19 @@
     // Load highlights and manual tags after article HTML is in the DOM (next tick).
     await tick();
     resolveInitialScroll();
+    // Attach before the remaining loads (not after) so a scroll during those
+    // network calls is never silently dropped.
+    window.addEventListener("scroll", onScroll, { passive: true });
+    document.addEventListener("visibilitychange", onVisibilityChange);
     await loadHighlights(id);
     await loadTags(id);
     await loadCollections();
-    window.addEventListener("scroll", onScroll, { passive: true });
-    document.addEventListener("visibilitychange", onVisibilityChange);
   });
 
   // An async onMount can't register a cleanup; tear down listeners here and
   // flush any pending debounced save so navigating away doesn't lose it.
   onDestroy(() => {
+    progressCtx?.set(0);
     if (typeof window === "undefined") return;
     window.removeEventListener("scroll", onScroll);
     document.removeEventListener("visibilitychange", onVisibilityChange);
@@ -291,7 +314,6 @@
   }
 </script>
 
-<div class="progress" style="--p: {progress}" aria-hidden="true"></div>
 <!-- reader vars live on the shell so the width pref governs the shell, not just the article -->
 <div class="reader-shell" style={readerCssVars(prefs)}>
   <div class="bar">
@@ -362,7 +384,6 @@
 />
 
 <style>
-  .progress { position: fixed; top: 0; left: 0; height: 3px; width: calc(var(--p) * 100%); background: var(--color-accent); z-index: 10; transition: width var(--dur-fast) var(--ease-out); }
   /* --reading-measure is set inline on .reader-shell so the column width
      follows the pref (narrow/normal/wide) end-to-end (FIX 2).
      The shell is wider than the prose measure so the highlights rail has room. */
@@ -410,7 +431,6 @@
     .reader-layout { grid-template-columns: 14rem minmax(0, 1fr) 16rem; align-items: start; }
     .reader-layout :global(.hl-sidebar) { position: sticky; top: var(--space-4); }
   }
-  @media (prefers-reduced-motion: reduce) { .progress { transition: none; } }
   .delete-error { margin: 0 0 0.75rem; font-size: var(--text-sm); color: var(--color-accent); }
   .reader-source { margin: 0 0 var(--space-4); }
 </style>
