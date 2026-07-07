@@ -56,37 +56,58 @@ never leaves your box" is the moat closed SaaS competitors cannot copy.
 
 ## 3. Architecture (Approach A — vectors in PB, cosine in the worker)
 
-- **Storage:** one row per chunk in a per-user PocketBase `embeddings` collection.
+- **Storage:** one row per chunk in an `embeddings` collection **keyed to
+  `content`, not to the user.** `content` is the global, URL-deduplicated
+  extraction table, so an article is embedded **once** no matter how many users
+  saved it — the same dedup the extraction pipeline already relies on. Embeddings
+  inherit `content`'s exact read/write posture: readable by any authenticated user
+  (`@request.auth.id != ''`), writable only by the worker's service credential.
+- **Per-user scoping happens at query time, not in storage.** A search for user U
+  ranks only over embeddings whose `content` is referenced by U's own `articles`,
+  and returns U's `articleId`s. This mirrors the existing keyword search, which
+  scopes an FTS match to the caller's library. A user can therefore never receive a
+  hit for content not in their own library.
 - **Embedding + search ownership:** the **worker** loads the local embedding model
   (`multilingual-e5-small`, ONNX via transformers.js) once at boot and owns both
-  indexing and query embedding. It exposes an **internal, server-side-only
-  `/search` endpoint**: embeds the query, cosine-ranks that user's vectors, returns
-  top-k chunk references.
-- **Web seam:** a SvelteKit server route (auth'd, BFF) proxies to the worker
-  `/search`. The model and service credentials stay server-side; nothing embeds in
-  the browser.
-- **Pure core:** cosine ranking and chunking are pure `@readmepls/core` functions,
-  tested in isolation. Side effects (PB reads, model inference, HTTP) stay at the
-  edges behind interfaces.
+  indexing and query embedding. It runs a small **internal HTTP server** exposing a
+  `/search` endpoint (shared-secret header, internal network only): given a query
+  and a user id, it embeds the query, resolves that user's article→content set,
+  ranks over the matching content embeddings, and returns ranked `articleId`s +
+  passage snippets. Loading the model in one process keeps RAM flat on a small box.
+- **Web seam:** a SvelteKit server route (auth'd, BFF) resolves the caller's user id
+  server-side and proxies to the worker `/search` with the shared secret. The model
+  and service credentials stay server-side; nothing embeds in the browser. The
+  returned `articleId`s flow through the *existing* library search-id render path
+  (same shape as keyword search), so no new result UI is required.
+- **Pure core:** cosine ranking, chunking, and the user-scoped hit-ranking are pure
+  `@readmepls/core` functions, tested in isolation. Side effects (PB reads, model
+  inference, HTTP) stay at the edges behind interfaces.
 
 Rationale vs alternatives: keeping vectors, model, and ranking colocated in the
-worker (where the service credential already lives) avoids shipping every vector to
-the web process per query (Approach B) and avoids coupling to PocketBase's pure-Go
-SQLite driver via a native extension (Approach C, `sqlite-vec`). Brute-force over a
-personal library (hundreds–few-thousand 384-dim chunks) is sub-10ms.
+worker (where the service credential already lives) avoids loading the ~100 MB model
+into the web process too (Approach B would double model RAM on the cheap box) and
+avoids coupling to PocketBase's pure-Go SQLite driver via a native extension
+(Approach C, `sqlite-vec`). Brute-force over a personal library (hundreds–few-
+thousand 384-dim chunks) is sub-10 ms. The cost of Approach A is a new internal
+web→worker HTTP channel + shared secret; accepted for the RAM win.
 
 ## 4. Data model
 
 ```
-embeddings   id, user, article (ref), chunk_index, char_start, char_end,
+embeddings   id, content (ref → content), chunk_index, char_start, char_end,
              text, vector (json array of float), embed_model, dim, created
-             (per-user)
+             (global; worker-written; readable by any authenticated user)
 ```
 
+- **Keyed to `content`, not the user** — one set of chunk rows per extracted
+  article, shared across every user who saved it (dedup). Rules mirror `content`:
+  `listRule`/`viewRule` = `@request.auth.id != ''`; `createRule`/`updateRule`/
+  `deleteRule` = `null` (worker service credential only).
 - `embed_model` + `dim` are stored on **every** row. Search compares only within a
   single model space (vectors from different models are not comparable). A change of
-  embedding model ⇒ a full per-user re-index.
-- Scoped `user = @request.auth.id` with an explicit tenant-isolation test.
+  embedding model ⇒ a re-index of every `content` row.
+- Unique index on `(content, chunk_index, embed_model)` so re-embedding a content
+  row is an idempotent replace, not a duplicate.
 - `vector` stored as a JSON float array (portable across PocketBase's SQLite driver;
   no binary-blob coupling). Revisit to a packed blob only if row size becomes a
   measured problem.
@@ -95,12 +116,19 @@ embeddings   id, user, article (ref), chunk_index, char_start, char_end,
 
 ## 5. Pipeline
 
-- **New worker job `type=embed`**, enqueued on successful `extract`. Steps: load
-  content → chunk → embed each chunk → upsert vector rows for that article.
-- **Idempotent:** re-extract (or re-embed) replaces that article's existing
-  `embeddings` rows; safe to re-run, consistent with the worker-job idempotency
-  model (`locked_at` / `locked_by`, stale-lock reclaim).
-- **Backfill job:** a one-shot pass embeds the pre-existing library on deploy.
+- **Indexing runs inline in `processJob`**, right after a successful
+  `upsertContent`. The existing worker has a single job type (`extract`) and no
+  per-type queue; embedding a content row is fast, local, and only meaningful once
+  extraction succeeded, so it is folded into the same job rather than adding a new
+  job type. Steps: chunk `content_text` → embed chunks (`passage` mode) → replace
+  that content's `embeddings` rows.
+- **Idempotent:** a re-run (retry / re-extract) replaces the content's existing
+  `embeddings` rows keyed by `(content, chunk_index, embed_model)`; safe to re-run,
+  consistent with the worker-job idempotency model.
+- **Best-effort:** an embedding failure is logged and swallowed — it must never fail
+  an otherwise-successful extraction job (same pattern as source linking today).
+- **Backfill job:** a one-shot pass (env-gated, like `BACKFILL_SOURCES`) embeds every
+  pre-existing `content` row that has no embeddings yet.
 - No quota gating on indexing — local inference is $0.
 
 ## 6. Chunking (pure core)
@@ -114,12 +142,18 @@ embeddings   id, user, article (ref), chunk_index, char_start, char_end,
 
 ## 7. Query flow
 
-1. Web server route (auth'd) → worker `GET /search?user=…&q=…&k=…`.
-2. Worker embeds `q` with the local model, loads that user's vectors (in-memory
-   cache, invalidated when new embeds land), cosine-ranks via the pure core
-   function, returns top-k `{ article, chunk_index, char_start, char_end, score,
-   snippet }`.
-3. Web renders hits and deep-links into the reader passage.
+1. Library page load (auth'd SvelteKit server) with a semantic query → web BFF
+   resolves the caller's user id from `locals` and calls worker
+   `GET /search?user=…&q=…&k=…` with the shared-secret header.
+2. Worker: embed `q` (`query` mode) → fetch that user's `articles`
+   (`user = {id}`, fields `id,content`) → build the `content → articleId` map →
+   fetch `embeddings` for those content ids → rank chunks by dot product (pure core)
+   → collapse to best chunk per article → return top-k
+   `{ articleId, contentId, chunkIndex, charStart, charEnd, score, snippet }`.
+3. Web maps hits to ranked `articleId`s and feeds them through the **existing**
+   library search-id path (`applySearchIds` + relevance sort), so results render in
+   the current library UI. Passage offsets are carried for a later deep-link
+   enhancement.
 
 ## 8. Interfaces / DI
 
@@ -154,7 +188,9 @@ embeddings   id, user, article (ref), chunk_index, char_start, char_end,
   correct `embed_model`/`dim`; re-extract replaces rows (no duplicates).
 - **Query (end-to-end, mocked embedder):** deterministic fake vectors → deterministic
   ranking and deep-link offsets.
-- **Tenant isolation:** user A's search never returns user B's chunks.
+- **Query-time scoping:** user A's search returns only `articleId`s from A's own
+  library — never a hit for `content` A has not saved, even though `embeddings` are
+  globally shared. Explicit test: two users, overlapping and disjoint content.
 - **Offline guarantee:** no test performs network I/O — the local model in
   integration, a fake embedder in units.
 
@@ -167,8 +203,10 @@ indexing is async in the worker, so it can never slow the UI; the only user-visi
 effect of overload is **index lag** (a just-captured article is briefly not yet
 searchable).
 
-**Indexing (per capture, async, batched):** article ≈ 2000 tokens ≈ ~4 chunks,
-≈ **1–2 s CPU/article** off the request path. One worker sustains order
+**Indexing (per capture, batched):** article ≈ 2000 tokens ≈ ~4 chunks,
+≈ **1–2 s CPU/article**. Because embeddings key to `content`, a URL is embedded
+**once** regardless of how many users save it — a popular article costs the box a
+single indexing pass, not one per user. One worker sustains order
 **hundreds–low-thousands of articles/hour** while sharing the box with extraction and
 SSR.
 
@@ -206,8 +244,11 @@ ever grow large.
   LRU.
 - **Cold-start latency:** first query loads the model — warm it on worker boot.
 - **Model-change re-index:** switching `embed_model` invalidates all existing
-  vectors; must trigger an explicit per-user backfill. Guarded by `embed_model`/`dim`
-  stored per row.
+  vectors; must trigger an explicit re-index of every `content` row. Guarded by
+  `embed_model`/`dim` stored per row.
+- **Web→worker channel:** the query path adds an internal HTTP dependency (web must
+  reach the worker). Guard with a shared secret, bind to the internal Docker network,
+  and degrade gracefully (fall back to keyword search) if the worker is unreachable.
 - **Multilingual quality:** `multilingual-e5-small` chosen because library content
   will not all be English; validate retrieval quality on a mixed-language fixture set.
 
