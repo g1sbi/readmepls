@@ -9,6 +9,7 @@ import { MockAIProvider } from "./ai/mock-provider.js";
 import { NullAIProvider } from "./ai/null-provider.js";
 import { ExtractorRegistry } from "./extract/registry.js";
 import type { ExtractIO } from "./extract/extractor.js";
+import { FakeEmbedder } from "./embed/fake-embedder.js";
 
 const html = readFileSync(
   fileURLToPath(new URL("./extract/fixtures/simple-article.html", import.meta.url)),
@@ -48,6 +49,7 @@ describe("processJob", () => {
       ai: new MockAIProvider({ tags: ["hello"], summary: "A test." }),
       classify: classifySource,
       fetchBytes: async () => null,
+      embedder: new FakeEmbedder(),
     });
 
     const done = await h.pb.collection("jobs").getOne(job.id);
@@ -83,6 +85,7 @@ describe("processJob", () => {
       ai: new MockAIProvider({ tags: ["x"], summary: "s" }),
       classify: classifySource,
       fetchBytes: async () => null,
+      embedder: new FakeEmbedder(),
     });
 
     const after = await h.pb.collection("jobs").getOne(job.id);
@@ -119,6 +122,7 @@ describe("processJob", () => {
       ai: new MockAIProvider(),
       classify: classifySource,
       fetchBytes: async () => null,
+      embedder: new FakeEmbedder(),
     });
 
     const after = await h.pb.collection("jobs").getOne(job.id);
@@ -159,6 +163,7 @@ describe("processJob", () => {
       ai: new MockAIProvider(),
       classify: classifySource,
       fetchBytes: async () => null,
+      embedder: new FakeEmbedder(),
     });
 
     const linkedArticle = await h.pb.collection("articles").getOne(article.id);
@@ -181,6 +186,7 @@ describe("processJob", () => {
       ai: new NullAIProvider(),
       classify: classifySource,
       fetchBytes: async () => null,
+      embedder: new FakeEmbedder(),
     });
 
     const done = await h.pb.collection("jobs").getOne(job.id);

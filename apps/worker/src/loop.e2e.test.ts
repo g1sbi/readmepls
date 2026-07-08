@@ -9,6 +9,7 @@ import { ArticleExtractor } from "./extract/article-extractor.js";
 import { MockAIProvider } from "./ai/mock-provider.js";
 import { ExtractorRegistry } from "./extract/registry.js";
 import type { ExtractIO } from "./extract/extractor.js";
+import { FakeEmbedder } from "./embed/fake-embedder.js";
 
 const html = readFileSync(
   fileURLToPath(new URL("./extract/fixtures/simple-article.html", import.meta.url)),
@@ -44,6 +45,7 @@ describe("phase-1 end-to-end loop", () => {
       ai: new MockAIProvider({ tags: ["hello"], summary: "A test." }),
       classify: classifySource,
       fetchBytes: async () => null,
+      embedder: new FakeEmbedder(),
     });
 
     const done = await h.pb.collection("jobs").getOne(job!.id);

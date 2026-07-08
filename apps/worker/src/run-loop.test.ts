@@ -8,6 +8,7 @@ import { MockAIProvider } from "./ai/mock-provider.js";
 import { runLoopOnce } from "./run-loop.js";
 import { ExtractorRegistry } from "./extract/registry.js";
 import type { ExtractIO } from "./extract/extractor.js";
+import { FakeEmbedder } from "./embed/fake-embedder.js";
 
 const html = readFileSync(
   fileURLToPath(new URL("./extract/fixtures/simple-article.html", import.meta.url)),
@@ -33,6 +34,7 @@ const deps = {
   ai: new MockAIProvider({ tags: ["hello"], summary: "A test." }),
   classify: classifySource,
   fetchBytes: async () => null,
+  embedder: new FakeEmbedder(),
 };
 
 describe("runLoopOnce", () => {

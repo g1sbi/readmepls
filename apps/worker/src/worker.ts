@@ -7,6 +7,8 @@ import type { SourceType } from "@readmepls/types";
 import { deriveSourceHost } from "@readmepls/core";
 import { ensureSource } from "./source/ensure-source.js";
 import { upsertContent } from "./content/upsert-content.js";
+import { indexContent } from "./embed/index-content.js";
+import type { EmbeddingProvider } from "./embed/provider.js";
 
 export interface ProcessDeps {
   io: ExtractIO;
@@ -14,6 +16,7 @@ export interface ProcessDeps {
   ai: AIProvider;
   classify: (url: string) => SourceType;
   fetchBytes: (url: string) => Promise<{ bytes: Uint8Array; contentType: string } | null>;
+  embedder: EmbeddingProvider;
 }
 
 export async function processJob(
@@ -59,6 +62,17 @@ export async function processJob(
       extract_status: result.status,
       failure_reason: result.failureReason,
     });
+
+    // Embed the extracted text for semantic search. Best-effort and keyed to the
+    // shared content row: an embedding failure must never fail an otherwise-good
+    // extraction, exactly like source linking below.
+    if (result.status !== "failed") {
+      try {
+        await indexContent(pb, content.id, result.contentText, deps.embedder);
+      } catch (err) {
+        console.error(`[worker] embedding failed for ${job.canonical_url}:`, err);
+      }
+    }
 
     // Link the content to its source website. Best-effort: a favicon or source
     // failure must never fail an otherwise-successful extraction job.
