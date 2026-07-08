@@ -11,14 +11,18 @@ export interface LibraryPage {
   perPage: number;
 }
 
-async function searchIds(pb: PocketBase, q: string): Promise<string[]> {
+export type SearchIdsResolver = (pb: PocketBase, q: string) => Promise<string[]>;
+
+/** Default keyword resolver: the FTS `/api/search` PocketBase route. */
+export const keywordSearchIds: SearchIdsResolver = async (pb, q) => {
   const res = await pb.send("/api/search", { method: "GET", query: { q } });
   const results = (res as { results?: { articleId: string }[] }).results ?? [];
   return results.map((r) => r.articleId).slice(0, 200);
-}
+};
 
 export async function fetchLibraryPage(
   pb: PocketBase, params: LibraryParams, now: Date = new Date(),
+  resolveSearchIds: SearchIdsResolver = keywordSearchIds,
 ): Promise<LibraryPage> {
   // favsrc: fold favorited source ids into the source facet (union with any explicit selection).
   let effective = params;
@@ -34,7 +38,7 @@ export async function fetchLibraryPage(
   let rankOrder: string[] | null = null;
 
   if (params.q.trim()) {
-    const ids = await searchIds(pb, params.q);
+    const ids = await resolveSearchIds(pb, params.q);
     if (ids.length === 0) return { items: [], totalItems: 0, page: params.page, perPage: built.perPage };
     rankOrder = ids;
     const sids = applySearchIds(ids);

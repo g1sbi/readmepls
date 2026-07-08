@@ -13,6 +13,7 @@ export default defineConfig({
       "$app/navigation": fileURLToPath(new URL("./src/__mocks__/app-navigation.ts", import.meta.url)),
       "$app/stores": fileURLToPath(new URL("./src/__mocks__/app-stores.ts", import.meta.url)),
       "$env/dynamic/public": fileURLToPath(new URL("./src/__mocks__/env-dynamic-public.ts", import.meta.url)),
+      "$env/dynamic/private": fileURLToPath(new URL("./src/__mocks__/env-dynamic-private.ts", import.meta.url)),
     },
   },
   test: {

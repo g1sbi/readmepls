@@ -14,7 +14,7 @@ import { load } from "./+page.server.js";
 describe("library load", () => {
   it("parses the URL params and returns page + facets", async () => {
     const url = new URL("http://x/library?read=unread&sort=-read_time");
-    const locals = { pb: {} } as never;
+    const locals = { pb: { authStore: { model: null } } } as never;
     const data = await load({ url, locals } as never);
     expect(data.params.read).toEqual(["unread"]);
     expect(data.params.sort).toBe("-read_time");
