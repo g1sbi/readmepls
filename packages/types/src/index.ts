@@ -3,6 +3,7 @@ export * from "./source-site.js";
 export * from "./extract.js";
 export * from "./ai.js";
 export * from "./content.js";
+export * from "./embedding.js";
 export * from "./job.js";
 export * from "./article.js";
 export * from "./reader.js";
