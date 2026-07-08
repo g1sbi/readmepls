@@ -49,6 +49,16 @@ own reverse proxy (Caddy, Traefik, or nginx) terminating TLS and forwarding to t
 **Smoke test:** `pnpm smoke` boots the full stack, seeds one job, and asserts the
 worker processes it end-to-end (uses a mock AI provider, so no API key is needed).
 
+**Semantic search:** library search is hybrid — every query blends keyword (full-text)
+and semantic (meaning-based) matches, so both exact phrases and paraphrases surface.
+Embeddings run on a local model (`multilingual-e5-small`, no API key); it downloads
+once on the first capture into the `worker_models` volume. To enable the semantic
+half, set `WORKER_SEARCH_SECRET` in `.env` (`openssl rand -hex 32`) — the same value
+wires the worker's internal `/search` endpoint and the web app that calls it. Leave it
+empty to run keyword-only. To embed content you captured before enabling it, set
+`BACKFILL_EMBEDDINGS=1` for one worker boot. If the worker is unreachable, search
+degrades to keyword-only automatically.
+
 ## Running locally (without Docker)
 
 Three processes against one PocketBase superuser shared by the worker and the

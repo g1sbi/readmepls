@@ -49,9 +49,21 @@ services:
       # Empty by default (real provider). The smoke test exports AI_PROVIDER=mock
       # so the worker completes jobs offline; overrides the .env value.
       AI_PROVIDER: ${AI_PROVIDER:-}
+      # Bind the internal /search server to all interfaces so `web` can reach it
+      # container-to-container (the worker defaults to loopback-only otherwise).
+      WORKER_HTTP_HOST: 0.0.0.0
+    expose:
+      # Internal semantic /search endpoint — reachable only on the compose network,
+      # never published to the host. `web` calls it with the shared secret.
+      - "8091"
+    volumes:
+      # Persist the downloaded embedding model across restarts (first capture
+      # fetches it once into TRANSFORMERS_CACHE=/data/models).
+      - worker_models:/data/models
     depends_on:
       pocketbase:
         condition: service_healthy
 
 volumes:
   pb_data:
+  worker_models:
