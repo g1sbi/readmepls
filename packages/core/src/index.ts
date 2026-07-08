@@ -12,6 +12,7 @@ export * from "./search/query.js";
 export * from "./embedding/chunk.js";
 export * from "./embedding/cosine.js";
 export * from "./embedding/search.js";
+export * from "./embedding/rrf.js";
 export * from "./source/extract-result.js";
 export * from "./source/x/tweet-id.js";
 export * from "./source/x/syndication.js";
