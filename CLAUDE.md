@@ -67,6 +67,11 @@ design phase does not add features.
   components compose them. No duplicated markup or CSS. This mixes generated
   shadcn-svelte components (e.g. `ui/badge/`) with surviving hand-rolled ones —
   migration is incremental, so both coexist. `cn()` (`$lib/utils`) merges classes.
+- **shadcn-svelte for new UI.** New UI primitives use shadcn-svelte components —
+  add them with the CLI (`pnpm dlx shadcn-svelte@latest add <name>`), don't
+  hand-roll a new one when shadcn-svelte ships an equivalent. Compose the generated
+  primitives (`ui/button/`, `ui/badge/`, …) into feature components. Prefer an
+  installed shadcn-svelte primitive over a hand-rolled `.svelte` when both exist.
 - **Mobile-first, always responsive.** This is a reader app — most reading happens
   on phones. Design and build for the smallest viewport first, then enhance upward.
   Every component must be usable and uncluttered at 360px wide: no horizontal
