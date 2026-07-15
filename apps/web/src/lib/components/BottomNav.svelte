@@ -1,6 +1,6 @@
 <script lang="ts">
   import { onMount } from "svelte";
-  import { Library, Search, User } from "@lucide/svelte";
+  import { Library, Search, FolderOpen, User } from "@lucide/svelte";
   import { nextNavVisible } from "./bottom-nav-scroll.js";
 
   let { pathname }: { pathname: string } = $props();
@@ -8,6 +8,7 @@
   const TABS = [
     { href: "/library", label: "library", icon: Library, match: (p: string) => p === "/library" || p.startsWith("/read") },
     { href: "/library?focus=search", label: "search", icon: Search, match: (_p: string) => false },
+    { href: "/collections", label: "collections", icon: FolderOpen, match: (p: string) => p.startsWith("/collections") },
     { href: "/profile", label: "profile", icon: User, match: (p: string) => p === "/profile" },
   ];
 

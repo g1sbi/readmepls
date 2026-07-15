@@ -16,6 +16,7 @@
   import LibraryToolbar from "$lib/components/LibraryToolbar.svelte";
   import ActiveFilters from "$lib/components/ActiveFilters.svelte";
   import FilterDrawer from "$lib/components/FilterDrawer.svelte";
+  import LibraryCollections from "$lib/components/LibraryCollections.svelte";
   import { reveal } from "$lib/actions/reveal.js";
 
   let { data }: { data: PageData } = $props();
@@ -99,6 +100,12 @@
 </script>
 
 <h1>your library</h1>
+
+<LibraryCollections
+  collections={data.facets.collections}
+  error={collectionError}
+  onCreate={createCollection}
+/>
 
 {#if articleError}
   <p class="article-error" role="alert">{articleError}</p>

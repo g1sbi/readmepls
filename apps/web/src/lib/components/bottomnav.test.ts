@@ -20,4 +20,14 @@ describe("BottomNav", () => {
     const { getByRole } = render(BottomNav, { pathname: "/read/abc123" });
     expect(getByRole("link", { name: /library/i })).toHaveAttribute("aria-current", "page");
   });
+
+  it("renders the collections tab", () => {
+    const { getByRole } = render(BottomNav, { pathname: "/library" });
+    expect(getByRole("link", { name: /collections/i })).toHaveAttribute("href", "/collections");
+  });
+
+  it("marks collections active on a collection route", () => {
+    const { getByRole } = render(BottomNav, { pathname: "/collections/recipes" });
+    expect(getByRole("link", { name: /collections/i })).toHaveAttribute("aria-current", "page");
+  });
 });
