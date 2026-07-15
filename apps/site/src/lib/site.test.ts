@@ -20,14 +20,14 @@ test("APP_URL falls back to localhost dev default when unset", async () => {
   expect(APP_URL).toBe("http://localhost:3000");
 });
 
-test("GITHUB_URL is an absolute https url", async () => {
+test("GITHUB_URL points at the g1sbi repo", async () => {
   const { GITHUB_URL } = await import("$lib/site");
-  expect(GITHUB_URL.startsWith("https://github.com/")).toBe(true);
+  expect(GITHUB_URL).toBe("https://github.com/g1sbi/readmepls");
 });
 
-test("tagline matches the brand line", async () => {
+test("tagline is the hero's second line", async () => {
   const { TAGLINE } = await import("$lib/site");
-  expect(TAGLINE).toBe("save any link. actually read it. pls.");
+  expect(TAGLINE).toBe("actually read it. pls.");
 });
 
 test("there are exactly three how-it-works steps", async () => {
@@ -43,4 +43,28 @@ test("there is at least one feature, each with title and body", async () => {
     expect(f.title.length).toBeGreaterThan(0);
     expect(f.body.length).toBeGreaterThan(0);
   }
+});
+
+test("reel has the five ordered content-type words", async () => {
+  const { REEL_WORDS } = await import("$lib/site");
+  expect([...REEL_WORDS]).toEqual([
+    "link",
+    "article",
+    "video",
+    "thread",
+    "newsletter",
+  ]);
+});
+
+test("there are four features and none is the AI card", async () => {
+  const { FEATURES } = await import("$lib/site");
+  expect(FEATURES).toHaveLength(4);
+  const titles = FEATURES.map((f) => f.title.toLowerCase());
+  expect(titles.some((t) => t.includes("ai"))).toBe(false);
+});
+
+test("pro strip has a badge and AI body copy", async () => {
+  const { PRO_STRIP } = await import("$lib/site");
+  expect(PRO_STRIP.badge).toBe("Coming soon · Pro");
+  expect(PRO_STRIP.body).toContain("AI auto-tags");
 });
