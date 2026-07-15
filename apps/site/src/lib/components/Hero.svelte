@@ -1,5 +1,14 @@
 <script lang="ts">
-  import { APP_URL, GITHUB_URL, TAGLINE } from "$lib/site";
+  import { APP_URL, GITHUB_URL, TAGLINE, REEL_WORDS } from "$lib/site";
+
+  // Visual reel slots: the first word is duplicated at the top so the downward
+  // scroll loops seamlessly; the remaining words are reversed because a higher
+  // DOM word enters the downward-moving window later. Order/count is locked to
+  // the `reel` keyframes below (5 words).
+  const slots = [REEL_WORDS[0], ...[...REEL_WORDS].reverse()];
+
+  // One clean sentence for screen readers, in place of the churning reel.
+  const srPhrase = `save any ${REEL_WORDS.slice(0, -1).join(", ")}, or ${REEL_WORDS[REEL_WORDS.length - 1]}`;
 </script>
 
 <section class="hero">
@@ -8,9 +17,13 @@
     <img class="logo" src="/hero.png" alt="readmepls" width="160" height="160" />
   </div>
   <h1 class="wordmark">readme<span class="pls">pls</span></h1>
+  <p class="tagline reel-line">
+    <span class="reel-lead" aria-hidden="true">save any&nbsp;</span><span class="reel" aria-hidden="true"><span class="reel-col">{#each slots as w}<span class="reel-word">{w}</span>{/each}</span></span>
+    <span class="sr-only">{srPhrase}</span>
+  </p>
   <p class="tagline">{TAGLINE}</p>
   <div class="cta">
-    <a class="btn primary" href={APP_URL} rel="external">Open app</a>
+    <a class="btn primary" href={APP_URL}>Open app</a>
     <a class="btn ghost" href={GITHUB_URL}>GitHub</a>
   </div>
 </section>
@@ -72,6 +85,37 @@
     color: var(--muted);
     animation: rise 0.6s ease 0.28s both;
   }
+
+  /* Slot-machine reel: a one-line window; the column steps downward, holding on
+     each word. ponytail: baseline of an overflow-hidden inline-block can sit a
+     hair low — nudge vertical-align if it looks off when running. */
+  .reel-line {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    align-items: baseline;
+  }
+  .reel {
+    --reel-h: 1.2em;
+    display: inline-block;
+    height: var(--reel-h);
+    line-height: var(--reel-h);
+    overflow: hidden;
+    vertical-align: bottom;
+    text-align: left;
+  }
+  .reel-col {
+    display: flex;
+    flex-direction: column;
+    animation: reel 11s cubic-bezier(0.7, 0, 0.3, 1) infinite;
+  }
+  .reel-word {
+    height: var(--reel-h);
+    color: var(--accent);
+    font-weight: 600;
+    white-space: nowrap;
+  }
+
   .cta {
     display: flex;
     flex-wrap: wrap;
@@ -110,6 +154,14 @@
     border: 2px solid var(--fold);
   }
 
+  @keyframes reel {
+    0%, 14% { transform: translateY(calc(var(--reel-h) * -5)); }
+    20%, 34% { transform: translateY(calc(var(--reel-h) * -4)); }
+    40%, 54% { transform: translateY(calc(var(--reel-h) * -3)); }
+    60%, 74% { transform: translateY(calc(var(--reel-h) * -2)); }
+    80%, 94% { transform: translateY(calc(var(--reel-h) * -1)); }
+    100% { transform: translateY(0); }
+  }
   @keyframes drop-in {
     0% {
       opacity: 0;
