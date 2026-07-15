@@ -63,15 +63,17 @@
     {/each}
   </ul>
 
-  {#if creating}
-    <form class="create" onsubmit={submitCreate}>
-      <Input bind:value={draft} placeholder="new collection…" aria-label="new collection name" />
-      <Button type="submit"><Plus class="icon-sm" aria-hidden="true" /> create</Button>
-    </form>
-  {:else}
-    <button class="new-btn" onclick={() => (creating = true)}><Plus class="icon-sm" aria-hidden="true" /> new collection</button>
-  {/if}
-  {#if error}<p class="error" role="alert">{error}</p>{/if}
+  <div class="create-area">
+    {#if creating}
+      <form class="create" onsubmit={submitCreate}>
+        <Input bind:value={draft} placeholder="new collection…" aria-label="new collection name" />
+        <Button type="submit"><Plus class="icon-sm" aria-hidden="true" /> create</Button>
+      </form>
+    {:else}
+      <button class="new-btn" onclick={() => (creating = true)}><Plus class="icon-sm" aria-hidden="true" /> new collection</button>
+    {/if}
+    {#if error}<p class="error" role="alert">{error}</p>{/if}
+  </div>
 </section>
 
 <style>
@@ -97,4 +99,7 @@
   .new-btn:hover { color: var(--color-accent-hover); }
   .new-btn:focus-visible { outline: var(--focus-ring-width) solid var(--color-ring); outline-offset: var(--focus-ring-offset); }
   .error { margin: var(--space-1) 0 0; font-size: var(--text-sm); color: var(--color-danger); }
+  /* Desktop: create moves to the always-present LibraryCollections section at the
+     top of the library; the drawer panel keeps rename/delete only. */
+  @media (min-width: 641px) { .create-area { display: none; } }
 </style>
