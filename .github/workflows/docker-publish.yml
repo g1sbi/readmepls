@@ -21,6 +21,8 @@ jobs:
             dockerfile: apps/web/Dockerfile
           - name: worker
             dockerfile: apps/worker/Dockerfile
+          - name: site
+            dockerfile: apps/site/Dockerfile
     steps:
       - uses: actions/checkout@v4
 
