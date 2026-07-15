@@ -1,7 +1,7 @@
 import { describe, it, expect, beforeAll, afterAll } from "vitest";
 import PocketBase, { type RecordModel } from "pocketbase";
 import { startEphemeralPb, type PbHandle } from "../pb/test-harness.js";
-import { fetchLibraryPage, fetchFacetOptions } from "./fetch.js";
+import { fetchLibraryPage, fetchFacetOptions, fetchCollections } from "./fetch.js";
 import { LibraryParams } from "@readmepls/types";
 
 let h: PbHandle;
@@ -92,5 +92,40 @@ describe("fetchLibraryPage + fetchFacetOptions run together", () => {
     await expect(
       Promise.all([fetchLibraryPage(a.pb, P({})), fetchFacetOptions(a.pb)])
     ).resolves.toBeDefined();
+  });
+});
+
+async function collection(pb: PocketBase, uid: string, name: string) {
+  return pb.collection("collections").create({ user: uid, name, slug: name, parent: "", order: 0 });
+}
+
+describe("fetchCollections", () => {
+  it("returns per-collection article counts, zero-filling empties", async () => {
+    const a = await user(`fc-a${Date.now()}@t.local`);
+    const recipes = await collection(a.pb, a.id, "recipes");
+    await collection(a.pb, a.id, "empty");
+    const c1 = await content({ title: "One" });
+    const c2 = await content({ title: "Two" });
+    const art1 = await article(a.pb, a.id, c1.id);
+    const art2 = await article(a.pb, a.id, c2.id);
+    await a.pb.collection("collection_items").create({ collection: recipes.id, article: art1.id, order: 0 });
+    await a.pb.collection("collection_items").create({ collection: recipes.id, article: art2.id, order: 0 });
+
+    const cols = await fetchCollections(a.pb);
+    expect(cols.find((c) => c.slug === "recipes")?.count).toBe(2);
+    expect(cols.find((c) => c.slug === "empty")?.count).toBe(0);
+  });
+
+  it("does not count another user's collection_items", async () => {
+    const a = await user(`fc-b${Date.now()}@t.local`);
+    const b = await user(`fc-c${Date.now()}@t.local`);
+    const bCol = await collection(b.pb, b.id, "bwork");
+    const c = await content({ title: "Secret" });
+    const art = await article(b.pb, b.id, c.id);
+    await b.pb.collection("collection_items").create({ collection: bCol.id, article: art.id, order: 0 });
+
+    // User a has no collections; their fetch sees nothing of b's.
+    const cols = await fetchCollections(a.pb);
+    expect(cols).toEqual([]);
   });
 });

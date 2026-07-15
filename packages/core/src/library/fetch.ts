@@ -67,18 +67,43 @@ export async function fetchLibraryPage(
   return { items: list.items, totalItems: list.totalItems, page: list.page, perPage: built.perPage };
 }
 
+export function tallyCollectionCounts(
+  collections: { id: string; name: string; slug: string }[],
+  items: { collection: string }[],
+): { id: string; name: string; slug: string; count: number }[] {
+  const counts = new Map<string, number>();
+  for (const it of items) counts.set(it.collection, (counts.get(it.collection) ?? 0) + 1);
+  return collections.map((c) => ({ ...c, count: counts.get(c.id) ?? 0 }));
+}
+
+export async function fetchCollections(
+  pb: PocketBase,
+): Promise<{ id: string; name: string; slug: string; count: number }[]> {
+  const colRows = await pb.collection("collections").getFullList({ sort: "name", requestKey: null });
+  const collections = colRows.map((c) => ({ id: c.id, name: c.name as string, slug: c.slug as string }));
+  // Count query is a secondary read: degrade to zero counts rather than failing the
+  // whole facet/index load if it errors (matches the repo's graceful-degrade convention).
+  let items: { collection: string }[] = [];
+  try {
+    const rows = await pb.collection("collection_items").getFullList({ fields: "collection", requestKey: null });
+    items = rows.map((r) => ({ collection: r.collection as string }));
+  } catch {
+    items = [];
+  }
+  return tallyCollectionCounts(collections, items);
+}
+
 export async function fetchFacetOptions(pb: PocketBase): Promise<{
   tags: { id: string; name: string }[];
-  collections: { id: string; name: string; slug: string }[];
+  collections: { id: string; name: string; slug: string; count: number }[];
   options: FacetOptions;
 }> {
-  // requestKey: null on the "articles"/"source_favorites" calls -- fetchLibraryPage
-  // queries the same collections concurrently on the same pb client (see fetch.ts's
-  // fetchLibraryPage), and the SDK's default auto-cancellation would otherwise abort
-  // whichever request loses the race.
-  const [tagRows, colRows, favRows, artRows] = await Promise.all([
+  // requestKey: null on the concurrent calls -- fetchLibraryPage queries some of the
+  // same collections on the same pb client; the SDK's default auto-cancellation would
+  // otherwise abort whichever request loses the race.
+  const [tagRows, collections, favRows, artRows] = await Promise.all([
     pb.collection("tags").getFullList({ sort: "name" }),
-    pb.collection("collections").getFullList({ sort: "name" }),
+    fetchCollections(pb),
     pb.collection("source_favorites").getFullList({ requestKey: null }),
     pb.collection("articles").getFullList({
       expand: "content.source",
@@ -95,7 +120,7 @@ export async function fetchFacetOptions(pb: PocketBase): Promise<{
   const favoriteIds = new Set(favRows.map((f) => f.source as string));
   return {
     tags: tagRows.map((t) => ({ id: t.id, name: t.name as string })),
-    collections: colRows.map((c) => ({ id: c.id, name: c.name as string, slug: c.slug as string })),
+    collections,
     options: deriveFacetOptions(artRows as unknown as ArticleFacetRow[], favoriteIds),
   };
 }
