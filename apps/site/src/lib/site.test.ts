@@ -68,3 +68,12 @@ test("pro strip has a badge and AI body copy", async () => {
   expect(PRO_STRIP.badge).toBe("Coming soon · Pro");
   expect(PRO_STRIP.body).toContain("AI auto-tags");
 });
+
+test("no step presents AI (AI is a Pro extension, not the core flow)", async () => {
+  const { STEPS } = await import("$lib/site");
+  for (const s of STEPS) {
+    const text = `${s.title} ${s.body}`;
+    expect(text).not.toMatch(/\bai\b/i);
+    expect(text.toLowerCase()).not.toContain("auto-tag");
+  }
+});
