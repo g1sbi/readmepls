@@ -25,4 +25,6 @@ COPY --from=build /repo/apps/site/build /usr/share/nginx/html
 ENV APP_URL=https://app.readmepls.com
 EXPOSE 80
 HEALTHCHECK --interval=10s --timeout=3s --start-period=10s --retries=5 \
-  CMD wget -qO- http://localhost/ >/dev/null 2>&1 || exit 1
+  # Probe 127.0.0.1, not localhost: in-container `localhost` resolves to ::1
+  # first, but nginx here listens on IPv4 only, so an IPv6 probe is refused.
+  CMD wget -qO- http://127.0.0.1/ >/dev/null 2>&1 || exit 1
