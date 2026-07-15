@@ -8,6 +8,9 @@ export default defineConfig({
   resolve: {
     alias: {
       $lib: fileURLToPath(new URL("./src/lib", import.meta.url)),
+      "$env/dynamic/public": fileURLToPath(
+        new URL("./src/__mocks__/env-dynamic-public.ts", import.meta.url),
+      ),
     },
   },
   test: {
