@@ -62,7 +62,7 @@
   .empty-hint { color: var(--color-text-muted); font-family: var(--font-ui); font-size: var(--text-sm); margin: 0 0 var(--space-2); }
   .create { display: flex; flex-direction: column; gap: var(--space-1); }
   .create-form { display: flex; align-items: center; gap: var(--space-1); }
-  .new-btn { display: inline-flex; align-items: center; gap: var(--space-1); align-self: flex-start; background: none; border: none; cursor: pointer; font-family: var(--font-ui); font-size: var(--text-sm); color: var(--color-accent); padding: var(--space-2); }
+  .new-btn { display: inline-flex; align-items: center; gap: var(--space-1); align-self: flex-start; background: none; border: none; cursor: pointer; font-family: var(--font-ui); font-size: var(--text-sm); color: var(--color-accent); padding: var(--space-2); min-height: 2.75rem; }
   .new-btn:hover { color: var(--color-accent-hover); }
   .new-btn:focus-visible { outline: var(--focus-ring-width) solid var(--color-ring); outline-offset: var(--focus-ring-offset); }
   .error { margin: var(--space-1) 0 0; font-size: var(--text-sm); color: var(--color-danger); }
