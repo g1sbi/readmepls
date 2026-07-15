@@ -43,7 +43,15 @@ commit (Conventional) → push main
 - Trigger: `on: push: branches: [main]`.
 - Permissions: `contents: write`, `pull-requests: write`.
 - Single step: `googleapis/release-please-action@v4` reading the config +
-  manifest below.
+  manifest below, authenticated with a **PAT** (`secrets.RELEASE_PLEASE_TOKEN`),
+  not the default `GITHUB_TOKEN`.
+
+**Why a PAT:** GitHub does not trigger further workflows from events created
+with the default `GITHUB_TOKEN`. The tag release-please pushes must trigger
+`docker-publish.yml`, so release-please authenticates with a fine-grained PAT
+(`contents: write` + `pull-requests: write`) stored as the
+`RELEASE_PLEASE_TOKEN` repo secret. Tags pushed under a PAT do trigger
+downstream workflows.
 
 ### `release-please-config.json`
 - `release-type: simple`
@@ -57,6 +65,8 @@ commit (Conventional) → push main
 
 ## Bootstrap procedure (one-time, manual)
 
+0. Create a fine-grained PAT (repo-scoped: Contents = read/write, Pull requests
+   = read/write) and store it as the `RELEASE_PLEASE_TOKEN` repo secret.
 1. Land the three files above on `main`.
 2. Tag the current prod state:
    `git tag v0.1.0 && git push origin v0.1.0`
