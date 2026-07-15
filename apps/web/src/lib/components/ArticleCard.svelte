@@ -7,10 +7,11 @@
   import ConfirmDialog from "./ui/ConfirmDialog.svelte";
   import DropdownMenu from "./ui/DropdownMenu.svelte";
   import MenuItem from "./ui/MenuItem.svelte";
-  import { RotateCw, Trash2, MoreHorizontal, Archive, ArchiveRestore, FolderPlus } from "@lucide/svelte";
+  import { RotateCw, Trash2, MoreHorizontal, Archive, ArchiveRestore, FolderPlus, ExternalLink } from "@lucide/svelte";
   import { deriveCardState } from "$lib/article/card-state.js";
   import { sourceView } from "$lib/source/source-view.js";
   import { browserPb } from "$lib/pb.js";
+  import { httpUrlOrNull } from "$lib/url/http-url.js";
   import { page } from "$app/stores";
   import { STARTED_THRESHOLD, FINISHED_THRESHOLD } from "@readmepls/core";
 
@@ -86,6 +87,10 @@
       <DropdownMenu label="article actions">
         {#snippet trigger()}<MoreHorizontal class="icon-sm" aria-hidden="true" />{/snippet}
         {#snippet children()}
+          <MenuItem onSelect={() => { const u = httpUrlOrNull(article.url); if (u) window.open(u, "_blank", "noopener,noreferrer"); }}>
+            <ExternalLink class="icon-sm" aria-hidden="true" /> open original
+          </MenuItem>
+          <div class="menu-sep"></div>
           {#if onAddToCollection}
             <div class="menu-label">add to collection</div>
             {#if collections && collections.length > 0}

@@ -2,6 +2,7 @@
   import { onMount, onDestroy, getContext, tick } from "svelte";
   import { page } from "$app/stores";
   import { browserPb } from "$lib/pb.js";
+  import { httpUrlOrNull } from "$lib/url/http-url.js";
   import { withReaderDefaults, anchoring, rangeOver, slugify, STARTED_THRESHOLD, FINISHED_THRESHOLD } from "@readmepls/core";
   import { Highlight, type ReaderPrefs, type HighlightColor } from "@readmepls/types";
   import type { Theme } from "$lib/theme/theme.js";
@@ -18,11 +19,12 @@
   import Rail from "$lib/components/ui/Rail.svelte";
   import DropdownMenu from "$lib/components/ui/DropdownMenu.svelte";
   import MenuItem from "$lib/components/ui/MenuItem.svelte";
-  import { ArrowLeft, Archive, Trash2, FolderPlus } from "@lucide/svelte";
+  import { ArrowLeft, Archive, Trash2, FolderPlus, ArrowUpRight } from "@lucide/svelte";
   import Skeleton from "$lib/components/ui/Skeleton.svelte";
   import HighlightPopover from "$lib/components/HighlightPopover.svelte";
   import HighlightsSidebar from "$lib/components/HighlightsSidebar.svelte";
   import SourcePill from "$lib/components/ui/SourcePill.svelte";
+  import { Button } from "$lib/components/ui/button";
   import { sourceView } from "$lib/source/source-view.js";
 
   // Global theme context provided by +layout.svelte. May be undefined when
@@ -182,6 +184,7 @@
   // sync when TopBar changes theme) and fall back to local prefs for isolation.
   const activeTheme = $derived(themeCtx ? themeCtx.current : prefs.theme);
   const source = $derived(sourceView(pb, content));
+  const originalUrl = $derived(article?.url ? httpUrlOrNull(article.url) : null);
 
   // Push every local progress change up to the layout-rendered strip.
   $effect(() => { progressCtx?.set(progress); });
@@ -355,8 +358,16 @@
         <!-- Svelte emits an a11y warning for onmouseup on a non-interactive <article>; accepted for text-selection in the reader. -->
         <article data-theme={activeTheme} class="reader" onmouseup={onMouseUp}>
           <h1>{content.title}</h1>
-          {#if source}
-            <div class="reader-source"><SourcePill name={source.name} host={source.host} iconUrl={source.iconUrl} /></div>
+          {#if source || originalUrl}
+            <div class="reader-source">
+              {#if source}<SourcePill name={source.name} host={source.host} iconUrl={source.iconUrl} />{/if}
+              {#if source && originalUrl}<span class="dot" aria-hidden="true">·</span>{/if}
+              {#if originalUrl}
+                <Button variant="link" href={originalUrl} target="_blank" rel="noopener noreferrer" class="open-original">
+                  open original <ArrowUpRight class="icon-sm" aria-hidden="true" />
+                </Button>
+              {/if}
+            </div>
           {/if}
           <!-- content_html is sanitized in the worker (Task 2) before storage -->
           <!-- bind:this anchors the highlight anchoring scope to the article body -->
@@ -432,5 +443,7 @@
     .reader-layout :global(.hl-sidebar) { position: sticky; top: var(--space-4); }
   }
   .delete-error { margin: 0 0 0.75rem; font-size: var(--text-sm); color: var(--color-accent); }
-  .reader-source { margin: 0 0 var(--space-4); }
+  .reader-source { display: flex; align-items: center; gap: var(--space-2); flex-wrap: wrap; margin: 0 0 var(--space-4); }
+  .reader-source .dot { color: var(--color-text-muted); }
+  .reader-source :global(.open-original) { font-family: var(--font-ui); font-size: var(--text-sm); height: auto; padding: 0; gap: var(--space-1); }
 </style>

@@ -354,6 +354,22 @@ describe("reader page — progress", () => {
     expect(window.scrollTo).not.toHaveBeenCalled();
   });
 
+  it("links to the original article in a new tab", async () => {
+    render(ReaderPage);
+    await waitFor(() => expect(screen.getByText("Test Article")).toBeInTheDocument());
+    const link = screen.getByRole("link", { name: /open original/i });
+    expect(link).toHaveAttribute("href", "https://example.com/p");
+    expect(link).toHaveAttribute("target", "_blank");
+    expect(link).toHaveAttribute("rel", "noopener noreferrer");
+  });
+
+  it("does not render the original link for a non-http url", async () => {
+    articleGetOne.mockResolvedValueOnce({ ...defaultArticle(), url: "javascript:alert(1)" });
+    render(ReaderPage);
+    await waitFor(() => expect(screen.getByText("Test Article")).toBeInTheDocument());
+    expect(screen.queryByRole("link", { name: /open original/i })).not.toBeInTheDocument();
+  });
+
   it("marks a short article finished immediately, with no scroll required", async () => {
     articleGetOne.mockResolvedValueOnce({ ...defaultArticle(), progress: 0 });
     Object.defineProperty(document.body, "scrollHeight", { value: 400, configurable: true });
