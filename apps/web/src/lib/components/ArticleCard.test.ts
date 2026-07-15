@@ -101,6 +101,27 @@ describe("ArticleCard", () => {
     expect(onDelete).toHaveBeenCalledWith("a1");
   });
 
+  it("opens the original article in a new tab from the menu", async () => {
+    const openSpy = vi.spyOn(window, "open").mockImplementation(() => null);
+    render(ArticleCard, { article: ready(), onDelete: vi.fn() });
+    await fireEvent.click(screen.getByRole("button", { name: "article actions" }));
+    await fireEvent.click(await screen.findByRole("menuitem", { name: /open original/i }));
+    expect(openSpy).toHaveBeenCalledWith("https://example.com/p", "_blank", "noopener,noreferrer");
+    openSpy.mockRestore();
+  });
+
+  it("does not open a non-http url from the menu", async () => {
+    const openSpy = vi.spyOn(window, "open").mockImplementation(() => null);
+    render(ArticleCard, {
+      article: article({ extract_status: "ok", title: "Hello", ai_tags_json: [] }, { url: "javascript:alert(1)" }),
+      onDelete: vi.fn(),
+    });
+    await fireEvent.click(screen.getByRole("button", { name: "article actions" }));
+    await fireEvent.click(await screen.findByRole("menuitem", { name: /open original/i }));
+    expect(openSpy).not.toHaveBeenCalled();
+    openSpy.mockRestore();
+  });
+
   it("shows the hostname (not the full path) while processing", () => {
     render(ArticleCard, {
       article: { id: "a2", url: "https://example.com/some/very/long/path?x=1", expand: undefined },
