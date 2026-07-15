@@ -13,5 +13,5 @@
 >
   <FolderOpen class="icon-sm" aria-hidden="true" />
   <span class="truncate">{name}</span>
-  <Badge variant="secondary">{count}</Badge>
+  <Badge variant="secondary" aria-label={`${count} articles`}>{count}</Badge>
 </Button>
