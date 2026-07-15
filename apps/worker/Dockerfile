@@ -38,5 +38,10 @@ RUN apt-get update \
     && apt-get purge -y --auto-remove python3-pip \
     && rm -rf /var/lib/apt/lists/*
 COPY --from=build --chown=app:app /out ./
+# Pre-create the TRANSFORMERS_CACHE mount point owned by app: a fresh named
+# volume at /data/models inherits ownership from the image path it covers,
+# so without this it lands root:root and the embedder's warmup-time mkdir
+# (LocalEmbedder) fails with EACCES under the non-root runtime user.
+RUN mkdir -p /data/models && chown app:app /data/models
 USER app
 CMD ["node", "dist/main.js"]
