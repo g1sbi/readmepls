@@ -442,6 +442,16 @@
     .reader-layout { grid-template-columns: 14rem minmax(0, 1fr) 16rem; align-items: start; }
     .reader-layout :global(.hl-sidebar) { position: sticky; top: var(--space-4); }
   }
+  /* Mobile: run the article card nearly edge-to-edge. It sits inside .page's
+     1.25rem inset; pull it out by 1rem so reading uses the full width, leaving
+     just a 0.25rem hint of the paper border. Trim the inner padding too. */
+  @media (max-width: 640px) {
+    .reader {
+      margin-inline: calc(-1 * var(--space-4));
+      padding: var(--space-4) var(--space-3);
+      border-radius: var(--radius-md);
+    }
+  }
   .delete-error { margin: 0 0 0.75rem; font-size: var(--text-sm); color: var(--color-accent); }
   .reader-source { display: flex; align-items: center; gap: var(--space-2); flex-wrap: wrap; margin: 0 0 var(--space-4); }
   .reader-source .dot { color: var(--color-text-muted); }
