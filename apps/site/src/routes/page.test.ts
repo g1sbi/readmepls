@@ -1,7 +1,7 @@
 import { render, screen } from "@testing-library/svelte";
 import { expect, test } from "vitest";
 import Page from "./+page.svelte";
-import { TAGLINE } from "$lib/site";
+import { TAGLINE, PRO_STRIP } from "$lib/site";
 
 test("landing page mounts all four sections", () => {
   render(Page);
@@ -9,4 +9,9 @@ test("landing page mounts all four sections", () => {
   expect(screen.getByText("How it works")).toBeTruthy(); // HowItWorks
   expect(screen.getByText("What you get")).toBeTruthy(); // Features
   expect(screen.getByText(/open source · self-hostable/i)).toBeTruthy(); // Footer
+});
+
+test("landing page shows the coming-soon Pro strip", () => {
+  render(Page);
+  expect(screen.getByText(PRO_STRIP.badge)).toBeTruthy();
 });

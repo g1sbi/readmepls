@@ -7,43 +7,59 @@ import { env } from "$env/dynamic/public";
 // Fallback covers local `vite dev` with no env set (web's default dev port).
 export const APP_URL = env.PUBLIC_APP_URL || "http://localhost:3000";
 
-// Change GITHUB_URL here if the repo slug differs.
-export const GITHUB_URL = "https://github.com/readmepls/readmepls";
-export const TAGLINE = "save any link. actually read it. pls.";
+export const GITHUB_URL = "https://github.com/g1sbi/readmepls";
+
+// Hero line 2. The reel (Hero.svelte) renders line 1: "save any <reel>".
+export const TAGLINE = "actually read it. pls.";
+
+// Slot-machine reel words shown after "save any", in display order.
+// NOTE: the `reel` keyframes in Hero.svelte are hand-tuned to this exact count
+// (5 words). If you add or remove a word, update those keyframes too.
+export const REEL_WORDS: readonly string[] = [
+  "link",
+  "article",
+  "video",
+  "thread",
+  "newsletter",
+];
 
 export type Step = { n: string; title: string; body: string };
 export type Feature = { title: string; body: string };
+export type ProStrip = { badge: string; body: string };
 
 export const STEPS: readonly Step[] = [
-  {
-    n: "1",
-    title: "Paste a link",
-    body: "Drop any article, thread, or video URL.",
-  },
+  { n: "1", title: "Paste a link", body: "Any article, video, or thread." },
   {
     n: "2",
-    title: "Extract & auto-tag",
-    body: "We pull the readable content and tag it with AI.",
+    title: "We extract the content and store it in readable form",
+    body: "Blog post, article, YouTube video — you name it.",
   },
   {
     n: "3",
-    title: "Read with highlights",
-    body: "A clean reader with highlights, notes, and search.",
+    title: "Read, highlight, organize",
+    body: "A calm reader with highlights, notes, search, and collections.",
   },
 ];
 
 export const FEATURES: readonly Feature[] = [
   {
-    title: "Reader view",
+    title: "A reader you'll actually use",
     body: "Distraction-free typography, tuned your way.",
   },
   {
     title: "Highlights & notes",
     body: "Mark up anything; it stays anchored to the text.",
   },
-  {
-    title: "AI auto-tags",
-    body: "Every save organized without lifting a finger.",
-  },
   { title: "Search & collections", body: "Find and group everything, fast." },
+  {
+    title: "Yours to host",
+    body: "Open source and self-hostable. No lock-in.",
+  },
 ];
+
+// The "coming soon" band below the free core. AI is a Pro extension — never
+// part of the free experience.
+export const PRO_STRIP: ProStrip = {
+  badge: "Coming soon · Pro",
+  body: "AI auto-tags, summaries, reading recommendations and more. Built on top of the reader you already have — it never gets in the way of it.",
+};
