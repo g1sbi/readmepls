@@ -37,23 +37,23 @@ export const STEPS: readonly Step[] = [
   {
     n: "3",
     title: "Read, highlight, organize",
-    body: "A calm reader with highlights, notes, search, and collections.",
+    body: "Everything you need to read, highlight, annotate, search, and collect.",
   },
 ];
 
 export const FEATURES: readonly Feature[] = [
   {
     title: "A reader you'll actually use",
-    body: "Distraction-free typography, tuned your way.",
+    body: "Clean, intuitive and helpful.",
   },
   {
     title: "Highlights & notes",
-    body: "Mark up anything; it stays anchored to the text.",
+    body: "Everything important at a glance",
   },
-  { title: "Search & collections", body: "Find and group everything, fast." },
+  { title: "Search & collections", body: "Find, group and organize your collections." },
   {
     title: "Yours to host",
-    body: "Open source and self-hostable. No lock-in.",
+    body: "For the privacy nerds out there.",
   },
 ];
 
@@ -61,5 +61,5 @@ export const FEATURES: readonly Feature[] = [
 // part of the free experience.
 export const PRO_STRIP: ProStrip = {
   badge: "Coming soon · Pro",
-  body: "AI auto-tags, summaries, reading recommendations and more. Built on top of the reader you already have — it never gets in the way of it.",
+  body: "AI auto-tags, summaries, reading recommendations and more. Built on top of the reader you already have — no gatekeeping core features.",
 };
