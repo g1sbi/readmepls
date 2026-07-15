@@ -16,6 +16,7 @@
   import LibraryToolbar from "$lib/components/LibraryToolbar.svelte";
   import ActiveFilters from "$lib/components/ActiveFilters.svelte";
   import FilterDrawer from "$lib/components/FilterDrawer.svelte";
+  import CollectionFolder from "$lib/components/ui/CollectionFolder.svelte";
   import { reveal } from "$lib/actions/reveal.js";
 
   let { data }: { data: PageData } = $props();
@@ -100,6 +101,14 @@
 
 <h1>your library</h1>
 
+{#if data.facets.collections.length}
+  <nav class="folder-strip" aria-label="collections">
+    {#each data.facets.collections as c (c.id)}
+      <CollectionFolder name={c.name} slug={c.slug} count={c.count} />
+    {/each}
+  </nav>
+{/if}
+
 {#if articleError}
   <p class="article-error" role="alert">{articleError}</p>
 {/if}
@@ -161,6 +170,8 @@
 
 <style>
   h1 { font-family: var(--font-ui); font-size: var(--text-xl); font-weight: var(--weight-semibold); color: var(--color-text); margin: 0 0 var(--space-5); }
+  .folder-strip { display: flex; gap: var(--space-2); overflow-x: auto; padding-bottom: var(--space-2); margin: 0 0 var(--space-4); scrollbar-width: thin; }
+  .folder-strip > :global(*) { flex: none; }
   .empty { text-align: center; padding: var(--space-7) var(--space-4); background: var(--color-surface); border-radius: var(--radius-xl); box-shadow: var(--shadow-sm); position: relative; overflow: hidden; }
   .empty p { font-family: var(--font-ui); color: var(--color-text-muted); }
   .empty a, .link { color: var(--color-accent); }

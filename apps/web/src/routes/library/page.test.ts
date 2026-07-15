@@ -1,5 +1,5 @@
 import { describe, it, expect, vi, beforeEach } from "vitest";
-import { render, screen, fireEvent, waitFor } from "@testing-library/svelte";
+import { render, screen, within, fireEvent, waitFor } from "@testing-library/svelte";
 import { page } from "$app/stores";
 import { LibraryParams } from "@readmepls/types";
 
@@ -35,7 +35,7 @@ const data = {
   page: { items: [article], totalItems: 1, page: 1, perPage: 24 },
   facets: {
     tags: [],
-    collections: [{ id: "c1", name: "reading list", slug: "reading-list" }],
+    collections: [{ id: "c1", name: "reading list", slug: "reading-list", count: 3 }],
     options: { sources: [], languages: [], authors: [] },
   },
 };
@@ -81,10 +81,13 @@ describe("library page", () => {
     await fireEvent.click(screen.getByRole("button", { name: /filters/i }));
     // The collections filter fieldset and the CollectionsPanel management section
     // both render inside the drawer — this is the CollectionsPanel management row.
-    expect(screen.getByRole("link", { name: /reading list/i })).toHaveAttribute("href", "/collections/reading-list");
+    // Scoped to the dialog since the library page's folder strip (above the
+    // toolbar) also renders a "reading list" link outside the drawer.
+    const drawer = within(screen.getByRole("dialog"));
+    expect(drawer.getByRole("link", { name: /reading list/i })).toHaveAttribute("href", "/collections/reading-list");
 
-    await fireEvent.click(screen.getByRole("button", { name: /new collection/i }));
-    const input = screen.getByLabelText(/new collection name/i);
+    await fireEvent.click(drawer.getByRole("button", { name: /new collection/i }));
+    const input = drawer.getByLabelText(/new collection name/i);
     await fireEvent.input(input, { target: { value: "later reads" } });
     await fireEvent.click(screen.getByRole("button", { name: /^create$/i }));
 
@@ -106,5 +109,16 @@ describe("library page", () => {
 
     await fireEvent.click(screen.getByRole("button", { name: "next →" }));
     expect(goto).toHaveBeenCalledWith("/library?page=2", expect.anything());
+  });
+
+  it("renders a folder strip linking to each collection", () => {
+    render(Library, { data } as never);
+    const link = screen.getByRole("link", { name: /reading list/i });
+    expect(link).toHaveAttribute("href", "/collections/reading-list");
+  });
+
+  it("hides the strip when there are no collections", () => {
+    render(Library, { data: { ...data, facets: { ...data.facets, collections: [] } } } as never);
+    expect(screen.queryByRole("link", { name: /reading list/i })).toBeNull();
   });
 });
