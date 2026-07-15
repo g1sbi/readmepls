@@ -1,20 +1,38 @@
-import { describe, it, expect, vi } from "vitest";
-import { render, screen, fireEvent } from "@testing-library/svelte";
+import { describe, it, expect, vi, beforeEach } from "vitest";
+import { render, screen, fireEvent, waitFor } from "@testing-library/svelte";
+import { page } from "$app/stores";
 import ArticleCard from "./ArticleCard.svelte";
 
-const article = (content: unknown) => ({
+const article = (content: unknown, extra: Record<string, unknown> = {}) => ({
   id: "a1",
   url: "https://example.com/p",
   expand: content ? { content } : undefined,
+  ...extra,
 });
 
+const ready = () => article({ extract_status: "ok", title: "Hello", ai_tags_json: ["ai"] });
+
+const basePageValue = {
+  params: {} as Record<string, string>,
+  url: new URL("http://localhost/"),
+  route: { id: null as string | null },
+  status: 200,
+  error: null,
+  data: {} as Record<string, unknown>,
+  form: null,
+  state: {} as Record<string, unknown>,
+};
+
+// Default to pro so tag/action assertions are unaffected by tiering.
+beforeEach(() => page.set({ ...basePageValue, data: { tier: "pro" } }));
+
 describe("ArticleCard", () => {
-  it("shows the title and tags when ready", () => {
-    render(ArticleCard, {
-      article: article({ extract_status: "ok", title: "Hello", ai_tags_json: ["ai", "ml"] }),
-    });
-    expect(screen.getByText("Hello")).toBeInTheDocument();
+  it("links the whole card to the reader when ready", () => {
+    render(ArticleCard, { article: ready() });
+    const link = screen.getByRole("link", { name: /hello/i });
+    expect(link).toHaveAttribute("href", "/read/a1");
     expect(screen.getByText("ai")).toBeInTheDocument();
+    expect(screen.queryByRole("button", { name: /read/i })).not.toBeInTheDocument();
   });
 
   it("shows a processing indicator when not yet extracted", () => {
@@ -33,22 +51,125 @@ describe("ArticleCard", () => {
     expect(onRetry).toHaveBeenCalledWith("a1");
   });
 
-  it("does not render a delete button without an onDelete handler", () => {
-    render(ArticleCard, {
-      article: article({ extract_status: "ok", title: "Hello", ai_tags_json: [] }),
-    });
-    expect(screen.queryByRole("button", { name: "delete article" })).not.toBeInTheDocument();
+  it("renders no actions menu when no handlers are provided", () => {
+    render(ArticleCard, { article: ready() });
+    expect(screen.queryByRole("button", { name: "article actions" })).not.toBeInTheDocument();
   });
 
-  it("opens a confirm dialog and fires onDelete when confirmed", async () => {
-    const onDelete = vi.fn();
+  it("adds the article to a collection from the menu", async () => {
+    const onAddToCollection = vi.fn();
     render(ArticleCard, {
-      article: article({ extract_status: "ok", title: "Hello", ai_tags_json: [] }),
-      onDelete,
+      article: ready(),
+      collections: [{ id: "c1", name: "read later" }],
+      onAddToCollection,
     });
-    await fireEvent.click(screen.getByRole("button", { name: "delete article" }));
-    expect(screen.getByText(/can't be undone/i)).toBeInTheDocument();
+    await fireEvent.click(screen.getByRole("button", { name: "article actions" }));
+    await waitFor(() => expect(screen.getByRole("menuitem", { name: /read later/i })).toBeInTheDocument());
+    await fireEvent.click(screen.getByRole("menuitem", { name: /read later/i }));
+    expect(onAddToCollection).toHaveBeenCalledWith("a1", "c1");
+  });
+
+  it("shows an empty hint when there are no collections", async () => {
+    render(ArticleCard, { article: ready(), collections: [], onAddToCollection: vi.fn() });
+    await fireEvent.click(screen.getByRole("button", { name: "article actions" }));
+    await waitFor(() => expect(screen.getByText(/no collections yet/i)).toBeInTheDocument());
+  });
+
+  it("archives an unarchived article from the menu", async () => {
+    const onArchive = vi.fn();
+    render(ArticleCard, { article: article({ extract_status: "ok", title: "Hello", ai_tags_json: [] }, { status: "unread" }), onArchive });
+    await fireEvent.click(screen.getByRole("button", { name: "article actions" }));
+    await fireEvent.click(await screen.findByRole("menuitem", { name: /^archive$/i }));
+    expect(onArchive).toHaveBeenCalledWith("a1");
+  });
+
+  it("offers unarchive for an archived article", async () => {
+    const onUnarchive = vi.fn();
+    render(ArticleCard, { article: article({ extract_status: "ok", title: "Hello", ai_tags_json: [] }, { status: "archived" }), onUnarchive });
+    await fireEvent.click(screen.getByRole("button", { name: "article actions" }));
+    await fireEvent.click(await screen.findByRole("menuitem", { name: /unarchive/i }));
+    expect(onUnarchive).toHaveBeenCalledWith("a1");
+  });
+
+  it("deletes via the menu after confirming", async () => {
+    const onDelete = vi.fn();
+    render(ArticleCard, { article: ready(), onDelete });
+    await fireEvent.click(screen.getByRole("button", { name: "article actions" }));
+    await fireEvent.click(await screen.findByRole("menuitem", { name: /delete/i }));
+    await waitFor(() => expect(screen.getByText(/can't be undone/i)).toBeInTheDocument());
     await fireEvent.click(screen.getByRole("button", { name: "delete" }));
     expect(onDelete).toHaveBeenCalledWith("a1");
+  });
+
+  it("opens the original article in a new tab from the menu", async () => {
+    const openSpy = vi.spyOn(window, "open").mockImplementation(() => null);
+    render(ArticleCard, { article: ready(), onDelete: vi.fn() });
+    await fireEvent.click(screen.getByRole("button", { name: "article actions" }));
+    await fireEvent.click(await screen.findByRole("menuitem", { name: /open original/i }));
+    expect(openSpy).toHaveBeenCalledWith("https://example.com/p", "_blank", "noopener,noreferrer");
+    openSpy.mockRestore();
+  });
+
+  it("does not open a non-http url from the menu", async () => {
+    const openSpy = vi.spyOn(window, "open").mockImplementation(() => null);
+    render(ArticleCard, {
+      article: article({ extract_status: "ok", title: "Hello", ai_tags_json: [] }, { url: "javascript:alert(1)" }),
+      onDelete: vi.fn(),
+    });
+    await fireEvent.click(screen.getByRole("button", { name: "article actions" }));
+    await fireEvent.click(await screen.findByRole("menuitem", { name: /open original/i }));
+    expect(openSpy).not.toHaveBeenCalled();
+    openSpy.mockRestore();
+  });
+
+  it("shows the hostname (not the full path) while processing", () => {
+    render(ArticleCard, {
+      article: { id: "a2", url: "https://example.com/some/very/long/path?x=1", expand: undefined },
+    });
+    expect(screen.getByText("example.com")).toBeInTheDocument();
+    expect(screen.queryByText(/some\/very\/long\/path/)).not.toBeInTheDocument();
+  });
+
+  it("hides AI tags for a standard-tier viewer even when content has them", () => {
+    page.set({ ...basePageValue, data: { tier: "standard" } });
+    render(ArticleCard, { article: article({ extract_status: "ok", title: "Hello", ai_tags_json: ["ai", "ml"] }) });
+    expect(screen.queryByText("ai")).not.toBeInTheDocument();
+    expect(screen.queryByText("ml")).not.toBeInTheDocument();
+  });
+
+  it("shows AI tags for a pro-tier viewer", () => {
+    page.set({ ...basePageValue, data: { tier: "pro" } });
+    render(ArticleCard, { article: ready() });
+    expect(screen.getByText("ai")).toBeInTheDocument();
+  });
+
+  it("shows a bottom progress bar for an in-progress article", () => {
+    const { container } = render(ArticleCard, {
+      article: article({ extract_status: "ok", title: "Hello", ai_tags_json: [] }, { progress: 0.45 }),
+    });
+    const bar = container.querySelector(".progress-bar");
+    expect(bar).toBeInTheDocument();
+    expect(bar?.getAttribute("style")).toContain("--p: 0.45");
+  });
+
+  it("hides the progress bar for an unread article", () => {
+    const { container } = render(ArticleCard, {
+      article: article({ extract_status: "ok", title: "Hello", ai_tags_json: [] }, { progress: 0 }),
+    });
+    expect(container.querySelector(".progress-bar")).not.toBeInTheDocument();
+  });
+
+  it("hides the progress bar for a finished article", () => {
+    const { container } = render(ArticleCard, {
+      article: article({ extract_status: "ok", title: "Hello", ai_tags_json: [] }, { progress: 0.99 }),
+    });
+    expect(container.querySelector(".progress-bar")).not.toBeInTheDocument();
+  });
+
+  it("hides the progress bar while processing, even if progress is set", () => {
+    const { container } = render(ArticleCard, {
+      article: article(null, { progress: 0.5 }),
+    });
+    expect(container.querySelector(".progress-bar")).not.toBeInTheDocument();
   });
 });

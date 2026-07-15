@@ -1,5 +1,7 @@
 <script lang="ts">
+  import { Trash2 } from "@lucide/svelte";
   import type { Highlight } from "@readmepls/types";
+  import { reveal } from "$lib/actions/reveal.js";
   let { highlights, orphans, onjump, ondelete }: {
     highlights: Highlight[];
     orphans: string[];
@@ -14,14 +16,14 @@
     <p class="empty">select text to highlight it</p>
   {/if}
   <ul>
-    {#each highlights as h (h.id)}
-      <li class:orphan={orphans.includes(h.id)}>
+    {#each highlights as h, i (h.id)}
+      <li class:orphan={orphans.includes(h.id)} use:reveal={{ delay: Math.min(i, 8) * 40 }}>
         <button class="quote" style="border-color: var(--hl-{h.color});" onclick={() => onjump(h.id)}>
           {h.text}
         </button>
         {#if h.note}<p class="note">{h.note}</p>{/if}
         {#if orphans.includes(h.id)}<p class="warn">can't locate in current text</p>{/if}
-        <button class="del" aria-label="delete" onclick={() => ondelete(h.id)}>delete</button>
+        <button class="del" aria-label="delete" onclick={() => ondelete(h.id)}><Trash2 class="icon-sm" aria-hidden="true" /></button>
       </li>
     {/each}
   </ul>
@@ -29,15 +31,17 @@
 
 <style>
   .hl-sidebar { display: flex; flex-direction: column; gap: var(--space-3); }
-  h2 { font-family: var(--font-display); font-size: var(--text-sm); color: var(--color-text-muted); }
+  h2 { font-family: var(--font-ui); font-size: var(--text-sm); color: var(--color-text-muted); }
   .empty { color: var(--color-text-muted); font-size: var(--text-sm); }
   ul { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: var(--space-3); }
   .quote {
     text-align: left; background: none; border: none; border-left: 3px solid var(--color-border);
     padding-left: var(--space-2); cursor: pointer; color: var(--color-text); font: inherit;
   }
+  .quote:focus-visible { outline: var(--focus-ring-width) solid var(--color-ring); outline-offset: var(--focus-ring-offset); }
   .note { color: var(--color-text-muted); font-size: var(--text-sm); margin: var(--space-1) 0 0 var(--space-2); }
   .warn { color: var(--color-accent); font-size: var(--text-xs); margin-left: var(--space-2); }
-  .del { background: none; border: none; color: var(--color-text-muted); cursor: pointer; font-size: var(--text-xs); }
+  .del { display: inline-flex; align-items: center; background: none; border: none; color: var(--color-text-muted); cursor: pointer; font-size: var(--text-xs); }
+  .del:focus-visible { outline: var(--focus-ring-width) solid var(--color-ring); outline-offset: var(--focus-ring-offset); }
   .orphan .quote { opacity: 0.6; }
 </style>

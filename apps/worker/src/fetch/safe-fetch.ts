@@ -62,6 +62,49 @@ export function defaultSafeFetchHtml(
   });
 }
 
+interface ByteResponseLike {
+  status: number;
+  headers: { get(name: string): string | null };
+  arrayBuffer(): Promise<ArrayBuffer>;
+}
+
+export interface SafeFetchBytesDeps {
+  lookup: (host: string) => Promise<string[]>;
+  fetchFn: (url: string) => Promise<ByteResponseLike>;
+  maxRedirects?: number;
+}
+
+/**
+ * SSRF-safe binary fetch, mirroring createSafeFetchHtml. Re-validates the host
+ * before every hop; follows redirects manually. Returns null on any non-2xx so
+ * favicon probing can fall through to the next candidate without throwing.
+ */
+export function createSafeFetchBytes(
+  deps: SafeFetchBytesDeps
+): (url: string) => Promise<{ bytes: Uint8Array; contentType: string } | null> {
+  const maxRedirects = deps.maxRedirects ?? 5;
+  return async function fetchBytes(url) {
+    let current = url;
+    for (let hop = 0; hop <= maxRedirects; hop++) {
+      await assertSafe(current, deps.lookup);
+      const r = await deps.fetchFn(current);
+      if (r.status >= 300 && r.status < 400) {
+        const location = r.headers.get("location");
+        if (!location) return null;
+        current = new URL(location, current).toString();
+        continue;
+      }
+      if (r.status < 200 || r.status >= 300) return null;
+      const buf = await r.arrayBuffer();
+      return {
+        bytes: new Uint8Array(buf),
+        contentType: r.headers.get("content-type") ?? "",
+      };
+    }
+    return null;
+  };
+}
+
 async function assertSafe(
   url: string,
   lookup: SafeFetchDeps["lookup"]

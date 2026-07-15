@@ -1,10 +1,10 @@
 <script lang="ts">
   import { page } from "$app/stores";
-  import { goto } from "$app/navigation";
   import { browserPb } from "$lib/pb.js";
   import type { ArticleRecord } from "$lib/article/record.js";
   import CardGrid from "$lib/components/ui/CardGrid.svelte";
   import ArticleCard from "$lib/components/ArticleCard.svelte";
+  import { ArrowLeft } from "@lucide/svelte";
 
   let name = $state("");
   let articles = $state<ArticleRecord[]>([]);
@@ -35,23 +35,23 @@
 
 <svelte:head><title>{name}</title></svelte:head>
 <div class="collection-view">
-  <a class="back" href="/library">← library</a>
+  <a class="back" href="/library"><ArrowLeft class="icon-sm" aria-hidden="true" /> library</a>
   <h1>{name}</h1>
   {#if articles.length === 0}
     <p class="empty-note">no articles in this collection yet.</p>
   {:else}
     <CardGrid>
       {#each articles as a (a.id)}
-        <ArticleCard article={a} onOpen={(id) => goto(`/read/${id}`)} />
+        <ArticleCard article={a} />
       {/each}
     </CardGrid>
   {/if}
 </div>
 
 <style>
-  .collection-view { max-width: 900px; margin: 0 auto; }
-  .back { font-family: var(--font-display); color: var(--color-text-muted); text-decoration: none; display: inline-block; margin-bottom: var(--space-3); }
+  .collection-view { max-width: var(--width-prose); margin: 0 auto; }
+  .back { display: inline-flex; align-items: center; gap: var(--space-1); font-family: var(--font-ui); color: var(--color-text-muted); text-decoration: none; margin-bottom: var(--space-3); }
   .back:hover { color: var(--color-text); }
-  h1 { font-family: var(--font-display); color: var(--color-text); font-size: 1.6rem; margin: 0 0 1.25rem; }
-  .empty-note { color: var(--color-text-muted); font-family: var(--font-display); text-align: center; padding: var(--space-6) 0; }
+  h1 { font-family: var(--font-ui); font-size: var(--text-xl); font-weight: var(--weight-semibold); color: var(--color-text); margin: 0 0 var(--space-5); }
+  .empty-note { color: var(--color-text-muted); font-family: var(--font-ui); text-align: center; padding: var(--space-6) 0; }
 </style>

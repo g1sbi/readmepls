@@ -9,6 +9,7 @@ import { ArticleExtractor } from "./extract/article-extractor.js";
 import { XExtractor } from "./extract/x-extractor.js";
 import type { ExtractIO } from "./extract/extractor.js";
 import { MockAIProvider } from "./ai/mock-provider.js";
+import { FakeEmbedder } from "./embed/fake-embedder.js";
 
 const tweet = JSON.parse(
   readFileSync(
@@ -44,6 +45,8 @@ describe("processJob routes X urls to the X extractor", () => {
       registry: new ExtractorRegistry([new ArticleExtractor(), new XExtractor()]),
       ai: new MockAIProvider({ tags: ["x"], summary: "tweet." }),
       classify: classifySource,
+      fetchBytes: async () => null,
+      embedder: new FakeEmbedder(),
     });
 
     const done = await h.pb.collection("jobs").getOne(job.id);

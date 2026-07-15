@@ -17,7 +17,7 @@
     try {
       if (mode === "signup") {
         await pb.collection("users").create({
-          email, password, passwordConfirm: password, tier: "free", monthly_quota_used: 0,
+          email, password, passwordConfirm: password, tier: "standard", monthly_quota_used: 0,
         });
       }
       await pb.collection("users").authWithPassword(email, password);
@@ -55,12 +55,12 @@
     background: var(--color-fold); clip-path: polygon(100% 0, 0 0, 100% 100%);
     border-top-right-radius: var(--radius-xl);
   }
-  h1 { font-family: var(--font-display); font-size: 1.8rem; margin: 0; color: var(--color-text); }
+  h1 { font-family: var(--font-ui); font-size: 1.8rem; margin: 0; color: var(--color-text); }
   h1 span { color: var(--color-accent); }
-  .tag { font-family: var(--font-display); color: var(--color-text-muted); margin: 0.25rem 0 1.5rem; }
+  .tag { font-family: var(--font-ui); color: var(--color-text-muted); margin: 0.25rem 0 1.5rem; }
   form { display: flex; flex-direction: column; gap: 0.75rem; }
-  .err { color: var(--color-danger); font-family: var(--font-display); font-size: 0.9rem; margin: 0; }
-  .toggle { margin-top: 1rem; background: none; border: none; color: var(--color-accent); font-family: var(--font-display); cursor: pointer; padding: 0; }
+  .err { color: var(--color-danger); font-family: var(--font-ui); font-size: 0.9rem; margin: 0; }
+  .toggle { margin-top: 1rem; background: none; border: none; color: var(--color-accent); font-family: var(--font-ui); cursor: pointer; padding: 0; }
   .toggle:hover { color: var(--color-accent-hover); }
   .toggle:focus-visible { outline: 2px solid var(--color-ring); outline-offset: 2px; }
 </style>

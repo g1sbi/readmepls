@@ -1,0 +1,71 @@
+/* Global reset. Imported once in +layout.svelte. Keep minimal — visual
+   tokens live in tokens.css; this only normalizes the box model and the
+   document edges so the paper background reaches the viewport. */
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+html,
+body {
+  margin: 0;
+  padding: 0;
+}
+
+body {
+  /* Match the app gradient so rubber-band/over-scroll shows paper, not canvas.
+     The gradient itself is re-applied on .app for the in-flow fill. */
+  background: var(--color-bg);
+  /* Bind the themed text color so otherwise-unstyled text (e.g. card titles)
+     follows light/dark/sepia instead of falling back to the UA default. */
+  color: var(--color-text);
+  min-height: 100dvh;
+}
+
+/* Icon sizing utilities (Track 2 slice 2). Applied via the lucide component's
+   `class` prop so size/stroke stay tokenized and themeable. Color inherits
+   currentColor (lucide's default stroke), so an icon takes its button/link's
+   text color automatically. CSS stroke-width overrides lucide's attribute. */
+.icon-sm,
+.icon-md,
+.icon-lg {
+  stroke-width: var(--icon-stroke);
+  flex: none; /* don't let an icon stretch inside a flex control */
+}
+.icon-sm { width: var(--icon-sm); height: var(--icon-sm); }
+.icon-md { width: var(--icon-md); height: var(--icon-md); }
+.icon-lg { width: var(--icon-lg); height: var(--icon-lg); }
+
+/* Visually hidden but available to assistive tech and to getByRole({name}).
+   Used to keep an icon-only control's accessible name without changing copy. */
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}
+
+/* Staggered entrance (lib/actions/reveal.ts). `.reveal` is the hidden start
+   state applied only when motion is allowed; `.is-visible` settles it. */
+.reveal { opacity: 0; transform: translateY(8px); }
+.reveal.is-visible {
+  opacity: 1; transform: none;
+  transition: opacity var(--dur-base) var(--ease-out) var(--reveal-delay, 0ms),
+              transform var(--dur-base) var(--ease-out) var(--reveal-delay, 0ms);
+}
+@media (prefers-reduced-motion: reduce) {
+  .reveal, .reveal.is-visible { opacity: 1; transform: none; transition: none; }
+}
+
+/* Cross-route view transitions (lib/view-transition.ts gates them on support +
+   motion preference, so no reduced-motion guard is needed here — the hook simply
+   isn't invoked when motion is off). */
+::view-transition-old(root) { animation: vt-fade var(--dur-view) var(--ease-out) reverse; }
+::view-transition-new(root) { animation: vt-fade var(--dur-view) var(--ease-out); }
+@keyframes vt-fade { from { opacity: 0; } to { opacity: 1; } }

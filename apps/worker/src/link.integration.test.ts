@@ -8,6 +8,7 @@ import { ArticleExtractor } from "./extract/article-extractor.js";
 import { MockAIProvider } from "./ai/mock-provider.js";
 import { ExtractorRegistry } from "./extract/registry.js";
 import type { ExtractIO } from "./extract/extractor.js";
+import { FakeEmbedder } from "./embed/fake-embedder.js";
 
 const html = readFileSync(
   fileURLToPath(new URL("./extract/fixtures/simple-article.html", import.meta.url)),
@@ -51,6 +52,8 @@ describe("processJob article linking", () => {
       registry,
       ai: new MockAIProvider({ tags: ["t"], summary: "s" }),
       classify: classifySource,
+      fetchBytes: async () => null,
+      embedder: new FakeEmbedder(),
     });
 
     const done = await h.pb.collection("jobs").getOne(job.id);

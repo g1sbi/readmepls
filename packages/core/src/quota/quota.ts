@@ -1,8 +1,10 @@
-const FREE_LIMIT = 50;
-const LIMITS: Record<string, number> = { free: FREE_LIMIT, pro: 1000 };
+import type { Tier } from "@readmepls/types";
+
+const STANDARD_LIMIT = 50;
+const LIMITS: Record<Tier, number> = { standard: STANDARD_LIMIT, pro: 1000 };
 
 export interface QuotaState {
-  tier: string;
+  tier: Tier;
   used: number;
 }
 
@@ -11,6 +13,6 @@ export function checkQuota(
   byoKey: boolean
 ): { ok: true } | { ok: false; limit: number } {
   if (byoKey) return { ok: true };
-  const limit = LIMITS[state.tier] ?? FREE_LIMIT;
+  const limit = LIMITS[state.tier] ?? STANDARD_LIMIT;
   return state.used < limit ? { ok: true } : { ok: false, limit };
 }

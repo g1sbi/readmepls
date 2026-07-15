@@ -9,11 +9,16 @@ import { YoutubeExtractor } from "./extract/youtube-extractor.js";
 import { defaultRunYtDlp } from "./extract/yt-dlp.js";
 import { ClaudeProvider } from "./ai/claude-provider.js";
 import { selectAiProvider } from "./ai/select-provider.js";
-import { createSafeFetchHtml } from "./fetch/safe-fetch.js";
+import { LocalEmbedder } from "./embed/local-embedder.js";
+import { selectEmbedder } from "./embed/select-embedder.js";
+import { createSafeFetchHtml, createSafeFetchBytes } from "./fetch/safe-fetch.js";
 import { runLoopOnce } from "./run-loop.js";
 import { ExtractorRegistry } from "./extract/registry.js";
 import type { ExtractIO } from "./extract/extractor.js";
 import type { ProcessDeps } from "./worker.js";
+import { backfillSources } from "./source/backfill-sources.js";
+import { backfillEmbeddings } from "./embed/backfill-embeddings.js";
+import { createSearchServer } from "./http/search-server.js";
 
 function requireEnv(name: string): string {
   const v = process.env[name];
@@ -47,8 +52,21 @@ async function main(): Promise<void> {
     return new ClaudeProvider(anthropic, model);
   });
 
+  const fetchBytes = createSafeFetchBytes({
+    lookup: async (host) => (await dnsLookup(host, { all: true })).map((a) => a.address),
+    fetchFn: (url) => fetch(url, { redirect: "manual" }),
+  });
+
   const fetchJson = async (url: string): Promise<unknown> =>
     JSON.parse(await fetchHtml(url));
+
+  // Lazy, same as the AI provider: EMBED_PROVIDER=fake (used by the offline
+  // smoke path) skips loading the local ONNX model entirely.
+  const embedder = selectEmbedder(process.env, () => new LocalEmbedder(process.env.TRANSFORMERS_CACHE));
+  const maybeWarmup = (embedder as unknown as { warmup?: () => Promise<void> }).warmup;
+  if (typeof maybeWarmup === "function") {
+    await maybeWarmup.call(embedder);
+  }
 
   const io: ExtractIO = {
     fetchHtml,
@@ -67,7 +85,33 @@ async function main(): Promise<void> {
     registry,
     ai,
     classify: classifySource,
+    fetchBytes,
+    embedder,
   };
+
+  if (process.env.BACKFILL_SOURCES === "1") {
+    const { linked } = await backfillSources(pb, { fetchHtml, fetchBytes });
+    console.log(`[worker ${workerId}] backfilled ${linked} content rows with sources`);
+  }
+
+  if (process.env.BACKFILL_EMBEDDINGS === "1") {
+    const { indexed } = await backfillEmbeddings(pb, embedder);
+    console.log(`[worker ${workerId}] backfilled embeddings for ${indexed} content rows`);
+  }
+
+  const searchSecret = process.env.WORKER_SEARCH_SECRET ?? "";
+  const searchPort = Number(process.env.WORKER_HTTP_PORT ?? "8091");
+  // Bind loopback by default so the internal /search endpoint is not exposed on
+  // every interface. In Docker, set WORKER_HTTP_HOST=0.0.0.0 so the web container
+  // can reach it over the internal network (the port is never published to host).
+  const searchHost = process.env.WORKER_HTTP_HOST ?? "127.0.0.1";
+  if (searchSecret) {
+    const server = createSearchServer({ pb, embedder, secret: searchSecret });
+    server.listen(searchPort, searchHost, () =>
+      console.log(`[worker ${workerId}] /search on ${searchHost}:${searchPort}`));
+  } else {
+    console.warn(`[worker ${workerId}] WORKER_SEARCH_SECRET unset — semantic /search disabled`);
+  }
 
   console.log(`[worker ${workerId}] polling ${pbUrl} every ${pollMs}ms`);
   // eslint-disable-next-line no-constant-condition

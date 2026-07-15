@@ -3,12 +3,13 @@
   "version": "0.0.0",
   "type": "module",
   "scripts": {
-    "build": "esbuild src/main.ts --bundle --platform=node --format=esm --target=node22 --outfile=dist/main.js --external:pocketbase --external:@anthropic-ai/sdk --external:jsdom --external:@mozilla/readability --external:zod --external:sanitize-html",
+    "build": "esbuild src/main.ts --bundle --platform=node --format=esm --target=node22 --outfile=dist/main.js --external:pocketbase --external:@anthropic-ai/sdk --external:jsdom --external:@mozilla/readability --external:zod --external:sanitize-html --external:@huggingface/transformers --external:onnxruntime-node --external:sharp",
     "start": "node dist/main.js"
   },
   "dependencies": {
     "@readmepls/types": "workspace:*",
     "@readmepls/core": "workspace:*",
+    "@huggingface/transformers": "^3.0.0",
     "@mozilla/readability": "^0.5.0",
     "jsdom": "^25.0.0",
     "pocketbase": "^0.21.0",

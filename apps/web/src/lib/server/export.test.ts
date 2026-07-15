@@ -54,7 +54,7 @@ describe("loadArticleExports", () => {
       { highlights: [], article_tags: [] },
       { a1: { id: "a1", url: "https://x.test/p", status: "unread", created: "2026", expand: { content: { title: "T", ai_tags_json: [], content_html: "<p>x</p>", excerpt: "", fetched_at: "2026" } } } }
     );
-    const out = await loadArticleExports(pb, ["a1", "missing"]);
+    const out = await loadArticleExports(pb, ["a1", "missing"], "pro");
     expect(out).toHaveLength(1);
     expect(out[0]!.id).toBe("a1");
     expect(out[0]!.title).toBe("T");
@@ -85,11 +85,53 @@ describe("loadArticleExports", () => {
         },
       }
     );
-    const out = await loadArticleExports(pb, ["a1"]);
+    const out = await loadArticleExports(pb, ["a1"], "pro");
     expect(out).toHaveLength(1);
     expect(out[0]!.publishedAt).toBe("2026-01-02");
     expect(out[0]!.aiTags).toEqual(["ai", "ml"]);
     expect(out[0]!.summary).toBe("the summary");
     expect(out[0]!.tags).toEqual(["research"]);
+  });
+
+  it("hides aiTags and summary for a standard-tier caller", async () => {
+    const { pb } = fakePb(
+      { highlights: [], article_tags: [] },
+      {
+        a1: {
+          id: "a1", url: "https://x.test/p", status: "unread", created: "2026",
+          expand: {
+            content: {
+              title: "T", ai_tags_json: ["ai", "ml"], content_html: "<p>x</p>",
+              excerpt: "an ai summary", fetched_at: "2026",
+            },
+          },
+        },
+      }
+    );
+    const out = await loadArticleExports(pb, ["a1"], "standard");
+    expect(out[0]!.aiTags).toEqual([]);
+    expect(out[0]!.summary).toBe("");
+    // Full body is unaffected — export still includes the complete article.
+    expect(out[0]!.contentHtml).toBe("<p>x</p>");
+  });
+
+  it("keeps aiTags and summary for a pro-tier caller", async () => {
+    const { pb } = fakePb(
+      { highlights: [], article_tags: [] },
+      {
+        a1: {
+          id: "a1", url: "https://x.test/p", status: "unread", created: "2026",
+          expand: {
+            content: {
+              title: "T", ai_tags_json: ["ai", "ml"], content_html: "<p>x</p>",
+              excerpt: "an ai summary", fetched_at: "2026",
+            },
+          },
+        },
+      }
+    );
+    const out = await loadArticleExports(pb, ["a1"], "pro");
+    expect(out[0]!.aiTags).toEqual(["ai", "ml"]);
+    expect(out[0]!.summary).toBe("an ai summary");
   });
 });

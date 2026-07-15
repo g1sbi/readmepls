@@ -21,13 +21,17 @@
 
 <style>
   button {
-    font-family: var(--font-display);
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: var(--space-2);
+    font-family: var(--font-ui);
     font-size: var(--text-sm, 0.95rem);
     border: 1px solid var(--color-border);
     background: var(--color-surface);
     color: var(--color-text);
     border-radius: var(--radius-pill);
-    padding: 0.5rem 1.1rem;
+    padding: var(--space-2) 1.1rem; /* 1.1rem: no clean --space-* equivalent (between space-4/1rem and space-5/1.5rem); rounding either way visibly changes the pill */
     cursor: pointer;
     transition: background var(--dur-fast) var(--ease-out),
       box-shadow var(--dur-fast) var(--ease-out), transform var(--dur-fast) var(--ease-out);

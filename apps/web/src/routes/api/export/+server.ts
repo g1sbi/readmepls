@@ -1,7 +1,8 @@
 import { error } from "@sveltejs/kit";
 import type { RequestHandler } from "@sveltejs/kit";
 import JSZip from "jszip";
-import { getConnector } from "@readmepls/core";
+import { getConnector, resolveTier, type TierConfig } from "@readmepls/core";
+import type { Tier } from "@readmepls/types";
 import { resolveArticleIds, loadArticleExports, type Scope } from "$lib/server/export.js";
 
 const PB_URL = process.env.PB_URL ?? "http://127.0.0.1:8090";
@@ -28,7 +29,14 @@ export const GET: RequestHandler = async ({ url, locals }) => {
   const ids = await resolveArticleIds(locals.pb, scope, PB_URL, locals.pb.authStore.token);
   if (ids.length === 0) throw error(404, "nothing to export");
 
-  const articles = await loadArticleExports(locals.pb, ids);
+  const config: TierConfig = {
+    selfHosted: process.env.SELF_HOSTED === "true",
+    aiProviderConfigured: Boolean(process.env.ANTHROPIC_API_KEY) || process.env.AI_PROVIDER === "mock",
+  };
+  const userRecord = locals.pb.authStore.model as { tier?: Tier } | null;
+  const tier: Tier = resolveTier({ tier: userRecord?.tier ?? "standard" }, config);
+
+  const articles = await loadArticleExports(locals.pb, ids, tier);
   if (articles.length === 0) throw error(404, "nothing to export");
 
   const connector = getConnector("markdown");

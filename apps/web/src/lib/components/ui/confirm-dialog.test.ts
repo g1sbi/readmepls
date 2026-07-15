@@ -43,4 +43,11 @@ describe("ConfirmDialog", () => {
     render(ConfirmDialog, { ...base, open: true, confirmLabel: "remove" });
     expect(screen.getByRole("button", { name: "remove" })).toBeInTheDocument();
   });
+
+  it("fires onCancel when Escape is pressed", async () => {
+    const onCancel = vi.fn();
+    render(ConfirmDialog, { ...base, open: true, onCancel });
+    await fireEvent.keyDown(document.body, { key: "Escape" });
+    expect(onCancel).toHaveBeenCalledOnce();
+  });
 });

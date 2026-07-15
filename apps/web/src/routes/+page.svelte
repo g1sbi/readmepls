@@ -1,6 +1,5 @@
 <script lang="ts">
   import { onMount, onDestroy } from "svelte";
-  import { goto } from "$app/navigation";
   import { browserPb } from "$lib/pb.js";
   import { splitHomeFeed } from "$lib/article/home-feed.js";
   import type { ArticleRecord } from "$lib/article/record.js";
@@ -42,7 +41,7 @@
     <h2>working on it</h2>
     <CardGrid>
       {#each feed.active as a (a.id)}
-        <ArticleCard article={a} onRetry={retry} onOpen={(id) => goto(`/read/${id}`)} />
+        <ArticleCard article={a} onRetry={retry} />
       {/each}
     </CardGrid>
   </section>
@@ -53,7 +52,7 @@
     <h2>recently saved</h2>
     <CardGrid>
       {#each feed.recent as a (a.id)}
-        <ArticleCard article={a} onOpen={(id) => goto(`/read/${id}`)} />
+        <ArticleCard article={a} />
       {/each}
     </CardGrid>
     <a class="more" href="/library">see all in your library →</a>
@@ -61,11 +60,11 @@
 {/if}
 
 <style>
-  .hero { text-align: center; padding: 2.5rem 0 2rem; }
-  .hero h1 { font-family: var(--font-display); font-size: clamp(1.8rem, 4vw, 2.8rem); color: var(--color-text); margin: 0 0 1.5rem; }
+  .hero { text-align: center; padding: var(--space-6) 0; }
+  .hero h1 { font-family: var(--font-ui); font-size: var(--text-2xl); color: var(--color-text); margin: 0 0 var(--space-5); }
   .hero h1 span { color: var(--color-accent); }
-  .block { margin-top: 2.5rem; }
-  .block h2 { font-family: var(--font-display); font-size: 1.1rem; color: var(--color-text-muted); margin: 0 0 0.9rem; }
-  .more { display: inline-block; margin-top: 1rem; font-family: var(--font-display); color: var(--color-accent); text-decoration: none; }
+  .block { margin-top: var(--space-6); }
+  .block h2 { font-family: var(--font-ui); font-size: var(--text-lg); font-weight: var(--weight-medium); color: var(--color-text-muted); margin: 0 0 var(--space-4); }
+  .more { display: inline-block; margin-top: var(--space-4); font-family: var(--font-ui); color: var(--color-accent); text-decoration: none; }
   .more:hover { color: var(--color-accent-hover); }
 </style>

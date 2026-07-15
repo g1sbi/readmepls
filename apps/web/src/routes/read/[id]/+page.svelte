@@ -2,7 +2,8 @@
   import { onMount, onDestroy, getContext, tick } from "svelte";
   import { page } from "$app/stores";
   import { browserPb } from "$lib/pb.js";
-  import { withReaderDefaults, anchoring, rangeOver, slugify } from "@readmepls/core";
+  import { httpUrlOrNull } from "$lib/url/http-url.js";
+  import { withReaderDefaults, anchoring, rangeOver, slugify, STARTED_THRESHOLD, FINISHED_THRESHOLD } from "@readmepls/core";
   import { Highlight, type ReaderPrefs, type HighlightColor } from "@readmepls/types";
   import type { Theme } from "$lib/theme/theme.js";
   import type { ArticleRecord } from "$lib/article/record.js";
@@ -15,15 +16,24 @@
   import ReaderControls from "$lib/components/ReaderControls.svelte";
   import ConfirmDialog from "$lib/components/ui/ConfirmDialog.svelte";
   import TagEditor from "$lib/components/TagEditor.svelte";
-  import AddToCollection from "$lib/components/AddToCollection.svelte";
-  import Button from "$lib/components/ui/Button.svelte";
-  import Spinner from "$lib/components/ui/Spinner.svelte";
+  import Rail from "$lib/components/ui/Rail.svelte";
+  import DropdownMenu from "$lib/components/ui/DropdownMenu.svelte";
+  import MenuItem from "$lib/components/ui/MenuItem.svelte";
+  import { ArrowLeft, Archive, Trash2, FolderPlus, ArrowUpRight } from "@lucide/svelte";
+  import Skeleton from "$lib/components/ui/Skeleton.svelte";
   import HighlightPopover from "$lib/components/HighlightPopover.svelte";
   import HighlightsSidebar from "$lib/components/HighlightsSidebar.svelte";
+  import SourcePill from "$lib/components/ui/SourcePill.svelte";
+  import { Button } from "$lib/components/ui/button";
+  import { sourceView } from "$lib/source/source-view.js";
 
   // Global theme context provided by +layout.svelte. May be undefined when
   // the reader is rendered in isolation (e.g. unit tests without the layout).
   const themeCtx = getContext<{ current: Theme; set: (t: Theme) => void } | undefined>("theme");
+  // The progress strip itself renders in +layout.svelte, outside .page --
+  // .page's transform-keyframed animation makes it a stacking context, which
+  // would cap the strip below TopBar no matter its z-index (see layout).
+  const progressCtx = getContext<{ set: (p: number) => void } | undefined>("readProgress");
 
   const pb = browserPb();
   let article = $state<ArticleRecord | null>(null);
@@ -31,6 +41,13 @@
   let prefs = $state<ReaderPrefs>(withReaderDefaults());
 
   let progress = $state(0);
+  // Last measurement taken while THIS page's DOM was known to be live. In an
+  // SPA navigation, SvelteKit swaps the outgoing page's DOM for the
+  // destination's before/while onDestroy fires, so re-measuring
+  // document.body at teardown time can read the WRONG (often much shorter)
+  // page and wrongly collapse to "finished". Every flush path reuses this
+  // instead of re-querying the DOM.
+  let pendingProgress = 0;
 
   // Highlight state
   // eslint-disable-next-line prefer-const — reassigned by bind:this, not Svelte reactivity
@@ -46,8 +63,8 @@
   let collections = $state<{ id: string; name: string }[]>([]);
 
   let confirmingDelete = $state(false);
-  // No pre-existing inline error pattern on this page; introduced here for delete failures.
-  let deleteError = $state("");
+  // Shared inline error for reader actions (archive / delete).
+  let actionError = $state("");
 
   async function loadHighlights(articleId: string) {
     const raw = await pb.collection("highlights").getFullList({
@@ -166,24 +183,70 @@
   // Derive the active theme: prefer the live global context (keeps article in
   // sync when TopBar changes theme) and fall back to local prefs for isolation.
   const activeTheme = $derived(themeCtx ? themeCtx.current : prefs.theme);
+  const source = $derived(sourceView(pb, content));
+  const originalUrl = $derived(article?.url ? httpUrlOrNull(article.url) : null);
+
+  // Push every local progress change up to the layout-rendered strip.
+  $effect(() => { progressCtx?.set(progress); });
 
   let progressTimer: ReturnType<typeof setTimeout> | undefined;
+
+  // max<=0 means the content fits the viewport with no scrollbar — treat
+  // that as fully read rather than 0, since scroll position can't express it.
+  function computeProgress(): number {
+    const max = document.body.scrollHeight - window.innerHeight;
+    return max > 0 ? Math.min(1, Math.max(0, window.scrollY / max)) : 1;
+  }
+
   function onScroll() {
+    // Measure now, while this page's DOM is definitely still the live one —
+    // not inside the debounced callback, which may run (or be pre-empted by
+    // flushSave) after navigation has already started swapping the DOM.
+    pendingProgress = computeProgress();
     clearTimeout(progressTimer);
     progressTimer = setTimeout(() => {
-      const max = document.body.scrollHeight - window.innerHeight;
-      const p = max > 0 ? Math.min(1, window.scrollY / max) : 0;
-      progress = p;
-      if (article) pb.collection("articles").update(article.id, { progress: p });
+      progress = pendingProgress;
+      if (article) pb.collection("articles").update(article.id, { progress: pendingProgress });
     }, 400);
+  }
+
+  // Writes the last known-good measurement immediately, bypassing the
+  // debounce — used when the component is about to disappear (navigation,
+  // tab close/hide) and a pending debounced write would otherwise be lost.
+  function flushSave() {
+    clearTimeout(progressTimer);
+    progress = pendingProgress;
+    if (article) pb.collection("articles").update(article.id, { progress: pendingProgress });
+  }
+
+  function onVisibilityChange() {
+    if (document.hidden) flushSave();
+  }
+
+  // Runs once on load, after content is in the DOM: restores scroll position
+  // for an in-progress article, or — if the content fits the viewport with
+  // no scrollbar — marks it finished immediately (no scroll event will ever
+  // fire to do this later).
+  function resolveInitialScroll() {
+    const max = document.body.scrollHeight - window.innerHeight;
+    if (max <= 0) {
+      pendingProgress = 1;
+      flushSave();
+      return;
+    }
+    if (progress > STARTED_THRESHOLD && progress < FINISHED_THRESHOLD) {
+      window.scrollTo(0, progress * max);
+    }
   }
 
   onMount(async () => {
     const id = $page.params.id;
     if (!id) return;
-    article = await pb.collection("articles").getOne(id, { expand: "content" });
+    article = await pb.collection("articles").getOne(id, { expand: "content.source" });
     // article is always non-null here — getOne throws on not-found
     content = article!.expand?.content ?? null;
+    progress = article!.progress ?? 0;
+    pendingProgress = progress;
 
     const uid = pb.authStore.model?.id;
     if (uid) {
@@ -195,19 +258,35 @@
     }
     // Load highlights and manual tags after article HTML is in the DOM (next tick).
     await tick();
+    resolveInitialScroll();
+    // Attach before the remaining loads (not after) so a scroll during those
+    // network calls is never silently dropped.
+    window.addEventListener("scroll", onScroll, { passive: true });
+    document.addEventListener("visibilitychange", onVisibilityChange);
     await loadHighlights(id);
     await loadTags(id);
     await loadCollections();
-    window.addEventListener("scroll", onScroll, { passive: true });
   });
 
-  // An async onMount can't register a cleanup; tear down the listener here.
+  // An async onMount can't register a cleanup; tear down listeners here and
+  // flush any pending debounced save so navigating away doesn't lose it.
   onDestroy(() => {
-    if (typeof window !== "undefined") window.removeEventListener("scroll", onScroll);
+    progressCtx?.set(0);
+    if (typeof window === "undefined") return;
+    window.removeEventListener("scroll", onScroll);
+    document.removeEventListener("visibilitychange", onVisibilityChange);
+    flushSave();
   });
 
   async function archive() {
-    if (article) await pb.collection("articles").update(article.id, { status: "archived" });
+    if (!article) return;
+    actionError = "";
+    try {
+      await pb.collection("articles").update(article.id, { status: "archived" });
+      await goto("/library");
+    } catch {
+      actionError = "couldn't archive that. try again.";
+    }
   }
 
   async function loadCollections() {
@@ -222,71 +301,89 @@
     });
   }
 
-  async function createCollection(name: string) {
-    const uid = pb.authStore.model?.id;
-    if (!uid) return;
-    const c = await pb.collection("collections").create({
-      user: uid, name, slug: slugify(name), parent: "", order: 0,
-    });
-    await addToCollection(c.id);
-    await loadCollections();
-  }
-
   async function confirmDelete() {
     if (!article) return;
     confirmingDelete = false;
-    deleteError = "";
+    actionError = "";
     try {
       await deleteArticle(pb, article.id);
+      // Clear the reference so onDestroy's flushSave (which fires on teardown
+      // after this navigation) doesn't write progress to a now-deleted record.
+      article = null;
       await goto("/library");
     } catch {
-      deleteError = "couldn't delete that. try again.";
+      actionError = "couldn't delete that. try again.";
     }
   }
 </script>
 
-<div class="progress" style="--p: {progress}" aria-hidden="true"></div>
 <!-- reader vars live on the shell so the width pref governs the shell, not just the article -->
 <div class="reader-shell" style={readerCssVars(prefs)}>
   <div class="bar">
-    <a class="back" href="/library">← library</a>
-    <ReaderControls {prefs} onChange={savePrefs} />
-    <Button onclick={archive}>Archive</Button>
-    <button class="reader-delete" onclick={() => (confirmingDelete = true)} aria-label="delete article">delete</button>
+    <a class="back" href="/library"><ArrowLeft class="icon-sm" aria-hidden="true" /> library</a>
   </div>
 
-  {#if deleteError}
-    <p class="delete-error" role="alert">{deleteError}</p>
+  {#if actionError}
+    <p class="delete-error" role="alert">{actionError}</p>
   {/if}
 
   {#if !content}
-    <Spinner label="Loading article" />
+    <Skeleton lines={8} />
   {:else}
-    <!-- data-theme uses the live global context so TopBar changes retone the article (FIX 1) -->
-    <!-- Svelte emits an a11y warning for onmouseup on a non-interactive <article>; accepted for text-selection in the reader. -->
-    <article data-theme={activeTheme} class="reader" onmouseup={onMouseUp}>
-      <h1>{content.title}</h1>
-      <!-- content_html is sanitized in the worker (Task 2) before storage -->
-      <!-- bind:this anchors the highlight anchoring scope to the article body -->
-      <div bind:this={bodyEl}>
-        {@html content.content_html}
+    <div class="reader-layout">
+      <Rail label="reading tools">
+        <ReaderControls {prefs} onChange={savePrefs} />
+        <TagEditor tags={manualTags.map(t => ({ id: t.id, name: t.name }))} onadd={addTag} onremove={removeTag} />
+        <div class="article-actions" role="group" aria-label="article actions">
+          <DropdownMenu label="add to collection" align="start">
+            {#snippet trigger()}<FolderPlus class="icon-md" aria-hidden="true" />{/snippet}
+            {#snippet children()}
+              <div class="menu-label">add to collection</div>
+              {#if collections.length > 0}
+                {#each collections as c (c.id)}
+                  <MenuItem onSelect={() => addToCollection(c.id)}>{c.name}</MenuItem>
+                {/each}
+              {:else}
+                <div class="menu-empty">no collections yet</div>
+              {/if}
+            {/snippet}
+          </DropdownMenu>
+          <button class="action-icon" onclick={archive} aria-label="archive article"><Archive class="icon-md" aria-hidden="true" /></button>
+          <button class="action-icon" onclick={() => (confirmingDelete = true)} aria-label="delete article"><Trash2 class="icon-md" aria-hidden="true" /></button>
+        </div>
+      </Rail>
+
+      <div class="reader-main">
+        <!-- data-theme uses the live global context so TopBar changes retone the article (FIX 1) -->
+        <!-- Svelte emits an a11y warning for onmouseup on a non-interactive <article>; accepted for text-selection in the reader. -->
+        <article data-theme={activeTheme} class="reader" onmouseup={onMouseUp}>
+          <h1>{content.title}</h1>
+          {#if source || originalUrl}
+            <div class="reader-source">
+              {#if source}<SourcePill name={source.name} host={source.host} iconUrl={source.iconUrl} />{/if}
+              {#if source && originalUrl}<span class="dot" aria-hidden="true">·</span>{/if}
+              {#if originalUrl}
+                <Button variant="link" href={originalUrl} target="_blank" rel="noopener noreferrer" class="open-original">
+                  open original <ArrowUpRight class="icon-sm" aria-hidden="true" />
+                </Button>
+              {/if}
+            </div>
+          {/if}
+          <!-- content_html is sanitized in the worker (Task 2) before storage -->
+          <!-- bind:this anchors the highlight anchoring scope to the article body -->
+          <div bind:this={bodyEl}>
+            {@html content.content_html}
+          </div>
+        </article>
       </div>
-    </article>
-    <div class="tag-section">
-      <TagEditor tags={manualTags.map(t => ({ id: t.id, name: t.name }))} onadd={addTag} onremove={removeTag} />
-    </div>
-    <div class="collection-section">
-      <AddToCollection {collections} onadd={addToCollection} oncreate={createCollection} />
+
+      <HighlightsSidebar {highlights} {orphans} onjump={jumpTo} ondelete={deleteHighlight} />
     </div>
   {/if}
 </div>
 
 {#if popover}
   <HighlightPopover x={popover.x} y={popover.y} onpick={createHighlight} oncancel={() => (popover = null)} />
-{/if}
-
-{#if content}
-  <HighlightsSidebar {highlights} {orphans} onjump={jumpTo} ondelete={deleteHighlight} />
 {/if}
 
 <ConfirmDialog
@@ -298,37 +395,65 @@
 />
 
 <style>
-  .progress { position: fixed; top: 0; left: 0; height: 3px; width: calc(var(--p) * 100%); background: var(--color-accent); z-index: 10; transition: width var(--dur-fast) var(--ease-out); }
   /* --reading-measure is set inline on .reader-shell so the column width
-     follows the pref (narrow/normal/wide) end-to-end (FIX 2). */
-  .reader-shell { max-width: var(--reading-measure); margin: 0 auto; }
-  .bar { display: flex; align-items: center; gap: 0.75rem; margin-bottom: 1rem; }
-  .bar .back { font-family: var(--font-display); color: var(--color-text-muted); text-decoration: none; }
+     follows the pref (narrow/normal/wide) end-to-end (FIX 2).
+     The shell is wider than the prose measure so the highlights rail has room. */
+  .reader-shell { max-width: var(--width-prose); margin: 0 auto; }
+  .bar { display: flex; align-items: center; gap: var(--space-3); margin-bottom: var(--space-4); }
+  .bar .back { display: inline-flex; align-items: center; gap: var(--space-1); font-family: var(--font-ui); color: var(--color-text-muted); text-decoration: none; }
   .bar .back:hover { color: var(--color-text); }
+
+  .article-actions { display: flex; gap: var(--space-2); }
+  .article-actions :global(.dropdown__trigger),
+  .action-icon {
+    display: inline-flex; align-items: center; justify-content: center;
+    width: 2.25rem; height: 2.25rem; padding: 0;
+    background: var(--color-surface); border: 1px solid var(--color-border);
+    border-radius: var(--radius-md); color: var(--color-text-muted); cursor: pointer;
+    transition: color var(--dur-fast) var(--ease-out), box-shadow var(--dur-fast) var(--ease-out);
+  }
+  .article-actions :global(.dropdown__trigger):hover,
+  .action-icon:hover { color: var(--color-accent); box-shadow: var(--shadow-sm); }
+  .article-actions :global(.dropdown__trigger):focus-visible,
+  .action-icon:focus-visible { outline: var(--focus-ring-width) solid var(--color-ring); outline-offset: var(--focus-ring-offset); }
+  @media (prefers-reduced-motion: reduce) {
+    .article-actions :global(.dropdown__trigger), .action-icon { transition: none; }
+  }
+
   .reader {
     background: var(--reading-bg); color: var(--reading-text);
     font-family: var(--reading-font); font-size: var(--reading-size);
-    line-height: var(--reading-leading); max-width: var(--reading-measure);
+    line-height: var(--reading-leading);
+    /* calc accounts for padding so content width = measure exactly (box-sizing: border-box from Task 1) */
+    max-width: calc(var(--reading-measure) + 2 * 1.5rem);
     margin: 0 auto; padding: 1.5rem; border-radius: var(--radius-lg);
   }
-  .reader :global(h1) { font-family: var(--font-display); line-height: 1.15; }
+  .reader :global(h1) { font-family: var(--font-reading); line-height: 1.15; }
   .reader :global(a) { color: var(--color-accent); }
   .reader :global(pre), .reader :global(code) { font-family: var(--font-mono); }
   .reader :global(pre) { background: var(--color-surface-sunken); padding: 1rem; border-radius: var(--radius-md); overflow-x: auto; }
   .reader :global(blockquote) { border-left: 3px solid var(--color-accent); margin: 1rem 0; padding-left: 1rem; color: var(--color-text-muted); }
   .reader :global(img) { max-width: 100%; height: auto; border-radius: var(--radius-md); }
-  .tag-section { max-width: var(--reading-measure); margin: var(--space-4) auto 0; padding: 0 1.5rem; }
-  .collection-section { max-width: var(--reading-measure); margin: var(--space-4) auto 0; padding: 0 1.5rem; }
-  @media (prefers-reduced-motion: reduce) { .progress { transition: none; } }
-  .reader-delete {
-    background: none;
-    border: none;
-    cursor: pointer;
-    font: inherit;
-    font-size: var(--text-sm);
-    color: var(--color-text-muted);
-    padding: 0.1rem 0.4rem;
+
+  /* single-column by default: rail (controls+actions) above article, highlights below */
+  .reader-layout { display: grid; grid-template-columns: 1fr; gap: var(--space-5); }
+  @media (min-width: 1024px) {
+    .reader-shell { max-width: var(--width-reader); }
+    .reader-layout { grid-template-columns: 14rem minmax(0, 1fr) 16rem; align-items: start; }
+    .reader-layout :global(.hl-sidebar) { position: sticky; top: var(--space-4); }
   }
-  .reader-delete:hover { color: var(--color-accent); }
+  /* Mobile: run the article card nearly edge-to-edge. It sits inside .page's
+     1.25rem inset; pull it out by 1rem so reading uses the full width, leaving
+     just a 0.25rem hint of the paper border. Trim the inner padding too. */
+  @media (max-width: 640px) {
+    .reader {
+      margin-inline: calc(-1 * var(--space-4));
+      padding: var(--space-4) var(--space-3);
+      border-radius: var(--radius-md);
+    }
+  }
   .delete-error { margin: 0 0 0.75rem; font-size: var(--text-sm); color: var(--color-accent); }
+  .reader-source { display: flex; align-items: center; gap: var(--space-2); flex-wrap: wrap; margin: 0 0 var(--space-4); }
+  .reader-source .dot { color: var(--color-text-muted); }
+  .reader-source :global(.open-original) { font-family: var(--font-ui); font-size: var(--text-sm); height: auto; padding: 0; gap: var(--space-1); }
 </style>

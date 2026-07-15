@@ -1,10 +1,10 @@
 // Stub for $app/stores in vitest component tests.
 // Real implementation is supplied by SvelteKit's Vite plugin at build time.
-// Individual tests override this via vi.mock("$app/stores", factory) when
-// they need to control page.params, page.url, etc.
-import { readable } from "svelte/store";
+// `page` is writable so tests can call page.set({...}) to control page.data
+// (e.g. viewer tier) before rendering a component that reads $page.
+import { writable } from "svelte/store";
 
-export const page = readable({
+export const page = writable({
   params: {} as Record<string, string>,
   url: new URL("http://localhost/"),
   route: { id: null as string | null },
@@ -15,5 +15,5 @@ export const page = readable({
   state: {} as Record<string, unknown>,
 });
 
-export const navigating = readable(null);
-export const updated = { subscribe: readable(false).subscribe, check: async () => false };
+export const navigating = writable(null);
+export const updated = { subscribe: writable(false).subscribe, check: async () => false };

@@ -13,3 +13,4 @@ pocketbase/LICENSE.md
 *.log
 *.tsbuildinfo
 .worktrees/
+.playwright-mcp/

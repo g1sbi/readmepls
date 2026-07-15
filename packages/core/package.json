@@ -3,10 +3,16 @@
   "version": "0.0.0",
   "type": "module",
   "main": "src/index.ts",
+  "exports": {
+    ".": "./src/index.ts",
+    "./server": "./src/server.ts",
+    "./*": "./*"
+  },
   "dependencies": {
     "@apache-annotator/dom": "^0.2.0",
     "@apache-annotator/selector": "^0.2.0",
     "@readmepls/types": "workspace:*",
+    "jsdom": "^25.0.0",
     "pocketbase": "^0.21.0",
     "turndown": "^7.2.4",
     "turndown-plugin-gfm": "^1.0.2",

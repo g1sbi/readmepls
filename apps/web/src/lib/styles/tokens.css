@@ -58,8 +58,9 @@
   --font-display: "Fredoka", ui-rounded, "Segoe UI", system-ui, sans-serif;
   --font-reading: "Newsreader", Georgia, "Times New Roman", serif;
   --font-mono:    "IBM Plex Mono", ui-monospace, "SFMono-Regular", monospace;
+  --font-ui:      "IBM Plex Sans", ui-sans-serif, system-ui, sans-serif;
 
-  /* UI type scale — Fredoka. Headings/chrome/controls. */
+  /* UI type scale — IBM Plex Sans (--font-ui). Fredoka (--font-display) is wordmark-only. */
   --text-2xs: 0.6875rem; /* 11 — tracked eyebrow/meta */
   --text-xs:  0.75rem;   /* 12 */
   --text-sm:  0.875rem;  /* 14 */
@@ -86,11 +87,23 @@
   --tracking-normal:  0;
   --tracking-eyebrow: 0.25em; /* banner meta */
 
+  /* iconography (Track 2 slice 2) */
+  --icon-sm: 1rem;     /* 16 — inline with sm/md text */
+  --icon-md: 1.25rem;  /* 20 — default action/control icon */
+  --icon-lg: 1.5rem;   /* 24 — emphasis */
+  --icon-stroke: 1.75; /* line weight, pairs with Fredoka */
+
   /* ---- 1. PRIMITIVES — space (4px base) -------------------------------- */
   --space-1: 0.25rem;  --space-2: 0.5rem;   --space-3: 0.75rem;
   --space-4: 1rem;     --space-5: 1.5rem;   --space-6: 2rem;
   --space-7: 3rem;     --space-8: 4rem;     --space-9: 6rem;
   --space-10: 8rem;
+
+  /* ---- 1. PRIMITIVES — container widths ------------------------------- */
+  --width-page:   1100px; /* card grids, library, home */
+  --width-prose:  900px;  /* reading-adjacent lists, collections, search */
+  --width-narrow: 768px;  /* forms, settings */
+  --width-reader: 1440px; /* reader 3-col shell (rail + article + highlights) on desktop */
 
   /* ---- 1. PRIMITIVES — radii (generous; from 64px icon, 40px dog-ear) --- */
   --radius-xs:  6px;
@@ -117,6 +130,10 @@
   --dur-fast: 120ms;
   --dur-base: 200ms;
   --dur-slow: 360ms;
+  --dur-shimmer: 1.4s;
+
+  --grain-opacity: 0.04;        /* banner ::before grain strength */
+  --dur-view: var(--dur-base);  /* cross-route view-transition duration */
 
   --z-base: 0; --z-raised: 10; --z-sticky: 100;
   --z-overlay: 1000; --z-modal: 1100; --z-toast: 1200;
@@ -148,6 +165,8 @@
   --color-border:        color-mix(in srgb, var(--ink-900) 12%, transparent);
   --color-border-strong: color-mix(in srgb, var(--ink-900) 22%, transparent);
   --color-ring:          var(--terracotta-500);
+  --focus-ring-width:    2px;
+  --focus-ring-offset:   2px;
   --color-selection:     var(--terracotta-100);
 
   /* status */
