@@ -164,10 +164,14 @@ describe("library page", () => {
     expect(link).toHaveAttribute("href", "/collections/reading-list");
   });
 
-  it("hides the strip when there are no collections", () => {
+  it("keeps the collections section with a create control when there are none", () => {
     render(Library, {
       data: { ...data, facets: { ...data.facets, collections: [] } },
     } as never);
+    // No collection tile links...
     expect(screen.queryByRole("link", { name: /reading list/i })).toBeNull();
+    // ...but the always-present section header and create affordance remain.
+    expect(screen.getByRole("heading", { name: /collections/i })).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: /new collection/i })).toBeInTheDocument();
   });
 });
