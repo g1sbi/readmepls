@@ -1,16 +1,16 @@
 <script lang="ts">
   import { onMount } from "svelte";
-  import { Library, Search, FolderOpen, User } from "@lucide/svelte";
+  import { Library, Search, FolderOpen } from "@lucide/svelte";
   import { nextNavVisible } from "./bottom-nav-scroll.js";
   import { searchPalette } from "$lib/stores/search-palette.svelte.js";
 
   let { pathname }: { pathname: string } = $props();
 
+  // profile tab hidden + route disabled temporarily; revisit later.
   const TABS = [
     { kind: "link", href: "/library", label: "library", icon: Library, match: (p: string) => p === "/library" || p.startsWith("/read") },
     { kind: "action", label: "search", icon: Search, action: () => searchPalette.open() },
     { kind: "link", href: "/collections", label: "collections", icon: FolderOpen, match: (p: string) => p.startsWith("/collections") },
-    { kind: "link", href: "/profile", label: "profile", icon: User, match: (p: string) => p === "/profile" },
   ] as const;
 
   let visible = $state(true);

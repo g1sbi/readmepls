@@ -4,22 +4,23 @@ import BottomNav from "./BottomNav.svelte";
 import { searchPalette } from "$lib/stores/search-palette.svelte.js";
 
 describe("BottomNav", () => {
-  it("renders the three primary tabs with correct hrefs", () => {
+  it("renders the primary tabs with correct hrefs", () => {
     const { getByRole } = render(BottomNav, { pathname: "/library" });
     expect(getByRole("link", { name: /library/i })).toHaveAttribute(
       "href",
       "/library",
     );
     expect(getByRole("button", { name: /search/i })).toBeInTheDocument();
-    expect(getByRole("link", { name: /profile/i })).toHaveAttribute(
-      "href",
-      "/profile",
-    );
+  });
+
+  it("does not render a profile tab", () => {
+    const { queryByRole } = render(BottomNav, { pathname: "/library" });
+    expect(queryByRole("link", { name: /profile/i })).not.toBeInTheDocument();
   });
 
   it("marks the active tab from the pathname", () => {
-    const { getByRole } = render(BottomNav, { pathname: "/profile" });
-    expect(getByRole("link", { name: /profile/i })).toHaveAttribute(
+    const { getByRole } = render(BottomNav, { pathname: "/collections" });
+    expect(getByRole("link", { name: /collections/i })).toHaveAttribute(
       "aria-current",
       "page",
     );

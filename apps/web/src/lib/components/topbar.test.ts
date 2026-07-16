@@ -16,12 +16,11 @@ describe("TopBar", () => {
     );
   });
 
-  it("links to the profile page", () => {
+  it("does not link to the profile page (temporarily hidden)", () => {
     render(TopBar, { theme: "light", onTheme: vi.fn(), onSignOut: vi.fn() });
-    expect(screen.getByRole("link", { name: /profile/i })).toHaveAttribute(
-      "href",
-      "/profile",
-    );
+    expect(
+      screen.queryByRole("link", { name: /profile/i }),
+    ).not.toBeInTheDocument();
   });
 
   it("opens a mobile menu with theme controls and sign out", async () => {
