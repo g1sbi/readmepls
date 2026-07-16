@@ -13,3 +13,9 @@ test("renders the open-source line from the banner", () => {
   render(Footer);
   expect(screen.getByText(/open source · self-hostable/i)).toBeTruthy();
 });
+
+test("renders the Docs link pointing at /docs", () => {
+  render(Footer);
+  const docs = screen.getByRole("link", { name: "Docs" });
+  expect(docs.getAttribute("href")).toBe("/docs");
+});
