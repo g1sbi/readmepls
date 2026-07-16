@@ -1,4 +1,4 @@
-import { describe, it, expect, beforeEach, afterEach } from "vitest";
+import { describe, it, expect, beforeEach, afterEach, vi } from "vitest";
 import {
   initialTypewriterState,
   nextTypewriterState,
@@ -7,7 +7,6 @@ import {
   PAUSE_MS,
   createTypewriter,
 } from "./typewriter.svelte.js";
-import { vi } from "vitest";
 
 const PHRASES = ["hi", "yo"];
 
@@ -85,15 +84,17 @@ describe("createTypewriter", () => {
     tw.stop();
   });
 
-  it("does not advance while paused", () => {
+  it("does not advance while paused, then resumes within one tick", () => {
     let paused = true;
     const tw = createTypewriter(["hi"], { paused: () => paused });
     tw.start();
-    vi.advanceTimersByTime(TYPE_MS * 5);
+    vi.advanceTimersByTime(TYPE_MS * 20);
     expect(tw.text).toBe("");
     paused = false;
-    vi.advanceTimersByTime(PAUSE_MS + TYPE_MS);
+    vi.advanceTimersByTime(TYPE_MS);
     expect(tw.text).toBe("h");
+    vi.advanceTimersByTime(TYPE_MS);
+    expect(tw.text).toBe("hi");
     tw.stop();
   });
 

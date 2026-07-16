@@ -57,33 +57,30 @@ export function nextTypewriterState(
 }
 
 // Thin runes wrapper: holds state in $state and schedules the next step with
-// setTimeout. `paused()` (e.g. input focused/non-empty) freezes advancement so
-// the animation never fights the user. Reduced motion => static first phrase.
+// setTimeout. `paused()` (e.g. input focused/non-empty) freezes advancement —
+// while paused the wrapper re-checks at the typing cadence, so resuming picks
+// up within one type-tick with no stutter. Reduced motion => static first
+// phrase, no timer.
 export function createTypewriter(
   phrases: string[],
   opts?: { paused?: () => boolean },
 ) {
   let state = $state(initialTypewriterState());
   let timer: ReturnType<typeof setTimeout> | undefined;
-  let wasPaused = opts?.paused?.() ?? false;
 
   function schedule(delayMs: number) {
     timer = setTimeout(tick, delayMs);
   }
 
   function tick() {
-    const isPausedNow = opts?.paused?.() ?? false;
-    const justResumed = wasPaused && !isPausedNow;
-    wasPaused = isPausedNow;
-
-    if (isPausedNow) {
-      schedule(PAUSE_MS);
+    if (opts?.paused?.()) {
+      // poll at the typing cadence so resume latency is at most one tick
+      schedule(TYPE_MS);
       return;
     }
     const step = nextTypewriterState(state, phrases);
     state = step.state;
-    const delayMs = justResumed ? PAUSE_MS + TYPE_MS : step.delayMs;
-    schedule(delayMs);
+    schedule(step.delayMs);
   }
 
   return {
