@@ -11,10 +11,35 @@ const { goto, fetchLive } = vi.hoisted(() => ({
 vi.mock("$app/navigation", () => ({ goto }));
 vi.mock("$lib/search/live-client.js", () => ({ fetchLive }));
 
-// Recently-read pb query stub.
+// Recently-read pb query stub. Defaults to one article with an expanded
+// source so tests can assert the title/source rendering without each test
+// having to construct its own fixture.
 vi.mock("$lib/pb.js", () => ({
   browserPb: () => ({
-    collection: () => ({ getList: vi.fn(async () => ({ items: [] })) }),
+    collection: () => ({
+      getList: vi.fn(async () => ({
+        items: [
+          {
+            id: "recent-1",
+            url: "https://docs.example.com/overview",
+            expand: {
+              content: {
+                title: "PocketBase overview",
+                expand: {
+                  source: {
+                    id: "src-1",
+                    host: "docs.example.com",
+                    name: "Example Docs",
+                    favicon: "",
+                    favicon_status: "none",
+                  },
+                },
+              },
+            },
+          },
+        ],
+      })),
+    }),
   }),
 }));
 
@@ -45,6 +70,15 @@ describe("SearchPalette", () => {
     searchPalette.open();
     await waitFor(() => expect(screen.getByRole("dialog")).toBeInTheDocument());
     expect(screen.getByText("rust")).toBeInTheDocument();
+  });
+
+  it("recently read items show a bold title and their source", async () => {
+    render(SearchPalette);
+    searchPalette.open();
+    await waitFor(() => expect(screen.getByRole("dialog")).toBeInTheDocument());
+    const title = await screen.findByText("PocketBase overview");
+    expect(title).toHaveClass("sp-title");
+    expect(screen.getByText("Example Docs")).toBeInTheDocument();
   });
 
   it("fetches live results as the query changes and navigates to a picked article", async () => {

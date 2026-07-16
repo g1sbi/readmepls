@@ -12,6 +12,7 @@
   import { fetchLive } from "$lib/search/live-client.js";
   import { loadRecentSearches, pushRecentSearch } from "$lib/search/recent-searches.js";
   import { browserPb } from "$lib/pb.js";
+  import { sourceView } from "$lib/source/source-view.js";
   import type { ArticleRecord } from "$lib/article/record.js";
 
   const EMPTY: LiveSearchResult = { articles: [], tags: [], collections: [] };
@@ -156,8 +157,10 @@
           {#if recentArticles.length}
             <Command.Group heading="recently read">
               {#each recentArticles as a (a.id)}
+                {@const source = sourceView(pb, a.expand?.content)}
                 <Command.Item onSelect={() => pickArticle(a.id)}>
-                  {a.expand?.content?.title ?? a.url}
+                  <span class="sp-title">{a.expand?.content?.title ?? a.url}</span>
+                  {#if source}<span class="sp-source">{source.name ?? source.host}</span>{/if}
                 </Command.Item>
               {/each}
             </Command.Group>
@@ -245,7 +248,11 @@
     align-items: baseline;
     gap: var(--space-2);
     min-height: 44px;
-    border-radius: var(--radius-md);
+    /* !important beats the generated command-item's own
+       in-data-[slot=dialog-content]:rounded-lg! (also !important), which
+       would otherwise win and render a 20px pill instead of this row's
+       tighter, proportionate corner. */
+    border-radius: var(--radius-sm) !important;
     font-family: var(--font-ui);
     color: var(--color-text);
     cursor: pointer;
