@@ -69,7 +69,7 @@
       onblur={() => (focused = false)}
       placeholder={focused ? "paste a link…" : tw.text}
       aria-label="paste a link to save"
-      class="text-base"
+      class="text-base md:text-base"
     />
     <InputGroup.Addon align="inline-end">
       <InputGroup.Button

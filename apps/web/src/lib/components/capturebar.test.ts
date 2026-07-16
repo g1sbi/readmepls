@@ -54,4 +54,18 @@ describe("CaptureBar", () => {
     await fireEvent.click(screen.getByRole("button", { name: /save link/i }));
     expect(await screen.findByRole("alert")).toHaveTextContent(/quota/i);
   });
+
+  it("shows a generic error on a non-ok response", async () => {
+    vi.stubGlobal(
+      "fetch",
+      vi.fn().mockResolvedValue(new Response(null, { status: 500 })),
+    );
+    render(CaptureBar, {});
+    await fireEvent.input(
+      screen.getByRole("textbox", { name: /paste a link/i }),
+      { target: { value: "https://example.com" } },
+    );
+    await fireEvent.click(screen.getByRole("button", { name: /save link/i }));
+    expect(await screen.findByRole("alert")).toHaveTextContent(/could not capture/i);
+  });
 });
