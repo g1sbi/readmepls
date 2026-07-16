@@ -1,14 +1,13 @@
 <script lang="ts">
-  import { goto } from "$app/navigation";
   import { THEMES, type Theme } from "$lib/theme/theme.js";
   import Sheet from "$lib/components/ui/Sheet.svelte";
-  import { Search, Library, User, Sun, Moon, Coffee, LogOut, Menu } from "@lucide/svelte";
+  import { searchPalette } from "$lib/stores/search-palette.svelte.js";
+  import { Search, Library, Sun, Moon, Coffee, LogOut, Menu } from "@lucide/svelte";
 
   // Theme → icon map; theme text label stays the accessible name.
   const themeIcon = { light: Sun, dark: Moon, sepia: Coffee } as const;
 
   let { theme, onTheme, onSignOut }: { theme: Theme; onTheme: (t: Theme) => void; onSignOut: () => void } = $props();
-  let q = $state("");
   let menuOpen = $state(false);
 </script>
 
@@ -33,12 +32,12 @@
   <a class="brand" href="/">readme<span>pls</span></a>
   <nav>
     <a href="/library"><Library class="icon-sm" aria-hidden="true" />library</a>
-    <a href="/profile"><User class="icon-sm" aria-hidden="true" />profile</a>
   </nav>
-  <form class="search" onsubmit={(e) => { e.preventDefault(); if (q.trim()) goto(`/search?q=${encodeURIComponent(q)}`); }}>
-    <Search class="icon-sm search-icon" aria-hidden="true" />
-    <input bind:value={q} placeholder="search…" aria-label="search library" />
-  </form>
+  <button type="button" class="search-trigger" onclick={() => searchPalette.open()}>
+    <Search class="icon-sm" aria-hidden="true" />
+    <span class="search-label">search your library…</span>
+    <kbd class="search-kbd">⌘K</kbd>
+  </button>
   <div class="right">
     {@render themeControls()}
     {@render signOutButton()}
@@ -75,21 +74,20 @@
   .themes button:focus-visible, .signout:focus-visible, .menu-btn:focus-visible { outline: 2px solid var(--color-ring); outline-offset: 2px; }
   .signout { display: inline-flex; align-items: center; gap: var(--space-1); font-family: var(--font-ui); font-size: 0.85rem; background: none; border: none; color: var(--color-text-muted); cursor: pointer; }
   .signout:hover { color: var(--color-text); }
-  .search { display: flex; flex: 1; max-width: 20rem; position: relative; align-items: center; }
-  .search :global(.search-icon) { position: absolute; left: 0.6rem; color: var(--color-text-subtle); pointer-events: none; }
-  .search input {
-    width: 100%;
-    font-family: var(--font-ui);
-    font-size: var(--text-sm);
-    padding: 0.3rem 0.65rem 0.3rem 1.9rem; /* left pad for the icon */
+  .search-trigger {
+    display: flex; flex: 1; max-width: 20rem; align-items: center; gap: var(--space-2);
+    min-height: 44px; padding: 0.3rem 0.65rem;
     background: var(--color-surface-sunken);
     border: 1px solid var(--color-border);
     border-radius: var(--radius-pill);
-    color: var(--color-text);
-    outline: none;
+    color: var(--color-text-subtle);
+    font-family: var(--font-ui); font-size: var(--text-sm);
+    cursor: pointer; text-align: left;
   }
-  .search input::placeholder { color: var(--color-text-subtle); }
-  .search input:focus { border-color: var(--color-ring); box-shadow: 0 0 0 2px var(--color-accent-wash); }
+  .search-trigger:hover { border-color: var(--color-ring); }
+  .search-trigger:focus-visible { outline: 2px solid var(--color-ring); outline-offset: 2px; }
+  .search-label { flex: 1; }
+  .search-kbd { font-family: var(--font-ui); font-size: var(--text-xs); padding: 0.1rem 0.35rem; border: 1px solid var(--color-border); border-radius: var(--radius-sm); }
 
   /* Menu button is desktop-hidden; revealed on mobile. */
   .menu-btn { display: none; align-items: center; justify-content: center; min-width: 44px; min-height: 44px; margin-left: auto; background: none; border: none; color: var(--color-text-muted); cursor: pointer; }
@@ -102,7 +100,7 @@
 
   @media (max-width: 640px) {
     .topbar { gap: 0.6rem; flex-wrap: nowrap; }
-    nav, .search, .right { display: none; } /* moved to bottom nav / menu sheet */
+    nav, .search-trigger, .right { display: none; } /* moved to bottom nav / menu sheet */
     .menu-btn { display: inline-flex; }
     /* Keep labels visible inside the menu sheet even on mobile. */
     .sheet-menu .themes button .label { position: static; width: auto; height: auto; clip: auto; margin: 0; }

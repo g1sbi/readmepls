@@ -1,18 +1,11 @@
 <script lang="ts">
   import type { LibraryParams, Sort } from "@readmepls/types";
   import { SlidersHorizontal } from "@lucide/svelte";
-  import { untrack } from "svelte";
 
-  let { params, total, focusSearch = false, onSearch, onSort, onOpenFilters }: {
-    params: LibraryParams; total: number; focusSearch?: boolean;
-    onSearch: (q: string) => void; onSort: (s: Sort) => void; onOpenFilters: () => void;
+  let { params, total, onSort, onOpenFilters }: {
+    params: LibraryParams; total: number;
+    onSort: (s: Sort) => void; onOpenFilters: () => void;
   } = $props();
-
-  let query = $state(untrack(() => params.q));
-  $effect(() => { query = params.q; });
-
-  let searchEl = $state<HTMLInputElement | null>(null);
-  $effect(() => { if (focusSearch) searchEl?.focus(); });
 
   const SORT_LABELS: { value: Sort; label: string }[] = [
     { value: "-created", label: "newest saved" },
@@ -27,15 +20,6 @@
 </script>
 
 <div class="toolbar">
-  <input
-    class="search"
-    type="search"
-    aria-label="search your library"
-    placeholder="search…"
-    bind:this={searchEl}
-    bind:value={query}
-    onkeydown={(e) => { if (e.key === "Enter") onSearch(query.trim()); }}
-  />
   <button class="filters-btn" onclick={onOpenFilters}>
     <SlidersHorizontal class="icon-sm" aria-hidden="true" /> filters
   </button>
@@ -54,7 +38,6 @@
 
 <style>
   .toolbar { display: flex; flex-wrap: wrap; gap: var(--space-3); align-items: center; margin: 0 0 var(--space-4); }
-  .search { flex: 1 1 12rem; padding: 0.5rem 0.75rem; border: 1px solid var(--color-border); border-radius: var(--radius-md); background: var(--color-surface); font-family: var(--font-ui); color: var(--color-text); }
   .filters-btn { display: inline-flex; align-items: center; gap: 0.35rem; padding: 0.5rem 0.75rem; border: 1px solid var(--color-border); border-radius: var(--radius-md); background: var(--color-surface); cursor: pointer; font-family: var(--font-ui); color: var(--color-text); }
   .filters-btn:hover { border-color: var(--color-accent); color: var(--color-accent); }
   select { padding: 0.5rem; border: 1px solid var(--color-border); border-radius: var(--radius-md); background: var(--color-surface); font-family: var(--font-ui); color: var(--color-text); }
@@ -62,7 +45,6 @@
   .sr-only { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); }
 
   @media (max-width: 640px) {
-    .search { flex-basis: 100%; order: 1; min-height: 44px; }
     .filters-btn { order: 2; min-height: 44px; }
     .sort { order: 3; }
     select { min-height: 44px; }

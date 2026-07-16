@@ -45,3 +45,37 @@ if (
   globalThis.PointerEvent =
     PointerEventPolyfill as unknown as typeof PointerEvent;
 }
+
+// jsdom doesn't implement scrollIntoView (github.com/jsdom/jsdom/issues/1695).
+// bits-ui's Command scrolls the active item into view on selection change,
+// so any test that selects/navigates a Command list needs this to exist —
+// otherwise it throws inside an internal effect as an unhandled rejection.
+if (
+  typeof Element !== "undefined" &&
+  typeof Element.prototype.scrollIntoView !== "function"
+) {
+  Element.prototype.scrollIntoView = () => {};
+}
+
+// Node 22+ ships its own global `localStorage`/`sessionStorage` accessors
+// (broken — they throw/return undefined without --localstorage-file). Vitest's
+// jsdom environment only proxies a window property onto the Node global when
+// the key is either absent from the global or in its own hardcoded allowlist;
+// neither storage key is, so Node's broken native accessor silently shadows
+// jsdom's real, working `window.localStorage`. `globalThis.window` is itself
+// the populated Node global (self-referencing), so the real Window instance
+// has to be reached via `globalThis.jsdom` (vitest's jsdom environment stashes
+// it there) rather than `window` directly. Any code exercising
+// localStorage-backed features (recent searches, prefs, …) under test needs
+// this restored to jsdom's implementation.
+const realWindow = (globalThis as { jsdom?: { window?: Window } }).jsdom
+  ?.window;
+if (realWindow) {
+  for (const key of ["localStorage", "sessionStorage"] as const) {
+    Object.defineProperty(globalThis, key, {
+      value: realWindow[key],
+      configurable: true,
+      writable: true,
+    });
+  }
+}

@@ -10,14 +10,26 @@ export default defineConfig({
   resolve: {
     alias: {
       $lib: fileURLToPath(new URL("./src/lib", import.meta.url)),
-      "$app/navigation": fileURLToPath(new URL("./src/__mocks__/app-navigation.ts", import.meta.url)),
-      "$app/stores": fileURLToPath(new URL("./src/__mocks__/app-stores.ts", import.meta.url)),
-      "$env/dynamic/public": fileURLToPath(new URL("./src/__mocks__/env-dynamic-public.ts", import.meta.url)),
-      "$env/dynamic/private": fileURLToPath(new URL("./src/__mocks__/env-dynamic-private.ts", import.meta.url)),
+      "$app/navigation": fileURLToPath(
+        new URL("./src/__mocks__/app-navigation.ts", import.meta.url),
+      ),
+      "$app/stores": fileURLToPath(
+        new URL("./src/__mocks__/app-stores.ts", import.meta.url),
+      ),
+      "$env/dynamic/public": fileURLToPath(
+        new URL("./src/__mocks__/env-dynamic-public.ts", import.meta.url),
+      ),
+      "$env/dynamic/private": fileURLToPath(
+        new URL("./src/__mocks__/env-dynamic-private.ts", import.meta.url),
+      ),
     },
   },
   test: {
     environment: "jsdom",
+    // jsdom's default document origin is the opaque `about:blank`, under which
+    // the Storage API throws (per spec) — localStorage-backed code (recent
+    // searches) needs a real origin to work in tests.
+    environmentOptions: { jsdom: { url: "http://localhost/" } },
     include: ["src/**/*.{test,spec}.{js,ts}"],
     setupFiles: ["./vitest-setup.ts"],
   },

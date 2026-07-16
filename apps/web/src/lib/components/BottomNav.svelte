@@ -1,16 +1,17 @@
 <script lang="ts">
   import { onMount } from "svelte";
-  import { Library, Search, FolderOpen, User } from "@lucide/svelte";
+  import { Library, Search, FolderOpen } from "@lucide/svelte";
   import { nextNavVisible } from "./bottom-nav-scroll.js";
+  import { searchPalette } from "$lib/stores/search-palette.svelte.js";
 
   let { pathname }: { pathname: string } = $props();
 
+  // profile tab hidden + route disabled temporarily; revisit later.
   const TABS = [
-    { href: "/library", label: "library", icon: Library, match: (p: string) => p === "/library" || p.startsWith("/read") },
-    { href: "/library?focus=search", label: "search", icon: Search, match: (_p: string) => false },
-    { href: "/collections", label: "collections", icon: FolderOpen, match: (p: string) => p.startsWith("/collections") },
-    { href: "/profile", label: "profile", icon: User, match: (p: string) => p === "/profile" },
-  ];
+    { kind: "link", href: "/library", label: "library", icon: Library, match: (p: string) => p === "/library" || p.startsWith("/read") },
+    { kind: "action", label: "search", icon: Search, action: () => searchPalette.open() },
+    { kind: "link", href: "/collections", label: "collections", icon: FolderOpen, match: (p: string) => p.startsWith("/collections") },
+  ] as const;
 
   let visible = $state(true);
 
@@ -35,10 +36,17 @@
 <nav class="bottom-nav" data-visible={visible} aria-label="primary">
   {#each TABS as tab (tab.label)}
     {@const Icon = tab.icon}
-    <a href={tab.href} aria-current={tab.match(pathname) ? "page" : undefined}>
-      <Icon class="icon-sm" aria-hidden="true" />
-      <span>{tab.label}</span>
-    </a>
+    {#if tab.kind === "link"}
+      <a href={tab.href} aria-current={tab.match(pathname) ? "page" : undefined}>
+        <Icon class="icon-sm" aria-hidden="true" />
+        <span>{tab.label}</span>
+      </a>
+    {:else}
+      <button type="button" class="tab-btn" onclick={tab.action}>
+        <Icon class="icon-sm" aria-hidden="true" />
+        <span>{tab.label}</span>
+      </button>
+    {/if}
   {/each}
 </nav>
 
@@ -53,11 +61,12 @@
     transition: transform var(--dur-base) var(--ease-paper);
   }
   .bottom-nav[data-visible="false"] { transform: translateY(100%); }
-  .bottom-nav a {
+  .bottom-nav a, .bottom-nav .tab-btn {
     flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center;
     gap: 2px; min-height: 56px; padding: 0.4rem 0;
     font-family: var(--font-ui); font-size: 0.7rem;
     color: var(--color-text-muted); text-decoration: none;
+    background: none; border: none; cursor: pointer;
   }
   .bottom-nav a[aria-current="page"] { color: var(--color-accent); }
   @media (max-width: 640px) { .bottom-nav { display: flex; } }
