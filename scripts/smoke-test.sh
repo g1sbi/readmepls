@@ -15,8 +15,11 @@ cd "$(dirname "$0")/.."
 PB_PORT="${PB_PORT:-8090}"
 WEB_PORT="${WEB_PORT:-3000}"
 SEED_URL="https://example.com"
+# compose.yml alone has no build: blocks (self-hosters pull pre-built images);
+# compose.dev.yml layers build: back in so this test builds from source.
+COMPOSE=(docker compose -f compose.yml -f compose.dev.yml)
 
-cleanup() { docker compose down -v >/dev/null 2>&1 || true; }
+cleanup() { "${COMPOSE[@]}" down -v >/dev/null 2>&1 || true; }
 trap cleanup EXIT
 
 [ -f .env ] || cp .env.example .env
@@ -26,14 +29,14 @@ set -a; . ./.env; set +a
 echo "==> building + starting stack (worker in mock-AI mode)"
 # Sentinel proves the browser-facing PB URL is injected at runtime (not baked).
 export PUBLIC_PB_URL="http://pb.smoke.test:8090"
-AI_PROVIDER=mock docker compose up -d --build
+AI_PROVIDER=mock "${COMPOSE[@]}" up -d --build
 
 wait_for() { # <name> <url>
   for i in $(seq 1 30); do
     if curl -fsS "$2" >/dev/null 2>&1; then echo "$1 up"; return 0; fi
     sleep 2
   done
-  echo "$1 never came up: $2"; docker compose logs "$1"; exit 1
+  echo "$1 never came up: $2"; "${COMPOSE[@]}" logs "$1"; exit 1
 }
 
 echo "==> waiting for pocketbase health"
@@ -44,7 +47,7 @@ echo "==> waiting for web"
 for i in $(seq 1 30); do
   code=$(curl -s -o /dev/null -w '%{http_code}' "http://localhost:${WEB_PORT}/" || true)
   if [ "$code" != "000" ] && [ -n "$code" ]; then echo "web responding ($code)"; break; fi
-  [ "$i" = "30" ] && { echo "web never responded"; docker compose logs web; exit 1; }
+  [ "$i" = "30" ] && { echo "web never responded"; "${COMPOSE[@]}" logs web; exit 1; }
   sleep 2
 done
 
@@ -55,7 +58,7 @@ PUBLIC_ENV_JS=$(curl -fsS "http://localhost:${WEB_PORT}/_app/env.js")
 case "$PUBLIC_ENV_JS" in
   *pb.smoke.test:8090*) echo "runtime PB URL present in public env" ;;
   *) echo "PUBLIC_PB_URL sentinel missing from /_app/env.js — runtime env not wired";
-     docker compose logs web; exit 1 ;;
+     "${COMPOSE[@]}" logs web; exit 1 ;;
 esac
 
 echo "==> authenticating as PocketBase superuser"
@@ -79,8 +82,8 @@ for i in $(seq 1 30); do
     | sed -n 's/.*"status":"\([a-z]*\)".*/\1/p' | head -n1)
   echo "   job status: ${STATUS:-<none>}"
   [ "$STATUS" = "done" ] && { echo "==> SMOKE PASS"; exit 0; }
-  [ "$STATUS" = "failed" ] && { echo "worker marked job failed"; docker compose logs worker; exit 1; }
+  [ "$STATUS" = "failed" ] && { echo "worker marked job failed"; "${COMPOSE[@]}" logs worker; exit 1; }
   sleep 2
 done
 
-echo "worker did not finish the job in time"; docker compose logs worker; exit 1
+echo "worker did not finish the job in time"; "${COMPOSE[@]}" logs worker; exit 1
