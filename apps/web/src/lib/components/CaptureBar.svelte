@@ -23,6 +23,8 @@
   let focused = $state(false);
 
   // pause the animation whenever the user is engaged, so it never types over them
+  // placeholders is a one-time initializer for the animation, not reactively swapped
+  // svelte-ignore state_referenced_locally
   const tw = createTypewriter(placeholders, {
     paused: () => focused || url.trim() !== "",
   });
