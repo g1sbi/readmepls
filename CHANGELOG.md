@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.4.0](https://github.com/g1sbi/readmepls/compare/v0.3.0...v0.4.0) (2026-07-16)
+
+
+### Features
+
+* **deploy:** trigger image builds on push to main and deploy to the VPS ([0aa6c0c](https://github.com/g1sbi/readmepls/commit/0aa6c0c89b725e1a88214bdd3065c8bddb2e1dcc))
+
 ## [0.3.0](https://github.com/g1sbi/readmepls/compare/v0.2.0...v0.3.0) (2026-07-16)
 
 
