@@ -7,6 +7,7 @@
   import { serializeLibraryParams, slugify, type SourceFacet } from "@readmepls/core";
   import { ClientResponseError } from "pocketbase";
   import { applyPatch } from "$lib/library/url-state.js";
+  import { searchPalette } from "$lib/stores/search-palette.svelte.js";
   import { browserPb } from "$lib/pb.js";
   import { deleteArticle } from "$lib/article/delete.js";
   import type { ArticleRecord } from "$lib/article/record.js";
@@ -114,12 +115,10 @@
 <LibraryToolbar
   params={data.params}
   total={data.page.totalItems}
-  focusSearch={data.focusSearch}
-  onSearch={(q) => patch({ q })}
   onSort={(s: Sort) => patch({ sort: s })}
   onOpenFilters={() => (drawerOpen = true)}
 />
-<ActiveFilters params={data.params} {labels} onRemove={patch} onClear={clearAll} />
+<ActiveFilters params={data.params} {labels} onRemove={patch} onClear={clearAll} onEditQuery={() => searchPalette.open(data.params.q)} />
 <FilterDrawer
   open={drawerOpen}
   onClose={() => (drawerOpen = false)}

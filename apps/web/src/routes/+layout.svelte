@@ -12,6 +12,8 @@
   import { releaseTransformContainingBlock } from "$lib/actions/release-transform-containing-block.js";
   import TopBar from "$lib/components/TopBar.svelte";
   import BottomNav from "$lib/components/BottomNav.svelte";
+  import SearchPalette from "$lib/components/SearchPalette.svelte";
+  import { handleSearchKeydown } from "$lib/search/handle-keydown.js";
 
   let { children } = $props();
   const pb = browserPb();
@@ -79,6 +81,8 @@
   }
 </script>
 
+<svelte:window onkeydown={handleSearchKeydown} />
+
 <div class="app">
   {#if chrome}
     <TopBar {theme} onTheme={setTheme} onSignOut={signOut} />
@@ -89,6 +93,7 @@
   <div class="page" class:page--wide={isReader} use:releaseTransformContainingBlock>{@render children()}</div>
   {#if chrome}
     <BottomNav pathname={$page.url.pathname} />
+    <SearchPalette />
   {/if}
 </div>
 
