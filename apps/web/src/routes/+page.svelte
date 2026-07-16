@@ -8,6 +8,7 @@
   import ArticleCard from "$lib/components/ArticleCard.svelte";
   import CardGrid from "$lib/components/ui/CardGrid.svelte";
   import { Button } from "$lib/components/ui/button/index.js";
+  import { Library, FolderOpen } from "@lucide/svelte";
 
   const GREETINGS = [
     "what do you feel like reading?",
@@ -45,8 +46,22 @@
   <CyclingGreeting phrases={GREETINGS} />
   <CaptureBar onCaptured={load} />
   <nav class="quick" aria-label="quick actions">
-    <Button href="/library" variant="outline" class="h-11 rounded-full">browse library</Button>
-    <Button href="/collections" variant="outline" class="h-11 rounded-full">your collections</Button>
+    <Button
+      href="/library"
+      variant="outline"
+      class="h-11 gap-2 rounded-full bg-card px-5 font-medium shadow-sm transition-all hover:-translate-y-px hover:bg-accent hover:shadow-md dark:bg-card dark:hover:bg-accent"
+    >
+      <Library aria-hidden="true" class="text-muted-foreground" />
+      browse library
+    </Button>
+    <Button
+      href="/collections"
+      variant="outline"
+      class="h-11 gap-2 rounded-full bg-card px-5 font-medium shadow-sm transition-all hover:-translate-y-px hover:bg-accent hover:shadow-md dark:bg-card dark:hover:bg-accent"
+    >
+      <FolderOpen aria-hidden="true" class="text-muted-foreground" />
+      your collections
+    </Button>
   </nav>
 </section>
 
