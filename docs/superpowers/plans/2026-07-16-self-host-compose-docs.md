@@ -56,7 +56,7 @@
 **Interfaces:**
 - Produces: three compose files self-hosters/contributors/the maintainer combine via `docker compose -f compose.yml [-f compose.dev.yml | -f compose.site.yml] ...`. Later tasks (env-parity script, smoke test, deploy workflow) depend on these exact filenames and the fact that `compose.yml` alone has no `build:` and no `site` service.
 
-- [ ] **Step 1: Rewrite `compose.yml` as the self-host-only file**
+- [x] **Step 1: Rewrite `compose.yml` as the self-host-only file**
 
 Replace the full file contents with:
 
@@ -123,7 +123,7 @@ volumes:
   worker_models:
 ```
 
-- [ ] **Step 2: Create `compose.dev.yml`**
+- [x] **Step 2: Create `compose.dev.yml`**
 
 ```yaml
 # Layers `build:` back onto the self-host services in compose.yml, for
@@ -146,7 +146,7 @@ services:
       dockerfile: apps/worker/Dockerfile
 ```
 
-- [ ] **Step 3: Create `compose.site.yml`**
+- [x] **Step 3: Create `compose.site.yml`**
 
 ```yaml
 # Adds the landing-page service. Only the maintainer's own deploy needs this —
@@ -164,7 +164,7 @@ services:
       - "${SITE_PORT:-3001}:80"
 ```
 
-- [ ] **Step 4: Validate all three compose combinations parse and resolve**
+- [x] **Step 4: Validate all three compose combinations parse and resolve**
 
 `env_file: .env` requires the file to exist at config-resolution time, so
 create one first if it's not already there:
@@ -177,7 +177,7 @@ docker compose -f compose.yml -f compose.site.yml config >/dev/null && echo "sit
 ```
 Expected: all three print their `OK` line with no YAML/merge errors.
 
-- [ ] **Step 5: Commit**
+- [x] **Step 5: Commit**
 
 ```bash
 git add compose.yml compose.dev.yml compose.site.yml
@@ -195,7 +195,7 @@ git commit -m "feat(deploy): split compose.yml into self-host, dev, and site ove
 **Interfaces:**
 - Produces: `.env.example` (paired with `compose.yml` in Task 3's parity check) and `.env.site.example` (paired with `compose.site.yml`).
 
-- [ ] **Step 1: Rewrite `.env.example`, dropping the `# ---- Images ----` / `IMAGE_OWNER` block and the `# --- Landing site ---` block**
+- [x] **Step 1: Rewrite `.env.example`, dropping the `# ---- Images ----` / `IMAGE_OWNER` block and the `# --- Landing site ---` block**
 
 Replace the full file contents with:
 
@@ -261,7 +261,7 @@ WORKER_HTTP_HOST=0.0.0.0
 WORKER_URL=http://worker:8091
 ```
 
-- [ ] **Step 2: Create `.env.site.example`**
+- [x] **Step 2: Create `.env.site.example`**
 
 ```
 # ---- Landing site (compose.site.yml) ----
@@ -275,7 +275,7 @@ APP_URL=https://app.readmepls.com
 SITE_PORT=3001
 ```
 
-- [ ] **Step 3: Sanity-check no other file still references the removed `IMAGE_OWNER` var**
+- [x] **Step 3: Sanity-check no other file still references the removed `IMAGE_OWNER` var**
 
 Run:
 ```bash
@@ -283,7 +283,7 @@ grep -rn "IMAGE_OWNER" --include="*.md" --include="*.yml" --include="*.mjs" --in
 ```
 Expected: no output (empty) — confirms `compose.yml`/`compose.dev.yml`/`compose.site.yml` from Task 1 don't reference it either.
 
-- [ ] **Step 4: Commit**
+- [x] **Step 4: Commit**
 
 ```bash
 git add .env.example .env.site.example
@@ -301,7 +301,7 @@ git commit -m "feat(deploy): split .env.example into self-host and site template
 - Consumes: `compose.yml`, `.env.example`, `compose.site.yml`, `.env.site.example` (from Tasks 1–2).
 - Produces: `node scripts/env-parity-check.mjs` exits 0 and prints an OK line per pair, or exits 1 with the offending file names and missing vars.
 
-- [ ] **Step 1: Replace the full file contents**
+- [x] **Step 1: Replace the full file contents**
 
 ```javascript
 import { readFileSync, readdirSync, statSync } from "node:fs";
@@ -379,7 +379,7 @@ if (undeclaredPublic.length) {
 console.log(`env-parity OK: ${usedPublic.size} PUBLIC_* code vars all declared`);
 ```
 
-- [ ] **Step 2: Run it and confirm it passes for both pairs**
+- [x] **Step 2: Run it and confirm it passes for both pairs**
 
 Run: `node scripts/env-parity-check.mjs`
 Expected output (order matters — pairs run in the order listed):
@@ -390,7 +390,7 @@ env-parity OK: <M> PUBLIC_* code vars all declared
 ```
 (exact `<N>`/`<M>` counts depend on current vars — just confirm exit code 0 and three OK lines, no `missing`/`undeclared` errors.)
 
-- [ ] **Step 3: Prove the check actually catches a break (regression test for the script itself)**
+- [x] **Step 3: Prove the check actually catches a break (regression test for the script itself)**
 
 Edit `compose.site.yml`, temporarily adding one line under `site.environment:`
 so it reads:
@@ -408,7 +408,7 @@ Then revert the throwaway line:
 git checkout -- compose.site.yml
 ```
 
-- [ ] **Step 4: Commit**
+- [x] **Step 4: Commit**
 
 ```bash
 git add scripts/env-parity-check.mjs
@@ -425,7 +425,7 @@ git commit -m "test(deploy): extend env-parity-check to the site compose/env pai
 **Interfaces:**
 - Consumes: `compose.yml`, `compose.dev.yml` (Task 1), `.env.example` (Task 2, copied to `.env` if absent).
 
-- [ ] **Step 1: Replace the full file contents**
+- [x] **Step 1: Replace the full file contents**
 
 ```bash
 #!/usr/bin/env bash
@@ -519,12 +519,12 @@ done
 echo "worker did not finish the job in time"; "${COMPOSE[@]}" logs worker; exit 1
 ```
 
-- [ ] **Step 2: Run the smoke test**
+- [x] **Step 2: Run the smoke test**
 
 Run: `pnpm smoke`
 Expected: ends with `==> SMOKE PASS` and exit code 0. (Requires network access for the worker's real HTTP fetch of `example.com`, per the script's own header comment.)
 
-- [ ] **Step 3: Commit**
+- [x] **Step 3: Commit**
 
 ```bash
 git add scripts/smoke-test.sh
@@ -541,7 +541,7 @@ git commit -m "test(deploy): build the smoke stack via compose.dev.yml overlay"
 **Interfaces:**
 - Consumes: `compose.yml`, `compose.site.yml` (Task 1) — assumed already present in `secrets.VPS_APP_DIR` on the VPS.
 
-- [ ] **Step 1: Update the deploy job's SSH script**
+- [x] **Step 1: Update the deploy job's SSH script**
 
 In the `deploy` job's `script:` block, replace:
 
@@ -563,7 +563,7 @@ with:
             docker image prune -f
 ```
 
-- [ ] **Step 2: Validate the workflow YAML still parses**
+- [x] **Step 2: Validate the workflow YAML still parses**
 
 Run:
 ```bash
@@ -571,7 +571,7 @@ python3 -c "import yaml; yaml.safe_load(open('.github/workflows/docker-publish.y
 ```
 Expected: `YAML OK`, no exception.
 
-- [ ] **Step 3: Commit**
+- [x] **Step 3: Commit**
 
 ```bash
 git add .github/workflows/docker-publish.yml
@@ -590,7 +590,7 @@ git commit -m "fix(deploy): pull/run the VPS stack via compose.yml + compose.sit
 
 **Interfaces:** None (documentation only).
 
-- [ ] **Step 1: Replace the "## Self Hosting" section in `README.md`**
+- [x] **Step 1: Replace the "## Self Hosting" section in `README.md`**
 
 Replace:
 ```markdown
@@ -616,7 +616,7 @@ AI features. Full walkthrough: [readmepls.com/docs](https://readmepls.com/docs).
 Data persists in the `pb_data` volume.
 ```
 
-- [ ] **Step 2: Update the Docker command note in `CLAUDE.md`**
+- [x] **Step 2: Update the Docker command note in `CLAUDE.md`**
 
 Replace:
 ```markdown
@@ -630,12 +630,12 @@ with:
   source instead: `docker compose -f compose.yml -f compose.dev.yml up -d --build`.
 ```
 
-- [ ] **Step 3: Read both files back to confirm the edits landed cleanly**
+- [x] **Step 3: Read both files back to confirm the edits landed cleanly**
 
 Run: `git diff README.md CLAUDE.md`
 Expected: a clean diff showing exactly the two replacements above, nothing else changed.
 
-- [ ] **Step 4: Commit**
+- [x] **Step 4: Commit**
 
 ```bash
 git add README.md CLAUDE.md
@@ -656,7 +656,7 @@ git commit -m "docs: rewrite self-host instructions around the compose file spli
 - Consumes: `GITHUB_URL` from `$lib/site` (existing export, see `apps/site/src/lib/site.ts:11`).
 - Produces: `Nav.svelte` — a Svelte component with no props, rendering a `GitHub` link (`href={GITHUB_URL}`) and a `Docs` link (`href="/docs"`).
 
-- [ ] **Step 1: Write the failing test**
+- [x] **Step 1: Write the failing test**
 
 Create `apps/site/src/lib/components/Nav.test.ts`:
 ```typescript
@@ -678,12 +678,12 @@ test("renders the Docs link pointing at /docs", () => {
 });
 ```
 
-- [ ] **Step 2: Run the test to verify it fails**
+- [x] **Step 2: Run the test to verify it fails**
 
 Run: `pnpm --filter @readmepls/site test -- Nav.test.ts` (or `pnpm exec vitest run apps/site/src/lib/components/Nav.test.ts` from repo root, per this repo's testing convention)
 Expected: FAIL — `Nav.svelte` doesn't exist yet.
 
-- [ ] **Step 3: Create `Nav.svelte`**
+- [x] **Step 3: Create `Nav.svelte`**
 
 ```svelte
 <script lang="ts">
@@ -736,12 +736,12 @@ Expected: FAIL — `Nav.svelte` doesn't exist yet.
 </style>
 ```
 
-- [ ] **Step 4: Run the test to verify it passes**
+- [x] **Step 4: Run the test to verify it passes**
 
 Run: `pnpm --filter @readmepls/site test -- Nav.test.ts`
 Expected: PASS (2 tests).
 
-- [ ] **Step 5: Wire `Nav` into the shared layout**
+- [x] **Step 5: Wire `Nav` into the shared layout**
 
 Modify `apps/site/src/routes/+layout.svelte` — replace:
 ```svelte
@@ -769,12 +769,12 @@ with:
 {@render children()}
 ```
 
-- [ ] **Step 6: Run the full site test suite to confirm nothing else broke**
+- [x] **Step 6: Run the full site test suite to confirm nothing else broke**
 
 Run: `pnpm --filter @readmepls/site test`
 Expected: all tests pass, including the existing `page.test.ts` (which renders `+page.svelte` directly, not the layout, so it's unaffected by the layout change).
 
-- [ ] **Step 7: Commit**
+- [x] **Step 7: Commit**
 
 ```bash
 git add apps/site/src/lib/components/Nav.svelte apps/site/src/lib/components/Nav.test.ts apps/site/src/routes/+layout.svelte
@@ -792,7 +792,7 @@ git commit -m "feat(site): add a top nav with GitHub and Docs links"
 **Interfaces:**
 - Produces: `Footer.svelte`'s second link now reads "Docs" and points at `/docs` (was "Self-host" → `GITHUB_URL`).
 
-- [ ] **Step 1: Write the failing test**
+- [x] **Step 1: Write the failing test**
 
 Add to `apps/site/src/lib/components/Footer.test.ts` (append after the existing two tests):
 ```typescript
@@ -803,12 +803,12 @@ test("renders the Docs link pointing at /docs", () => {
 });
 ```
 
-- [ ] **Step 2: Run the test to verify it fails**
+- [x] **Step 2: Run the test to verify it fails**
 
 Run: `pnpm --filter @readmepls/site test -- Footer.test.ts`
 Expected: FAIL — no link named "Docs" exists yet (current link is named "Self-host").
 
-- [ ] **Step 3: Update `Footer.svelte`**
+- [x] **Step 3: Update `Footer.svelte`**
 
 Replace:
 ```svelte
@@ -834,12 +834,12 @@ with:
 
 (Only the `<footer>` markup changes — the `<script>` and `<style>` blocks are unchanged.)
 
-- [ ] **Step 4: Run the test to verify it passes**
+- [x] **Step 4: Run the test to verify it passes**
 
 Run: `pnpm --filter @readmepls/site test -- Footer.test.ts`
 Expected: PASS (3 tests).
 
-- [ ] **Step 5: Commit**
+- [x] **Step 5: Commit**
 
 ```bash
 git add apps/site/src/lib/components/Footer.svelte apps/site/src/lib/components/Footer.test.ts
@@ -857,7 +857,7 @@ git commit -m "feat(site): point the footer's self-host link at /docs"
 **Interfaces:**
 - Produces: `CodeBlock.svelte` accepting a single prop `code: string`, rendering it verbatim in a `<pre><code>` block with a copy-to-clipboard button. Consumed by the docs page (Task 10) via `<CodeBlock code={...} />`.
 
-- [ ] **Step 1: Write the failing tests**
+- [x] **Step 1: Write the failing tests**
 
 Create `apps/site/src/lib/components/CodeBlock.test.ts`:
 ```typescript
@@ -882,12 +882,12 @@ test("copies the code to the clipboard on click", async () => {
 });
 ```
 
-- [ ] **Step 2: Run the tests to verify they fail**
+- [x] **Step 2: Run the tests to verify they fail**
 
 Run: `pnpm --filter @readmepls/site test -- CodeBlock.test.ts`
 Expected: FAIL — `CodeBlock.svelte` doesn't exist yet.
 
-- [ ] **Step 3: Create `CodeBlock.svelte`**
+- [x] **Step 3: Create `CodeBlock.svelte`**
 
 ```svelte
 <script lang="ts">
@@ -944,12 +944,12 @@ Expected: FAIL — `CodeBlock.svelte` doesn't exist yet.
 </style>
 ```
 
-- [ ] **Step 4: Run the tests to verify they pass**
+- [x] **Step 4: Run the tests to verify they pass**
 
 Run: `pnpm --filter @readmepls/site test -- CodeBlock.test.ts`
 Expected: PASS (2 tests).
 
-- [ ] **Step 5: Commit**
+- [x] **Step 5: Commit**
 
 ```bash
 git add apps/site/src/lib/components/CodeBlock.svelte apps/site/src/lib/components/CodeBlock.test.ts
@@ -969,7 +969,7 @@ git commit -m "feat(site): add a copyable CodeBlock component"
 - Consumes: `CodeBlock` (Task 9, `props: { code: string }`), `GITHUB_URL` from `$lib/site`.
 - Produces: route `/docs`, prerendered (inherits `export const prerender = true` from `apps/site/src/routes/+layout.ts:1`). `+page.server.ts` exports `load: PageServerLoad` returning `{ compose: string, envExample: string }`, consumed by `+page.svelte` via `let { data } = $props()`.
 
-- [ ] **Step 1: Write the failing test**
+- [x] **Step 1: Write the failing test**
 
 Create `apps/site/src/routes/docs/page.test.ts`:
 ```typescript
@@ -1001,12 +1001,12 @@ test("renders the AI on/off explainer, not a tiers/plans pitch", () => {
 });
 ```
 
-- [ ] **Step 2: Run the test to verify it fails**
+- [x] **Step 2: Run the test to verify it fails**
 
 Run: `pnpm --filter @readmepls/site test -- docs/page.test.ts`
 Expected: FAIL — `apps/site/src/routes/docs/+page.svelte` doesn't exist yet.
 
-- [ ] **Step 3: Create `+page.server.ts`**
+- [x] **Step 3: Create `+page.server.ts`**
 
 ```typescript
 import { readFileSync } from "node:fs";
@@ -1028,7 +1028,7 @@ export const load: PageServerLoad = () => {
 };
 ```
 
-- [ ] **Step 4: Create `+page.svelte`**
+- [x] **Step 4: Create `+page.svelte`**
 
 ```svelte
 <script lang="ts">
@@ -1162,12 +1162,12 @@ export const load: PageServerLoad = () => {
 </style>
 ```
 
-- [ ] **Step 5: Run the test to verify it passes**
+- [x] **Step 5: Run the test to verify it passes**
 
 Run: `pnpm --filter @readmepls/site test -- docs/page.test.ts`
 Expected: PASS (3 tests).
 
-- [ ] **Step 6: Verify the file-path resolution in `+page.server.ts` is correct**
+- [x] **Step 6: Verify the file-path resolution in `+page.server.ts` is correct**
 
 The relative path `../../../../../compose.yml` from
 `apps/site/src/routes/docs/+page.server.ts` must resolve to the repo-root
@@ -1183,12 +1183,12 @@ console.log(path.relative(
 ```
 Expected: `../../../../../compose.yml` (5 levels — `docs` → `routes` → `src` → `site` → `apps` → repo root), matching the path used in Step 3.
 
-- [ ] **Step 7: Start the dev server and manually confirm `/docs` renders correctly in a browser**
+- [x] **Step 7: Start the dev server and manually confirm `/docs` renders correctly in a browser**
 
 Run: `pnpm --filter @readmepls/site dev`, open `http://localhost:5173/docs` (or whatever port Vite prints).
 Expected: the page loads with no errors, all 7 sections render, both code blocks show the real contents of the repo's `compose.yml` and `.env.example` (not the test fixture), the copy buttons work, and the layout is usable at a 360px-wide viewport (use the browser's device toolbar). Also click "Docs" in both the top nav and the footer from `/` to confirm both links land here.
 
-- [ ] **Step 8: Run the full site test suite and the repo-wide env-parity/typecheck/lint checks**
+- [x] **Step 8: Run the full site test suite and the repo-wide env-parity/typecheck/lint checks**
 
 Run:
 ```bash
@@ -1198,7 +1198,7 @@ pnpm env:check
 ```
 Expected: all pass with no errors.
 
-- [ ] **Step 9: Commit**
+- [x] **Step 9: Commit**
 
 ```bash
 git add apps/site/src/routes/docs
@@ -1209,9 +1209,9 @@ git commit -m "feat(site): add a /docs page walking through self-hosting"
 
 ## Final verification (after all tasks)
 
-- [ ] Run `pnpm test` (whole workspace) — all pass.
-- [ ] Run `pnpm typecheck` and `pnpm lint` — both clean.
-- [ ] Run `pnpm smoke` — ends in `SMOKE PASS` (proves `compose.dev.yml` still builds and boots the real stack).
-- [ ] Run `docker compose -f compose.yml config`, `-f compose.dev.yml config`, and `-f compose.site.yml config` — all resolve without error.
-- [ ] In a browser (`pnpm --filter @readmepls/site dev`): visit `/`, confirm the new top nav appears above `Hero` with working GitHub/Docs links, scroll to the footer and confirm its Docs link also points at `/docs`; visit `/docs` directly and confirm all 7 sections and both code blocks render.
+- [x] Run `pnpm test` (whole workspace) — all pass.
+- [x] Run `pnpm typecheck` and `pnpm lint` — both clean.
+- [x] Run `pnpm smoke` — ends in `SMOKE PASS` (proves `compose.dev.yml` still builds and boots the real stack).
+- [x] Run `docker compose -f compose.yml config`, `-f compose.dev.yml config`, and `-f compose.site.yml config` — all resolve without error.
+- [x] In a browser (`pnpm --filter @readmepls/site dev`): visit `/`, confirm the new top nav appears above `Hero` with working GitHub/Docs links, scroll to the footer and confirm its Docs link also points at `/docs`; visit `/docs` directly and confirm all 7 sections and both code blocks render.
 - [ ] Delete this plan and its paired spec (`docs/superpowers/specs/2026-07-16-self-host-compose-docs-design.md`) once merged, per the repo's working agreement on parked/shipped plans.
