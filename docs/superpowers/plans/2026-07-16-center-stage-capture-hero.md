@@ -4,14 +4,15 @@
 
 **Goal:** Replace the static home-page tagline with a center-stage capture hero — a fading greeting, a big pill input with a typewriter placeholder, and quick-action chips.
 
-**Architecture:** A pure typewriter step-reducer (no DOM/timers) drives a thin runes wrapper that schedules `setTimeout` ticks. `CaptureBar` is reworked into a rounded pill consuming that wrapper for its placeholder; `CyclingGreeting` fades between phrases on an interval. `+page.svelte` wires them together and drops the old `<h1>` tagline, keeping a visually-hidden `<h1>` for SEO/screen readers. A shared `prefersReducedMotion()` helper gates all animation.
+**Architecture:** A pure typewriter step-reducer (no DOM/timers) drives a thin runes wrapper that schedules `setTimeout` ticks. `CaptureBar` is reworked into a rounded pill by **composing the installed shadcn-svelte `input-group` primitives** (`Root`/`Addon`/`Input`/`Button`), consuming that wrapper for its placeholder; `CyclingGreeting` fades between phrases on an interval. `+page.svelte` wires them together and drops the old `<h1>` tagline, keeping a visually-hidden `<h1>` for SEO/screen readers, and renders quick-action chips as shadcn-svelte `Button` links. A shared `prefersReducedMotion()` helper gates all animation.
 
 **Tech Stack:** SvelteKit + Svelte 5 runes, Tailwind v4 + `tokens.css`, `@lucide/svelte` icons, Vitest + `@testing-library/svelte` (jsdom).
 
 ## Global Constraints
 
 - **Lowercase playful voice** in all user-facing copy (design language).
-- **Tokens only** — never hardcode a color, font, radius, or shadow; reference `tokens.css` vars.
+- **Tokens only** — never hardcode a color, font, radius, or shadow; reference `tokens.css` vars (or Tailwind utilities, which the shadcn-bridge maps onto those tokens).
+- **shadcn-svelte for new UI** — compose the installed generated primitives (`ui/input-group/`, `ui/button/`), don't hand-roll equivalents or import `bits-ui` directly. `--primary` is bridged to `--color-accent`.
 - **Mobile-first:** usable at 360px with no horizontal overflow; tap targets ≥44px; text inputs ≥16px font (avoids iOS focus zoom).
 - **Reduced motion:** `prefers-reduced-motion: reduce` disables the typewriter (static first placeholder) and the greeting fade (static first phrase).
 - **Stable accessible name:** the animating placeholder must never be the input's accessible name — the input keeps a fixed `aria-label`.
@@ -510,12 +511,14 @@ git commit -m "feat(web): add CyclingGreeting component"
 
 ### Task 4: Rework `CaptureBar` into a pill with typewriter placeholder
 
+Compose the installed shadcn-svelte `input-group` primitives — do NOT hand-roll a `.pill` div. `--primary` is bridged to `--color-accent`, so `Button variant="default"` gives the terracotta send button.
+
 **Files:**
-- Modify: `apps/web/src/lib/components/CaptureBar.svelte` (full rewrite of markup + styles; capture logic preserved)
+- Modify: `apps/web/src/lib/components/CaptureBar.svelte` (full rewrite of markup; capture logic preserved)
 - Test: `apps/web/src/lib/components/capturebar.test.ts` (new)
 
 **Interfaces:**
-- Consumes: `createTypewriter` from `$lib/typewriter.svelte.js` (Task 2).
+- Consumes: `createTypewriter` from `$lib/typewriter.svelte.js` (Task 2); `$lib/components/ui/input-group/index.js`; `@lucide/svelte` icons.
 - Produces: `CaptureBar` — props unchanged externally except a new optional `placeholders?: string[]` (defaults to the built-in source examples). Input has fixed `aria-label="paste a link to save"`; submit button has `aria-label="save link"`. Behavior unchanged: POST `/api/capture`, 402 → quota message, other non-ok → generic error, success → clear field + call `onCaptured`.
 
 - [ ] **Step 1: Write the failing test**
@@ -588,11 +591,14 @@ Expected: FAIL — no accessible element named `/save link/i` (current button sa
 
 - [ ] **Step 3: Rewrite the component**
 
+Notes on the utility classes: `InputGroup.Root` defaults to a compact `h-8 rounded-lg`; the overrides make it the tall hero pill. `size-11` = 44px (tap target). `text-base` = 16px on the input avoids iOS focus zoom. The Root's built-in `has-[…:focus-visible]` ring handles focus styling, so no custom focus CSS is needed. Colors come from the bridge (`variant="default"` → `--primary` → `--color-accent`).
+
 ```svelte
 <!-- apps/web/src/lib/components/CaptureBar.svelte -->
 <script lang="ts">
   import { onMount, onDestroy } from "svelte";
   import { BookmarkPlus, ArrowUp } from "@lucide/svelte";
+  import * as InputGroup from "$lib/components/ui/input-group/index.js";
   import { createTypewriter } from "$lib/typewriter.svelte.js";
 
   const DEFAULT_PLACEHOLDERS = [
@@ -646,22 +652,34 @@ Expected: FAIL — no accessible element named `/save link/i` (current button sa
 </script>
 
 <form onsubmit={(e) => { e.preventDefault(); submit(); }}>
-  <div class="pill" data-focused={focused}>
-    <BookmarkPlus class="lead" aria-hidden="true" />
-    <input
-      class="field"
+  <InputGroup.Root class="mx-auto h-14 max-w-xl rounded-full pl-2 pr-1.5 shadow-sm">
+    <InputGroup.Addon>
+      <BookmarkPlus aria-hidden="true" />
+    </InputGroup.Addon>
+    <InputGroup.Input
       type="url"
       bind:value={url}
       onfocus={() => (focused = true)}
       onblur={() => (focused = false)}
       placeholder={focused ? "paste a link…" : tw.text}
       aria-label="paste a link to save"
+      class="text-base"
     />
-    <button type="submit" class="send" disabled={busy} aria-label="save link" aria-busy={busy}>
-      <ArrowUp class="icon-sm" aria-hidden="true" />
-    </button>
-  </div>
-  {#if err}<p role="alert">{err}</p>{/if}
+    <InputGroup.Addon align="inline-end">
+      <InputGroup.Button
+        type="submit"
+        variant="default"
+        size="icon-sm"
+        class="size-11 rounded-full"
+        aria-label="save link"
+        aria-busy={busy}
+        disabled={busy}
+      >
+        <ArrowUp aria-hidden="true" />
+      </InputGroup.Button>
+    </InputGroup.Addon>
+  </InputGroup.Root>
+  {#if err}<p class="capture-error" role="alert">{err}</p>{/if}
 </form>
 
 <style>
@@ -669,71 +687,7 @@ Expected: FAIL — no accessible element named `/save link/i` (current button sa
     max-width: 640px;
     margin: 0 auto;
   }
-  .pill {
-    display: flex;
-    align-items: center;
-    gap: var(--space-2);
-    background: var(--color-surface-raised);
-    border: 1px solid var(--color-border);
-    border-radius: var(--radius-pill);
-    padding: var(--space-2) var(--space-2) var(--space-2) var(--space-4);
-    box-shadow: var(--shadow-sm);
-    transition:
-      border-color var(--dur-fast, 150ms) var(--ease-out, ease),
-      box-shadow var(--dur-fast, 150ms) var(--ease-out, ease);
-  }
-  .pill[data-focused="true"] {
-    border-color: var(--color-border-strong);
-    box-shadow: var(--shadow-md);
-  }
-  .pill :global(.lead) {
-    flex: none;
-    width: 1.25rem;
-    height: 1.25rem;
-    color: var(--color-text-subtle);
-  }
-  .field {
-    flex: 1;
-    min-width: 0;
-    border: none;
-    background: transparent;
-    font-family: var(--font-ui);
-    font-size: 1.05rem; /* ≥16px: avoids iOS focus zoom */
-    color: var(--color-text);
-    padding: var(--space-2) 0;
-  }
-  .field:focus {
-    outline: none;
-  }
-  .field::placeholder {
-    color: var(--color-text-subtle);
-  }
-  .send {
-    flex: none;
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    width: 44px;
-    height: 44px;
-    border: none;
-    border-radius: var(--radius-pill);
-    background: var(--color-accent);
-    color: var(--color-surface);
-    cursor: pointer;
-    transition: background var(--dur-fast, 150ms) var(--ease-out, ease);
-  }
-  .send:hover:not(:disabled) {
-    background: var(--color-accent-hover);
-  }
-  .send:disabled {
-    opacity: 0.6;
-    cursor: default;
-  }
-  .send:focus-visible {
-    outline: 2px solid var(--color-ring);
-    outline-offset: 2px;
-  }
-  p {
+  .capture-error {
     margin: var(--space-3) 0 0;
     text-align: center;
     color: var(--color-danger);
@@ -830,16 +784,19 @@ Replace the `<section class="hero">…</section>` block (lines ~34-37) with:
   <CyclingGreeting phrases={GREETINGS} />
   <CaptureBar onCaptured={load} />
   <nav class="quick" aria-label="quick actions">
-    <a href="/library">browse library</a>
-    <a href="/collections">your collections</a>
+    <Button href="/library" variant="outline" class="h-11 rounded-full">browse library</Button>
+    <Button href="/collections" variant="outline" class="h-11 rounded-full">your collections</Button>
   </nav>
 </section>
 ```
+
+Quick-action chips are shadcn-svelte `Button`s with `href` (Button renders an `<a>` when given `href`). `h-11` = 44px tap target; `variant="outline"` gives the quiet chip look.
 
 Add the imports and greeting constant to the `<script>` block (alongside the existing imports):
 
 ```ts
   import CyclingGreeting from "$lib/components/CyclingGreeting.svelte";
+  import { Button } from "$lib/components/ui/button/index.js";
 
   const GREETINGS = [
     "what do you feel like reading?",
@@ -872,22 +829,6 @@ Replace the `.hero` style rules (the old `.hero h1` / `.hero h1 span` rules are 
     gap: var(--space-2);
     margin-top: var(--space-4);
   }
-  .quick a {
-    display: inline-flex;
-    align-items: center;
-    min-height: 44px;
-    padding: 0 var(--space-4);
-    font-family: var(--font-ui);
-    font-size: var(--text-sm);
-    color: var(--color-text-muted);
-    text-decoration: none;
-    background: transparent;
-    border: 1px solid var(--color-border);
-    border-radius: var(--radius-pill);
-    transition: background var(--dur-fast, 150ms) var(--ease-out, ease);
-  }
-  .quick a:hover { background: var(--color-surface-sunken); color: var(--color-text); }
-  .quick a:focus-visible { outline: 2px solid var(--color-ring); outline-offset: 2px; }
   .block { margin-top: var(--space-6); }
   .block h2 { font-family: var(--font-ui); font-size: var(--text-lg); font-weight: var(--weight-medium); color: var(--color-text-muted); margin: 0 0 var(--space-4); }
   .more { display: inline-block; margin-top: var(--space-4); font-family: var(--font-ui); color: var(--color-accent); text-decoration: none; }
