@@ -4,8 +4,17 @@
   import { splitHomeFeed } from "$lib/article/home-feed.js";
   import type { ArticleRecord } from "$lib/article/record.js";
   import CaptureBar from "$lib/components/CaptureBar.svelte";
+  import CyclingGreeting from "$lib/components/CyclingGreeting.svelte";
   import ArticleCard from "$lib/components/ArticleCard.svelte";
   import CardGrid from "$lib/components/ui/CardGrid.svelte";
+  import { Button } from "$lib/components/ui/button/index.js";
+
+  const GREETINGS = [
+    "what do you feel like reading?",
+    "found something worth keeping?",
+    "paste it now, read it later.",
+    "your reading pile, minus the clutter.",
+  ];
 
   const pb = browserPb();
   let articles = $state<ArticleRecord[]>([]);
@@ -32,8 +41,13 @@
 </script>
 
 <section class="hero">
-  <h1>save any link. <span>actually read it.</span></h1>
+  <h1 class="sr-only">save any link and actually read it</h1>
+  <CyclingGreeting phrases={GREETINGS} />
   <CaptureBar onCaptured={load} />
+  <nav class="quick" aria-label="quick actions">
+    <Button href="/library" variant="outline" class="h-11 rounded-full">browse library</Button>
+    <Button href="/collections" variant="outline" class="h-11 rounded-full">your collections</Button>
+  </nav>
 </section>
 
 {#if feed.active.length}
@@ -60,9 +74,25 @@
 {/if}
 
 <style>
-  .hero { text-align: center; padding: var(--space-6) 0; }
-  .hero h1 { font-family: var(--font-ui); font-size: var(--text-2xl); color: var(--color-text); margin: 0 0 var(--space-5); }
-  .hero h1 span { color: var(--color-accent); }
+  .hero { text-align: center; padding: var(--space-7) 0 var(--space-6); }
+  .sr-only {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    padding: 0;
+    margin: -1px;
+    overflow: hidden;
+    clip: rect(0, 0, 0, 0);
+    white-space: nowrap;
+    border: 0;
+  }
+  .quick {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: var(--space-2);
+    margin-top: var(--space-4);
+  }
   .block { margin-top: var(--space-6); }
   .block h2 { font-family: var(--font-ui); font-size: var(--text-lg); font-weight: var(--weight-medium); color: var(--color-text-muted); margin: 0 0 var(--space-4); }
   .more { display: inline-block; margin-top: var(--space-4); font-family: var(--font-ui); color: var(--color-accent); text-decoration: none; }
