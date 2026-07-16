@@ -1,12 +1,33 @@
+<!-- apps/web/src/lib/components/CaptureBar.svelte -->
 <script lang="ts">
-  import Input from "./ui/Input.svelte";
-  import Button from "./ui/Button.svelte";
-  import { BookmarkPlus } from "@lucide/svelte";
+  import { onMount, onDestroy } from "svelte";
+  import { BookmarkPlus, ArrowUp } from "@lucide/svelte";
+  import * as InputGroup from "$lib/components/ui/input-group/index.js";
+  import { createTypewriter } from "$lib/typewriter.svelte.js";
 
-  let { onCaptured }: { onCaptured?: () => void } = $props();
+  const DEFAULT_PLACEHOLDERS = [
+    "en.wikipedia.org/wiki/…",
+    "a youtube video",
+    "that newsletter you never open",
+    "any blog post, really",
+  ];
+
+  let {
+    onCaptured,
+    placeholders = DEFAULT_PLACEHOLDERS,
+  }: { onCaptured?: () => void; placeholders?: string[] } = $props();
+
   let url = $state("");
   let busy = $state(false);
   let err = $state("");
+  let focused = $state(false);
+
+  // pause the animation whenever the user is engaged, so it never types over them
+  const tw = createTypewriter(placeholders, {
+    paused: () => focused || url.trim() !== "",
+  });
+  onMount(() => tw.start());
+  onDestroy(() => tw.stop());
 
   async function submit() {
     if (!url.trim()) return;
@@ -19,11 +40,11 @@
         body: JSON.stringify({ url }),
       });
       if (res.status === 402) {
-        err = "Quota exceeded — upgrade to capture more.";
+        err = "quota exceeded — upgrade to capture more.";
         return;
       }
       if (!res.ok) {
-        err = "Could not capture that link.";
+        err = "could not capture that link.";
         return;
       }
       url = "";
@@ -35,13 +56,46 @@
 </script>
 
 <form onsubmit={(e) => { e.preventDefault(); submit(); }}>
-  <Input bind:value={url} placeholder="Paste a link…" type="url" />
-  <Button type="submit" variant="accent" disabled={busy}><BookmarkPlus class="icon-sm" aria-hidden="true" /> {busy ? "saving…" : "save it"}</Button>
-  {#if err}<p role="alert">{err}</p>{/if}
+  <InputGroup.Root class="mx-auto h-14 max-w-xl rounded-full pl-2 pr-1.5 shadow-sm">
+    <InputGroup.Addon>
+      <BookmarkPlus aria-hidden="true" />
+    </InputGroup.Addon>
+    <InputGroup.Input
+      type="url"
+      bind:value={url}
+      onfocus={() => (focused = true)}
+      onblur={() => (focused = false)}
+      placeholder={focused ? "paste a link…" : tw.text}
+      aria-label="paste a link to save"
+      class="text-base"
+    />
+    <InputGroup.Addon align="inline-end">
+      <InputGroup.Button
+        type="submit"
+        variant="default"
+        size="icon-sm"
+        class="size-11 rounded-full"
+        aria-label="save link"
+        aria-busy={busy}
+        disabled={busy}
+      >
+        <ArrowUp aria-hidden="true" />
+      </InputGroup.Button>
+    </InputGroup.Addon>
+  </InputGroup.Root>
+  {#if err}<p class="capture-error" role="alert">{err}</p>{/if}
 </form>
 
 <style>
-  form { display: flex; gap: 0.6rem; max-width: 640px; margin: 0 auto; align-items: center; }
-  form :global(input) { flex: 1; font-size: 1.05rem; padding: 0.7rem 0.9rem; }
-  p { flex-basis: 100%; margin: var(--space-2) 0 0; color: var(--color-danger); font-family: var(--font-ui); font-size: 0.9rem; }
+  form {
+    max-width: 640px;
+    margin: 0 auto;
+  }
+  .capture-error {
+    margin: var(--space-3) 0 0;
+    text-align: center;
+    color: var(--color-danger);
+    font-family: var(--font-ui);
+    font-size: 0.9rem;
+  }
 </style>
