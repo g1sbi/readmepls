@@ -47,7 +47,7 @@
 **Interfaces:**
 - Produces: `startEphemeralPb(opts?: { dir?: string; migrationsDir?: string; env?: Record<string, string> }): Promise<PbHandle>` (adds `env` to the existing options). Produces the PocketBase route `GET /api/single-account/status` → `{ locked: boolean }`, and blocks `POST /api/collections/users/records` with a 403 when locked. Later tasks (web app) consume the status route.
 
-- [ ] **Step 1: Add the `env` option to `startEphemeralPb`**
+- [x] **Step 1: Add the `env` option to `startEphemeralPb`**
 
 Read `packages/core/src/pb/test-harness.ts` first. Change the options type and the `spawn` call:
 
@@ -99,7 +99,7 @@ export async function startEphemeralPb(
 
 Only the function signature and the `spawn(...)` call's third argument change — everything else in the file stays as-is.
 
-- [ ] **Step 2: Write the failing integration test**
+- [x] **Step 2: Write the failing integration test**
 
 Create `packages/core/src/pb/single-account.test.ts`:
 
@@ -155,12 +155,12 @@ describe("single-account mode disabled (control)", () => {
 });
 ```
 
-- [ ] **Step 3: Run the test to verify it fails**
+- [x] **Step 3: Run the test to verify it fails**
 
 Run: `pnpm exec vitest run packages/core/src/pb/single-account.test.ts`
 Expected: FAIL — `statusOf` returns a 404 body (route doesn't exist yet) so the first `toEqual({ locked: false })` assertion fails, and/or the second signup does not reject since nothing blocks it yet.
 
-- [ ] **Step 4: Create the shared lock-check module and the PocketBase hook**
+- [x] **Step 4: Create the shared lock-check module and the PocketBase hook**
 
 Hook/router callbacks in this PocketBase JSVM (Goja) run in an isolated
 scope that cannot see top-level functions or variables defined elsewhere in
@@ -224,12 +224,12 @@ routerAdd("GET", "/api/single-account/status", (e) => {
 });
 ```
 
-- [ ] **Step 5: Run the tests to verify they pass**
+- [x] **Step 5: Run the tests to verify they pass**
 
 Run: `pnpm exec vitest run packages/core/src/pb/single-account.test.ts`
 Expected: PASS (2 test files, 2 tests).
 
-- [ ] **Step 6: Document the env var**
+- [x] **Step 6: Document the env var**
 
 In `.env.example`, immediately after the `SELF_HOSTED=false` line (inside the existing `# ---- Deployment mode ----` block), add:
 
@@ -240,12 +240,12 @@ In `.env.example`, immediately after the `SELF_HOSTED=false` line (inside the ex
 SINGLE_ACCOUNT=false
 ```
 
-- [ ] **Step 7: Run the full workspace test suite**
+- [x] **Step 7: Run the full workspace test suite**
 
 Run: `pnpm test`
 Expected: all test files pass, including the two new ones.
 
-- [ ] **Step 8: Commit**
+- [x] **Step 8: Commit**
 
 ```bash
 git add packages/core/src/pb/test-harness.ts packages/core/src/pb/single-account.test.ts pocketbase/pb_hooks/single_account_lib.js pocketbase/pb_hooks/single_account.pb.js .env.example
@@ -264,7 +264,7 @@ git commit -m "feat(pocketbase): add SINGLE_ACCOUNT self-host signup lock"
 - Consumes: `GET /api/single-account/status` (Task 1) via `PB_URL` (same env var already read in `apps/web/src/hooks.server.ts`).
 - Produces: `load: PageServerLoad` returning `{ locked: boolean }`, consumed by `+page.svelte` (Task 3) via `let { data } = $props()`.
 
-- [ ] **Step 1: Write the failing test**
+- [x] **Step 1: Write the failing test**
 
 Create `apps/web/src/routes/login/page.server.test.ts`:
 
@@ -298,12 +298,12 @@ describe("login page load", () => {
 });
 ```
 
-- [ ] **Step 2: Run the test to verify it fails**
+- [x] **Step 2: Run the test to verify it fails**
 
 Run: `pnpm exec vitest run apps/web/src/routes/login/page.server.test.ts`
 Expected: FAIL — `./+page.server.js` doesn't exist yet.
 
-- [ ] **Step 3: Create `+page.server.ts`**
+- [x] **Step 3: Create `+page.server.ts`**
 
 ```typescript
 import PocketBase from "pocketbase";
@@ -321,14 +321,14 @@ export const load: PageServerLoad = async () => {
 };
 ```
 
-- [ ] **Step 4: Run the test to verify it passes**
+- [x] **Step 4: Run the test to verify it passes**
 
 Run: `pnpm exec vitest run apps/web/src/routes/login/page.server.test.ts`
 Expected: PASS (2 tests).
 
 Note: `pb.send()` internally calls the global `fetch`, so stubbing `globalThis.fetch` in the test intercepts it without needing to mock the `pocketbase` package itself.
 
-- [ ] **Step 5: Commit**
+- [x] **Step 5: Commit**
 
 ```bash
 git add apps/web/src/routes/login/+page.server.ts apps/web/src/routes/login/page.server.test.ts
@@ -346,7 +346,7 @@ git commit -m "feat(web): fetch single-account lock status on the login page"
 **Interfaces:**
 - Consumes: `data: { locked: boolean }` (Task 2).
 
-- [ ] **Step 1: Write the failing tests**
+- [x] **Step 1: Write the failing tests**
 
 Create `apps/web/src/routes/login/page.test.ts`:
 
@@ -373,12 +373,12 @@ describe("login page — single-account lock", () => {
 });
 ```
 
-- [ ] **Step 2: Run the tests to verify they fail**
+- [x] **Step 2: Run the tests to verify they fail**
 
 Run: `pnpm exec vitest run apps/web/src/routes/login/page.test.ts`
 Expected: FAIL — `+page.svelte` doesn't accept a `data` prop yet, so the toggle renders unconditionally in both cases and the locked-note text doesn't exist.
 
-- [ ] **Step 3: Update `+page.svelte`**
+- [x] **Step 3: Update `+page.svelte`**
 
 Read `apps/web/src/routes/login/+page.svelte` first. Add the `data` prop and the `PageData` import, and replace the toggle button with a conditional:
 
@@ -459,7 +459,7 @@ Read `apps/web/src/routes/login/+page.svelte` first. Add the `data` prop and the
 </style>
 ```
 
-- [ ] **Step 4: Sync SvelteKit generated types**
+- [x] **Step 4: Sync SvelteKit generated types**
 
 The `PageData` type in `./$types` is generated from `+page.server.ts` — regenerate it before typechecking:
 
@@ -467,17 +467,17 @@ The `PageData` type in `./$types` is generated from `+page.server.ts` — regene
 cd apps/web && pnpm exec svelte-kit sync && cd ../..
 ```
 
-- [ ] **Step 5: Run the tests to verify they pass**
+- [x] **Step 5: Run the tests to verify they pass**
 
 Run: `pnpm exec vitest run apps/web/src/routes/login/page.test.ts`
 Expected: PASS (2 tests).
 
-- [ ] **Step 6: Run the full web test suite to confirm nothing else broke**
+- [x] **Step 6: Run the full web test suite to confirm nothing else broke**
 
 Run: `pnpm test`
 Expected: all test files pass.
 
-- [ ] **Step 7: Manually verify in a browser**
+- [x] **Step 7: Manually verify in a browser**
 
 Start PocketBase and the web app locally with the flag on:
 
@@ -488,7 +488,7 @@ SELF_HOSTED=true SINGLE_ACCOUNT=true PB_URL=http://127.0.0.1:8090 pnpm --filter 
 
 Visit `/login`: confirm the "need an account? sign up" toggle is visible (no account exists yet). Sign up with a test email. Log out (or open a new incognito window) and revisit `/login`: confirm the toggle is gone and "this instance is locked to one account." is shown. Confirm the layout is usable at a 360px-wide viewport (browser device toolbar). Stop both background processes when done.
 
-- [ ] **Step 8: Commit**
+- [x] **Step 8: Commit**
 
 ```bash
 git add apps/web/src/routes/login/+page.svelte apps/web/src/routes/login/page.test.ts
@@ -499,7 +499,7 @@ git commit -m "feat(web): hide sign-up on the login page when single-account is 
 
 ## Final verification (after all tasks)
 
-- [ ] Run `pnpm test` — all pass.
-- [ ] Run `pnpm typecheck` and `pnpm lint` — both clean.
-- [ ] Manual browser check from Task 3 Step 7 confirms the golden path: first signup works, toggle disappears afterward, note is shown, 360px layout is clean.
-- [ ] Delete this plan and its paired spec (`docs/superpowers/specs/2026-07-17-single-account-mode-design.md`) once merged, per the repo's working agreement on parked/shipped plans.
+- [x] Run `pnpm test` — all pass.
+- [x] Run `pnpm typecheck` and `pnpm lint` — both clean.
+- [x] Manual browser check from Task 3 Step 7 confirms the golden path: first signup works, toggle disappears afterward, note is shown, 360px layout is clean.
+- [x] Delete this plan and its paired spec (`docs/superpowers/specs/2026-07-17-single-account-mode-design.md`) once merged, per the repo's working agreement on parked/shipped plans.
