@@ -32,4 +32,13 @@ describe("login page load", () => {
       expect.objectContaining({ method: "GET" })
     );
   });
+
+  it("returns locked: false when the status fetch throws (fail open)", async () => {
+    const fetchMock = vi.fn().mockRejectedValue(new Error("PocketBase unreachable"));
+    vi.stubGlobal("fetch", fetchMock);
+
+    const data = await load({} as never);
+
+    expect(data).toEqual({ locked: false });
+  });
 });
