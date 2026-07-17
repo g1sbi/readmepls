@@ -14,8 +14,10 @@ jobs:
     steps:
       - uses: googleapis/release-please-action@v4
         with:
-          # Uses the built-in GITHUB_TOKEN (contents+pull-requests write granted
-          # above). No PAT needed: docker-publish triggers on push to main, so
-          # images build without a tag-created event to fan out from.
+          # Classic PAT with `repo` scope. This account's fine-grained tokens and
+          # the built-in GITHUB_TOKEN both 403 on create-a-release (enterprise
+          # policy caps the fine-grained permission model), while a classic PAT
+          # works — so releases must run under it.
+          token: ${{ secrets.RELEASE_PLEASE_TOKEN }}
           config-file: release-please-config.json
           manifest-file: .release-please-manifest.json
