@@ -111,6 +111,14 @@ design phase does not add features.
   started.
 - **Small commits, Conventional Commits.** `feat:`, `fix:`, `docs:`, `test:`,
   `refactor:`, `chore:`. One logical change per commit.
+- **Versioning is release-please on a pre-1.0 (`0.x.y`) line.** Config
+  (`release-please-config.json`) sets `bump-patch-for-minor-pre-major: true` and
+  `bump-minor-pre-major: true`, so while under `1.0.0`: `feat:`/`fix:` bump the
+  **patch** (`0.3.0`→`0.3.1`) and only a breaking change (`feat!:` or a
+  `BREAKING CHANGE:` footer) bumps the **minor** (`0.x.0`). Pick the commit type
+  with that in mind — don't reach for `!`/breaking unless you mean a minor bump.
+  Do not hand-edit versions in `.release-please-manifest.json`; release-please
+  owns them.
 - **Squash before merging.** A feature branch lands as squashed commits — one
   clean, logical Conventional Commit per change (no `wip`, `fix typo`, or
   review-fixup noise in history). Granular commits during development are fine;
