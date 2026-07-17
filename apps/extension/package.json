@@ -1,0 +1,19 @@
+{
+  "name": "@readmepls/extension",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "build": "node build.mjs",
+    "test": "vitest run"
+  },
+  "dependencies": {
+    "pocketbase": "^0.21.0",
+    "zod": "^3.23.0"
+  },
+  "devDependencies": {
+    "@types/chrome": "^0.0.270",
+    "esbuild": "^0.24.0",
+    "vitest": "^2.1.0"
+  }
+}
