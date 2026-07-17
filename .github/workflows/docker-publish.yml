@@ -67,6 +67,6 @@ jobs:
           key: ${{ secrets.VPS_SSH_KEY }}
           script: |
             cd ${{ secrets.VPS_APP_DIR }}
-            docker compose pull
-            docker compose up -d
+            docker compose -f compose.yml -f compose.site.yml pull
+            docker compose -f compose.yml -f compose.site.yml up -d
             docker image prune -f

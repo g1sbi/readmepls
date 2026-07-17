@@ -1,0 +1,13 @@
+# Adds the landing-page service. Only the maintainer's own deploy needs this —
+# self-hosters never load this file.
+services:
+  site:
+    image: ghcr.io/g1sbi/readmepls-site:latest
+    build:
+      context: .
+      dockerfile: apps/site/Dockerfile
+    restart: unless-stopped
+    environment:
+      APP_URL: ${APP_URL:-https://app.readmepls.com}
+    ports:
+      - "${SITE_PORT:-3001}:80"

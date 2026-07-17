@@ -20,7 +20,9 @@ before implementing a feature.
 - Web dev server: `pnpm --filter @readmepls/web dev`
 - Worker (build + run): `pnpm --filter @readmepls/worker build && pnpm --filter @readmepls/worker start`
 - PocketBase locally: `pocketbase/pocketbase serve --http=127.0.0.1:8090 --migrationsDir=pocketbase/pb_migrations --hooksDir=pocketbase/pb_hooks`
-- Full stack via Docker: `cp .env.example .env` then `docker compose up -d` (see README.md for required env vars)
+- Full stack via Docker: `cp .env.example .env` then `docker compose up -d`
+  (pulls published images; see README.md for self-host setup). To build from
+  source instead: `docker compose -f compose.yml -f compose.dev.yml up -d --build`.
 
 ## Roadmap (phases)
 

@@ -15,7 +15,7 @@ export interface PbHandle {
 }
 
 export async function startEphemeralPb(
-  opts: { dir?: string; migrationsDir?: string } = {}
+  opts: { dir?: string; migrationsDir?: string; env?: Record<string, string> } = {}
 ): Promise<PbHandle> {
   const dir = opts.dir ?? mktempPbDir();
   const migrationsDir = opts.migrationsDir ?? "pocketbase/pb_migrations";
@@ -36,7 +36,7 @@ export async function startEphemeralPb(
   const proc = spawn(
     PB_BIN,
     ["serve", `--http=127.0.0.1:${port}`, `--dir=${dir}`, `--migrationsDir=${migrationsDir}`, "--hooksDir=pocketbase/pb_hooks"],
-    { stdio: "ignore" }
+    { stdio: "ignore", env: { ...process.env, ...opts.env } }
   );
 
   await waitForHealth(url);

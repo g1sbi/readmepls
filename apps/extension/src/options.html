@@ -1,0 +1,53 @@
+<!doctype html>
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <link rel="stylesheet" href="tokens.css" />
+    <style>
+      body {
+        max-width: 480px;
+        margin: 40px auto;
+        padding: 0 16px;
+        font-family: var(--font-sans, system-ui);
+        color: var(--color-ink, #211e17);
+        background: var(--color-paper, #f5efe1);
+      }
+      h1 {
+        font-family: var(--font-display, inherit);
+      }
+      label {
+        display: block;
+        margin-bottom: 6px;
+      }
+      input {
+        width: 100%;
+        box-sizing: border-box;
+        min-height: 44px;
+        padding: 0 12px;
+        margin-bottom: 12px;
+        border: 1px solid var(--color-ink, #211e17);
+        border-radius: var(--radius-md, 8px);
+      }
+      button {
+        min-height: 44px;
+        padding: 0 20px;
+        border: none;
+        border-radius: var(--radius-md, 8px);
+        background: var(--color-accent, #c24a38);
+        color: #fff;
+        cursor: pointer;
+      }
+      .status {
+        margin-top: 12px;
+      }
+    </style>
+  </head>
+  <body>
+    <h1>readmepls settings</h1>
+    <label for="instance">instance url</label>
+    <input id="instance" type="url" placeholder="https://app.readmepls.com" />
+    <button id="save">save</button>
+    <p id="status" class="status"></p>
+    <script type="module" src="options.js"></script>
+  </body>
+</html>

@@ -1,0 +1,255 @@
+/* ============================================================================
+ * readmepls — design tokens (single source of truth)
+ *
+ * Derived from assets/_banner.html. Warm-paper stationery aesthetic:
+ * paper substrate, warm ink, ONE hot accent (terracotta), tactile motifs.
+ *
+ * Layers, in order:
+ *   1. Primitives  — raw palette ramps + scales. Never reference in components.
+ *   2. Semantic    — role-based vars (--color-bg, --color-accent, …). USE THESE.
+ *   3. Themes      — [data-theme] remaps semantics only. Components never change.
+ *   4. Reader      — long-form typography knobs the prefs UI writes to.
+ *
+ * RULE: components reference semantic / reader tokens only. The design phase
+ * retones the whole product by editing layers 1–3, touching no component.
+ * ========================================================================== */
+
+:root {
+  /* ---- 1. PRIMITIVES — palette ----------------------------------------- */
+
+  /* paper: warm neutral substrate (banner radial gradient lives in here) */
+  --paper-50:  #fbf8f1;
+  --paper-100: #f7f3ea; /* banner bg start  */
+  --paper-200: #f1ecdf; /* banner bg mid    */
+  --paper-300: #eae3d2; /* banner bg end    */
+  --paper-400: #e4dcc8; /* dog-ear fold     */
+  --paper-500: #d8cdb4;
+  --paper-600: #c3b595;
+
+  /* ink: warm near-black through muted taupe (all banner text colors live here) */
+  --ink-900: #211e17; /* title — primary text */
+  --ink-700: #4a4234;
+  --ink-600: #6e6453; /* tagline — secondary  */
+  --ink-500: #8a7e68;
+  --ink-400: #ac9f86; /* meta — tertiary/eyebrow */
+  --ink-300: #c6bba3;
+
+  /* terracotta: the single hot accent */
+  --terracotta-600: #a43a2a; /* pressed / on-light hover */
+  --terracotta-500: #c24a38; /* base accent (banner "pls") */
+  --terracotta-400: #d26450; /* hover / on-dark base     */
+  --terracotta-300: #e59a8c; /* tint                     */
+  --terracotta-100: #f4d9d2; /* wash / selection bg      */
+
+  /* warm status hues — muted to sit on paper, never neon */
+  --sage-500:   #6e8b5a; /* success */
+  --amber-500:  #c98a2b; /* warning */
+  --clay-500:   #b23a2a; /* danger  */
+  --dusk-500:   #5e7b8b; /* info    */
+
+  /* reader marker tints — soft, paper-friendly highlight colors (Phase 4) */
+  --marker-butter: #f6e6a8;
+  --marker-rose:   #f3cdca;
+  --marker-sky:    #cfe0e6;
+  --marker-mint:   #cfe3cf;
+
+
+  /* ---- 1. PRIMITIVES — type -------------------------------------------- */
+  --font-display: "Fredoka", ui-rounded, "Segoe UI", system-ui, sans-serif;
+  --font-reading: "Newsreader", Georgia, "Times New Roman", serif;
+  --font-mono:    "IBM Plex Mono", ui-monospace, "SFMono-Regular", monospace;
+  --font-ui:      "IBM Plex Sans", ui-sans-serif, system-ui, sans-serif;
+
+  /* UI type scale — IBM Plex Sans (--font-ui). Fredoka (--font-display) is wordmark-only. */
+  --text-2xs: 0.6875rem; /* 11 — tracked eyebrow/meta */
+  --text-xs:  0.75rem;   /* 12 */
+  --text-sm:  0.875rem;  /* 14 */
+  --text-md:  1rem;      /* 16 — UI base */
+  --text-lg:  1.25rem;   /* 20 */
+  --text-xl:  1.5rem;    /* 24 */
+  --text-2xl: 2rem;      /* 32 */
+  --text-3xl: 2.75rem;   /* 44 */
+  --text-4xl: 4rem;      /* 64 — display */
+  --text-hero: clamp(3rem, 8vw, 8.75rem); /* banner-scale brand */
+
+  --weight-regular: 400;
+  --weight-medium:  500;
+  --weight-semibold: 600;
+  --weight-bold:    700;
+
+  --leading-tight: 0.9;  /* banner title */
+  --leading-snug:  1.15; /* headings     */
+  --leading-ui:    1.4;  /* UI text      */
+
+  /* Fredoka wants negative tracking at display sizes; positive when tiny+tracked */
+  --tracking-display: -0.04em;
+  --tracking-tight:   -0.01em;
+  --tracking-normal:  0;
+  --tracking-eyebrow: 0.25em; /* banner meta */
+
+  /* iconography (Track 2 slice 2) */
+  --icon-sm: 1rem;     /* 16 — inline with sm/md text */
+  --icon-md: 1.25rem;  /* 20 — default action/control icon */
+  --icon-lg: 1.5rem;   /* 24 — emphasis */
+  --icon-stroke: 1.75; /* line weight, pairs with Fredoka */
+
+  /* ---- 1. PRIMITIVES — space (4px base) -------------------------------- */
+  --space-1: 0.25rem;  --space-2: 0.5rem;   --space-3: 0.75rem;
+  --space-4: 1rem;     --space-5: 1.5rem;   --space-6: 2rem;
+  --space-7: 3rem;     --space-8: 4rem;     --space-9: 6rem;
+  --space-10: 8rem;
+
+  /* ---- 1. PRIMITIVES — container widths ------------------------------- */
+  --width-page:   1100px; /* card grids, library, home */
+  --width-prose:  900px;  /* reading-adjacent lists, collections, search */
+  --width-narrow: 768px;  /* forms, settings */
+  --width-reader: 1440px; /* reader 3-col shell (rail + article + highlights) on desktop */
+
+  /* ---- 1. PRIMITIVES — radii (generous; from 64px icon, 40px dog-ear) --- */
+  --radius-xs:  6px;
+  --radius-sm:  10px;
+  --radius-md:  14px;
+  --radius-lg:  20px;
+  --radius-xl:  28px;
+  --radius-2xl: 40px;
+  --radius-pill: 999px;
+
+  /* ---- 1. PRIMITIVES — shadow (warm brown tint, never neutral gray) ----- */
+  --shadow-color: 54 44 22; /* the banner's warm shadow rgb */
+  --shadow-sm: 0 1px 2px rgb(var(--shadow-color) / 0.08);
+  --shadow-md: 0 4px 12px rgb(var(--shadow-color) / 0.10);
+  --shadow-lg: 0 12px 28px rgb(var(--shadow-color) / 0.14);
+  --shadow-xl: 0 26px 44px rgb(var(--shadow-color) / 0.22); /* banner icon */
+
+  /* ---- 1. PRIMITIVES — texture & motion -------------------------------- */
+  /* faint paper grain (banner ::before). Use as a low-opacity overlay layer. */
+  --texture-grain: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='120' height='120'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2'/></filter><rect width='100%25' height='100%25' filter='url(%23n)' opacity='0.5'/></svg>");
+
+  --ease-paper: cubic-bezier(0.2, 0.7, 0.2, 1); /* soft settle */
+  --ease-out:   cubic-bezier(0.16, 1, 0.3, 1);
+  --dur-fast: 120ms;
+  --dur-base: 200ms;
+  --dur-slow: 360ms;
+  --dur-shimmer: 1.4s;
+
+  --grain-opacity: 0.04;        /* banner ::before grain strength */
+  --dur-view: var(--dur-base);  /* cross-route view-transition duration */
+
+  --z-base: 0; --z-raised: 10; --z-sticky: 100;
+  --z-overlay: 1000; --z-modal: 1100; --z-toast: 1200;
+
+  /* ========================================================================
+   * 2. SEMANTIC — light (default). Components reference ONLY these.
+   * ====================================================================== */
+
+  /* surfaces */
+  --color-bg:            var(--paper-100);
+  --color-bg-gradient:   radial-gradient(120% 140% at 18% 12%,
+                           var(--paper-100) 0%, var(--paper-200) 55%, var(--paper-300) 100%);
+  --color-surface:       var(--paper-50);
+  --color-surface-sunken:var(--paper-200);
+  --color-surface-raised:#ffffff;
+
+  /* text */
+  --color-text:          var(--ink-900);
+  --color-text-muted:    var(--ink-600);
+  --color-text-subtle:   var(--ink-400);
+  --color-text-on-accent:#fff7f2;
+
+  /* accent */
+  --color-accent:        var(--terracotta-500);
+  --color-accent-hover:  var(--terracotta-600);
+  --color-accent-wash:   var(--terracotta-100);
+
+  /* lines & focus */
+  --color-border:        color-mix(in srgb, var(--ink-900) 12%, transparent);
+  --color-border-strong: color-mix(in srgb, var(--ink-900) 22%, transparent);
+  --color-ring:          var(--terracotta-500);
+  --focus-ring-width:    2px;
+  --focus-ring-offset:   2px;
+  --color-selection:     var(--terracotta-100);
+
+  /* status */
+  --color-success: var(--sage-500);
+  --color-warning: var(--amber-500);
+  --color-danger:  var(--clay-500);
+  --color-info:    var(--dusk-500);
+
+  /* highlight colors (keys match the highlights.color enum) */
+  --hl-terracotta: rgba(194, 74, 56, 0.28);
+  --hl-amber:      rgba(214, 158, 46, 0.32);
+  --hl-sage:       rgba(122, 145, 106, 0.30);
+
+  /* dog-ear fold (decorative motif) */
+  --color-fold:    var(--paper-400);
+
+  /* ========================================================================
+   * 4. READER — long-form knobs. The prefs UI writes these at runtime;
+   * the reader column reads them. Defaults below = comfortable default.
+   * ====================================================================== */
+  --reading-font:    var(--font-reading);
+  /* humanist reading sans — the serif/sans toggle's sans option.
+     NOT --font-display (Fredoka is display-only, never body). */
+  --reading-font-sans: "Inter", "Segoe UI", system-ui, -apple-system, sans-serif;
+  --reading-size:    1.1875rem; /* ~19px */
+  --reading-leading: 1.7;
+  --reading-measure: 68ch;      /* max line length */
+  --reading-text:    var(--ink-900);
+  --reading-bg:      var(--color-surface);
+}
+
+/* ==========================================================================
+ * 3. THEMES — remap semantics only. Warm-dark (not cold gray) + sepia read.
+ * ========================================================================== */
+
+[data-theme="dark"] {
+  --color-bg:             #1a1712;
+  --color-bg-gradient:    radial-gradient(120% 140% at 18% 12%, #211d16 0%, #1a1712 60%, #15120d 100%);
+  --color-surface:        #221e18;
+  --color-surface-sunken: #15120d;
+  --color-surface-raised: #2b261e;
+
+  --color-text:           #ece6d8;
+  --color-text-muted:     #a89c85;
+  --color-text-subtle:    #7c7159;
+  --color-text-on-accent: #1a1712;
+
+  --color-accent:         var(--terracotta-400);
+  --color-accent-hover:   var(--terracotta-300);
+  --color-accent-wash:    color-mix(in srgb, var(--terracotta-400) 22%, transparent);
+
+  --color-border:         color-mix(in srgb, #ece6d8 14%, transparent);
+  --color-border-strong:  color-mix(in srgb, #ece6d8 26%, transparent);
+  --color-ring:           var(--terracotta-400);
+  --color-selection:      color-mix(in srgb, var(--terracotta-400) 30%, transparent);
+
+  --color-fold:           #2b261e;
+  --shadow-color:         8 5 2;
+
+  --reading-text:         #ece6d8;
+  --reading-bg:           var(--color-surface);
+}
+
+/* sepia: reading-optimized warm page, lower contrast — applies to reader only */
+[data-theme="sepia"] {
+  --color-bg:             #efe6d2;
+  --color-bg-gradient:    radial-gradient(120% 140% at 18% 12%, #f3ecd9 0%, #efe6d2 60%, #e8dcc2 100%);
+  --color-surface:        #f4ecd9;
+  --color-surface-sunken: #e8dcc2;
+  --color-surface-raised: #f8f1e0;
+
+  --color-text:           #463a28;
+  --color-text-muted:     #6e5d42;
+  --color-text-subtle:    #9a8767;
+
+  --color-border:         color-mix(in srgb, #463a28 14%, transparent);
+  --color-fold:           #e3d6ba;
+
+  --reading-text:         #463a28;
+  --reading-bg:           var(--color-surface);
+}
+
+/* respect users who don't want motion */
+@media (prefers-reduced-motion: reduce) {
+  :root { --dur-fast: 0ms; --dur-base: 0ms; --dur-slow: 0ms; }
+}

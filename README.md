@@ -48,7 +48,19 @@ pnpm --filter @readmepls/web dev
 ```
 
 ## Self Hosting
-Wanna build your own, personal library? Got you covered there too. The app is easily self-hostable, with an optional bring-your-own-key approach to the AI features.
+
+Wanna build your own, personal library? Got you covered there too — the app
+is easily self-hostable, with an optional bring-your-own-key approach to the
+AI features. Full walkthrough: [readmepls.com/docs](https://readmepls.com/docs).
+
+1. Grab [`compose.yml`](compose.yml) and [`.env.example`](.env.example) from
+   this repo — no need to clone it.
+2. Rename `.env.example` to `.env` and fill in the PocketBase admin/worker
+   passwords (and, optionally, `ANTHROPIC_API_KEY` to turn AI features on for
+   everyone using your instance).
+3. `docker compose pull && docker compose up -d`
+
+Data persists in the `pb_data` volume.
 
 ## License
 

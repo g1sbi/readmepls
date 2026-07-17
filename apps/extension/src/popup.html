@@ -1,0 +1,98 @@
+<!doctype html>
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <link rel="stylesheet" href="tokens.css" />
+    <style>
+      body {
+        width: 320px;
+        margin: 0;
+        padding: 16px;
+        font-family: var(--font-sans, system-ui);
+        background: var(--color-paper, #f5efe1);
+        color: var(--color-ink, #211e17);
+      }
+      h1 {
+        font-family: var(--font-display, inherit);
+        font-size: 1.1rem;
+        margin: 0 0 12px;
+      }
+      button,
+      input {
+        font: inherit;
+      }
+      button {
+        min-height: 44px;
+        width: 100%;
+        border: none;
+        border-radius: var(--radius-md, 8px);
+        background: var(--color-accent, #c24a38);
+        color: #fff;
+        cursor: pointer;
+      }
+      button:disabled {
+        opacity: 0.5;
+        cursor: default;
+      }
+      input {
+        min-height: 44px;
+        width: 100%;
+        box-sizing: border-box;
+        margin-bottom: 8px;
+        padding: 0 12px;
+        border: 1px solid var(--color-ink, #211e17);
+        border-radius: var(--radius-md, 8px);
+        background: #fff;
+        color: var(--color-ink, #211e17);
+      }
+      .hidden {
+        display: none;
+      }
+      .status {
+        margin-top: 12px;
+        font-size: 0.9rem;
+      }
+      .muted {
+        opacity: 0.7;
+        font-size: 0.8rem;
+        word-break: break-all;
+      }
+      a {
+        color: var(--color-accent, #c24a38);
+      }
+    </style>
+  </head>
+  <body>
+    <h1>save to readmepls</h1>
+
+    <form id="login" class="hidden">
+      <input
+        id="email"
+        type="email"
+        placeholder="email"
+        autocomplete="username"
+        required
+      />
+      <input
+        id="password"
+        type="password"
+        placeholder="password"
+        autocomplete="current-password"
+        required
+      />
+      <button type="submit">sign in</button>
+      <p id="login-error" class="status"></p>
+    </form>
+
+    <div id="capture" class="hidden">
+      <p id="page-title"></p>
+      <p id="page-url" class="muted"></p>
+      <button id="save">save this page</button>
+      <p id="capture-status" class="status"></p>
+    </div>
+
+    <p id="boot-error" class="status hidden"></p>
+
+    <script type="module" src="popup.js"></script>
+  </body>
+</html>

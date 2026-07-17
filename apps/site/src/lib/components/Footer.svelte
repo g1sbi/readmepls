@@ -5,7 +5,8 @@
 <footer class="footer">
   <nav class="links">
     <a href={GITHUB_URL}>GitHub</a>
-    <a href={GITHUB_URL}>Self-host</a>
+    <a href="/docs">Docs</a>
+    <a href="/privacy">Privacy</a>
   </nav>
   <p class="meta">open source · self-hostable</p>
 </footer>
