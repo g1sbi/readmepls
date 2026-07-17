@@ -1,17 +1,11 @@
-import { readFileSync } from "node:fs";
 import type { PageServerLoad } from "./$types";
+import compose from "../../../../../compose.yml?raw";
+import envExample from "../../../../../.env.example?raw";
 
-// Reads the actual repo-root compose.yml/.env.example at build time (this
-// route is prerendered — see ../+layout.ts) so the docs page can never drift
-// from the files self-hosters actually copy.
-export const load: PageServerLoad = () => {
-  const compose = readFileSync(
-    new URL("../../../../../compose.yml", import.meta.url),
-    "utf8",
-  );
-  const envExample = readFileSync(
-    new URL("../../../../../.env.example", import.meta.url),
-    "utf8",
-  );
-  return { compose, envExample };
-};
+// compose.yml and .env.example are inlined from the repo root at build time via
+// Vite's ?raw, so the prerendered docs page always matches the files
+// self-hosters actually copy — with no filesystem access at prerender. (The
+// earlier import.meta.url approach broke once the server bundle moved under
+// .svelte-kit/output, resolving the path to a non-existent file.) The Docker
+// build stage COPYs both files so Rollup can read them there too.
+export const load: PageServerLoad = () => ({ compose, envExample });

@@ -13,6 +13,9 @@ RUN --mount=type=cache,id=pnpm,target=/pnpm/store \
 # ---- build: bake the sentinel into the prerendered output ----
 FROM base AS build
 COPY apps/site ./apps/site
+# The docs page inlines these from the repo root via ?raw at build time, so the
+# published instructions never drift from the files self-hosters actually copy.
+COPY compose.yml .env.example ./
 ENV PUBLIC_APP_URL=__APP_URL__
 RUN pnpm --filter @readmepls/site build
 
