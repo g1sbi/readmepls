@@ -4,6 +4,9 @@
   import { validateCredentials } from "$lib/auth/validate.js";
   import Input from "$lib/components/ui/Input.svelte";
   import Button from "$lib/components/ui/Button.svelte";
+  import type { PageData } from "./$types";
+
+  let { data }: { data: PageData } = $props();
 
   const pb = browserPb();
   let email = $state("");
@@ -38,9 +41,13 @@
       <Button type="submit" variant="accent">{mode === "signin" ? "sign in" : "sign up"}</Button>
       {#if err}<p role="alert" class="err">{err}</p>{/if}
     </form>
-    <button class="toggle" type="button" onclick={() => (mode = mode === "signin" ? "signup" : "signin")}>
-      {mode === "signin" ? "need an account? sign up" : "have an account? sign in"}
-    </button>
+    {#if !data.locked}
+      <button class="toggle" type="button" onclick={() => (mode = mode === "signin" ? "signup" : "signin")}>
+        {mode === "signin" ? "need an account? sign up" : "have an account? sign in"}
+      </button>
+    {:else}
+      <p class="locked-note">this instance is locked to one account.</p>
+    {/if}
   </div>
 </main>
 
@@ -63,4 +70,5 @@
   .toggle { margin-top: 1rem; background: none; border: none; color: var(--color-accent); font-family: var(--font-ui); cursor: pointer; padding: 0; }
   .toggle:hover { color: var(--color-accent-hover); }
   .toggle:focus-visible { outline: 2px solid var(--color-ring); outline-offset: 2px; }
+  .locked-note { margin-top: 1rem; color: var(--color-text-muted); font-family: var(--font-ui); font-size: 0.85rem; text-align: center; }
 </style>
