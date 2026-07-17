@@ -19,3 +19,9 @@ test("renders the Docs link pointing at /docs", () => {
   const docs = screen.getByRole("link", { name: "Docs" });
   expect(docs.getAttribute("href")).toBe("/docs");
 });
+
+test("renders the Privacy link pointing at /privacy", () => {
+  render(Footer);
+  const privacy = screen.getByRole("link", { name: "Privacy" });
+  expect(privacy.getAttribute("href")).toBe("/privacy");
+});
