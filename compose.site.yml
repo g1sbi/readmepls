@@ -1,5 +1,10 @@
 # Adds the landing-page service. Only the maintainer's own deploy needs this —
-# self-hosters never load this file.
+# self-hosters never load this file. It is an OVERLAY on compose.yml, not a
+# standalone project: always combine the two so all four services live in one
+# `readmepls` project. Running compose.site.yml on its own (or the main stack on
+# its own) makes each invocation flag the other's containers as orphans. Set
+# COMPOSE_FILE=compose.yml:compose.site.yml in the VPS .env so a bare
+# `docker compose up -d` loads both automatically (see .env.site.example).
 services:
   site:
     image: ghcr.io/g1sbi/readmepls-site:latest
