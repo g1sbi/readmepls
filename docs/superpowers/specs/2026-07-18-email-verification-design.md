@@ -112,6 +112,10 @@ Verification itself is PocketBase-native:
   **`apps/web/src/routes/api/retry/+server.ts`** — call `requireVerified` at the
   top of the handler (after auth resolves, before doing work).
 - **`app.d.ts`** (`App.Locals`) — add `verified: boolean`.
+- **`pocketbase/pb_migrations/<ts>_verify_existing_users.js`** (new migration) —
+  one-off cutover: set `verified=true` for all `users` rows that exist at migrate
+  time, so accounts predating this change are not gated. Tracked in git per the
+  migration rule. Harmless in self-host (`verified` is unused there).
 - **`.env.example`** — add a SaaS-only SMTP block:
   `SMTP_HOST`, `SMTP_PORT`, `SMTP_USERNAME`, `SMTP_PASSWORD`, `SMTP_TLS`,
   `SMTP_FROM` (sender address), `SMTP_FROM_NAME`, documented as required for SaaS
@@ -128,7 +132,8 @@ email : link → /verify?token=T → confirmVerification(T)   (verified = true)
       → authRefresh() → redirect / → guard + requireVerified pass
 ```
 
-No new collections or migrations — `verified` already ships on `users`.
+No new collection — `verified` already ships on `users`. One data migration at
+cutover backfills existing users to `verified=true` (see Components).
 
 ## Error handling
 
@@ -162,7 +167,6 @@ Vitest, offline, network mocked.
 
 - SaaS deploy must set the `SMTP_*` env vars (transactional email provider creds).
   No secrets committed; `.env.example` documents the keys.
-- Existing SaaS users predating this change have `verified=false` and would be
-  gated on next visit. If that is undesirable, a one-off data migration can set
-  `verified=true` for accounts created before the cutover — flagged for the
-  implementation plan to decide, not baked into this design.
+- Existing SaaS users predating this change are backfilled to `verified=true` by
+  the cutover migration (see Components), so no current user is locked out. Only
+  signups after the cutover go through verification.
