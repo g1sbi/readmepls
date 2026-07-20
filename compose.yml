@@ -46,6 +46,10 @@ services:
       # Points yt-dlp at the mounted cookies file ONLY when YOUTUBE_COOKIES_HOST
       # is set; otherwise expands to empty and the worker sends no --cookies.
       YOUTUBE_COOKIES_FILE: ${YOUTUBE_COOKIES_HOST:+/run/secrets/yt-cookies.txt}
+      # bgutil PO-token provider (sidecar below). yt-dlp fetches YouTube PO
+      # tokens from it to get past the datacenter-IP bot-block — no account
+      # needed. Set YOUTUBE_POT_PROVIDER_URL="" in .env to disable.
+      YOUTUBE_POT_PROVIDER_URL: ${YOUTUBE_POT_PROVIDER_URL-http://bgutil:4416}
     expose:
       # Internal semantic /search endpoint — reachable only on the compose network,
       # never published to the host. `web` calls it with the shared secret.
@@ -61,6 +65,17 @@ services:
     depends_on:
       pocketbase:
         condition: service_healthy
+      bgutil:
+        condition: service_started
+
+  # PO-token provider for yt-dlp's YouTube extractor. Generates BotGuard tokens
+  # so the worker's captures survive YouTube's datacenter-IP bot-block without
+  # an account or cookies. Internal-only — never published to the host.
+  bgutil:
+    image: brainicism/bgutil-ytdlp-pot-provider:latest
+    restart: unless-stopped
+    expose:
+      - "4416"
 
 volumes:
   pb_data:

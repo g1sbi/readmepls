@@ -62,6 +62,29 @@ describe("createRunYtDlp", () => {
     expect(execArgs).not.toContain("--cookies");
   });
 
+  it("passes the bgutil PO-token base_url via --extractor-args when configured", async () => {
+    let execArgs: string[] = [];
+    const run = createRunYtDlp({
+      exec: async (args) => { execArgs = args; return ytDlpJson; },
+      fetchText: async () => json3,
+      potProviderUrl: "http://bgutil:4416",
+    });
+    await run("dQw4w9WgXcQ");
+    const i = execArgs.indexOf("--extractor-args");
+    expect(i).toBeGreaterThanOrEqual(0);
+    expect(execArgs[i + 1]).toBe("youtubepot-bgutilhttp:base_url=http://bgutil:4416");
+  });
+
+  it("omits --extractor-args when no PO-token provider is configured", async () => {
+    let execArgs: string[] = [];
+    const run = createRunYtDlp({
+      exec: async (args) => { execArgs = args; return ytDlpJson; },
+      fetchText: async () => json3,
+    });
+    await run("dQw4w9WgXcQ");
+    expect(execArgs).not.toContain("--extractor-args");
+  });
+
   it("returns null captions when no english track is present", async () => {
     const run = createRunYtDlp({
       exec: async () => JSON.stringify({ id: "x", title: "t", channel: null }),

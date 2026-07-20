@@ -17,6 +17,12 @@ export interface RunYtDlpDeps {
    * past it. Optional — omitted when running from an unblocked IP.
    */
   cookiesFile?: string | null;
+  /**
+   * Base URL of a bgutil PO-token provider (the compose sidecar). When set,
+   * yt-dlp fetches YouTube PO tokens from it to legitimize datacenter-IP
+   * traffic — no account/cookies needed. Optional.
+   */
+  potProviderUrl?: string | null;
 }
 
 // Permissive schema for the subset of yt-dlp `-j` output this adapter reads.
@@ -72,6 +78,9 @@ export function createRunYtDlp(
     const url = `https://www.youtube.com/watch?v=${videoId}`;
     const args = ["-j", "--skip-download"];
     if (deps.cookiesFile) args.push("--cookies", deps.cookiesFile);
+    if (deps.potProviderUrl) {
+      args.push("--extractor-args", `youtubepot-bgutilhttp:base_url=${deps.potProviderUrl}`);
+    }
     args.push(url);
     const raw = await deps.exec(args);
     // Validate at the IO boundary — malformed yt-dlp output throws here,
@@ -100,6 +109,8 @@ export function defaultRunYtDlp(
     // Optional cookies file to defeat YouTube's datacenter-IP bot-block. Empty
     // string (unset env) is treated as "no cookies".
     cookiesFile: process.env.YOUTUBE_COOKIES_FILE || null,
+    // Optional bgutil PO-token provider (compose sidecar). Empty = disabled.
+    potProviderUrl: process.env.YOUTUBE_POT_PROVIDER_URL || null,
     exec: async (args) => {
       try {
         const { stdout } = await execFileAsync("yt-dlp", args, { maxBuffer: 32 * 1024 * 1024 });
