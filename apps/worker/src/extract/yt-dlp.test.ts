@@ -39,6 +39,29 @@ describe("createRunYtDlp", () => {
     expect(out.captions!.cues[0]!.text).toBe("hello and welcome");
   });
 
+  it("passes --cookies to yt-dlp when a cookies file is configured", async () => {
+    let execArgs: string[] = [];
+    const run = createRunYtDlp({
+      exec: async (args) => { execArgs = args; return ytDlpJson; },
+      fetchText: async () => json3,
+      cookiesFile: "/run/secrets/yt-cookies.txt",
+    });
+    await run("dQw4w9WgXcQ");
+    const i = execArgs.indexOf("--cookies");
+    expect(i).toBeGreaterThanOrEqual(0);
+    expect(execArgs[i + 1]).toBe("/run/secrets/yt-cookies.txt");
+  });
+
+  it("omits --cookies when no cookies file is configured", async () => {
+    let execArgs: string[] = [];
+    const run = createRunYtDlp({
+      exec: async (args) => { execArgs = args; return ytDlpJson; },
+      fetchText: async () => json3,
+    });
+    await run("dQw4w9WgXcQ");
+    expect(execArgs).not.toContain("--cookies");
+  });
+
   it("returns null captions when no english track is present", async () => {
     const run = createRunYtDlp({
       exec: async () => JSON.stringify({ id: "x", title: "t", channel: null }),
@@ -46,6 +69,58 @@ describe("createRunYtDlp", () => {
     });
     const out = await run("x");
     expect(out.captions).toBeNull();
+  });
+
+  it("matches a variant English key (en-US) when there is no exact 'en' track", async () => {
+    const url = "https://youtube.com/api/timedtext?fmt=json3&lang=en-US";
+    let fetchedUrl = "";
+    const run = createRunYtDlp({
+      exec: async () =>
+        JSON.stringify({
+          id: "kJQP7kiw5Fk",
+          title: "t",
+          subtitles: { "en-US": [{ ext: "json3", url }], ja: [{ ext: "json3", url: "x" }] },
+        }),
+      fetchText: async (u) => { fetchedUrl = u; return json3; },
+    });
+    const out = await run("kJQP7kiw5Fk");
+    expect(fetchedUrl).toBe(url);
+    expect(out.captions).not.toBeNull();
+  });
+
+  it("prefers an exact 'en' track over a variant like 'en-US'", async () => {
+    const exact = "https://youtube.com/api/timedtext?fmt=json3&lang=en";
+    let fetchedUrl = "";
+    const run = createRunYtDlp({
+      exec: async () =>
+        JSON.stringify({
+          id: "x",
+          title: "t",
+          subtitles: {
+            "en-US": [{ ext: "json3", url: "https://youtube.com/variant" }],
+            en: [{ ext: "json3", url: exact }],
+          },
+        }),
+      fetchText: async (u) => { fetchedUrl = u; return json3; },
+    });
+    await run("x");
+    expect(fetchedUrl).toBe(exact);
+  });
+
+  it("matches a variant English key in automatic_captions", async () => {
+    const url = "https://youtube.com/api/timedtext?fmt=json3&lang=en-orig";
+    let fetchedUrl = "";
+    const run = createRunYtDlp({
+      exec: async () =>
+        JSON.stringify({
+          id: "x",
+          title: "t",
+          automatic_captions: { "en-orig": [{ ext: "json3", url }] },
+        }),
+      fetchText: async (u) => { fetchedUrl = u; return json3; },
+    });
+    await run("x");
+    expect(fetchedUrl).toBe(url);
   });
 
   it("prefers manual subtitles over automatic_captions when both are present", async () => {

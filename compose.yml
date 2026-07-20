@@ -43,6 +43,9 @@ services:
       # Bind the internal /search server to all interfaces so `web` can reach it
       # container-to-container (the worker defaults to loopback-only otherwise).
       WORKER_HTTP_HOST: 0.0.0.0
+      # Points yt-dlp at the mounted cookies file ONLY when YOUTUBE_COOKIES_HOST
+      # is set; otherwise expands to empty and the worker sends no --cookies.
+      YOUTUBE_COOKIES_FILE: ${YOUTUBE_COOKIES_HOST:+/run/secrets/yt-cookies.txt}
     expose:
       # Internal semantic /search endpoint — reachable only on the compose network,
       # never published to the host. `web` calls it with the shared secret.
@@ -51,6 +54,10 @@ services:
       # Persist the downloaded embedding model across restarts (first capture
       # fetches it once into TRANSFORMERS_CACHE=/data/models).
       - worker_models:/data/models
+      # Optional YouTube cookies (Netscape format) to defeat the datacenter-IP
+      # bot-block. Falls back to /dev/null when YOUTUBE_COOKIES_HOST is unset —
+      # harmless, since YOUTUBE_COOKIES_FILE is then empty and never read.
+      - ${YOUTUBE_COOKIES_HOST:-/dev/null}:/run/secrets/yt-cookies.txt:ro
     depends_on:
       pocketbase:
         condition: service_healthy
