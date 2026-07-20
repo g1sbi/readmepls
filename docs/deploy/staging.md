@@ -54,7 +54,19 @@ security boundary, same as prod's public PB.
 
 Reload Caddy after editing (e.g. `caddy reload` or `systemctl reload caddy`).
 
-### 3. Staging directory + env
+### 3. Firewall
+
+`compose.yml` publishes its ports on `0.0.0.0`, so `http://<VPS_IP>:3100` and
+`http://<VPS_IP>:8190` are reachable directly, bypassing Caddy's Basic Auth
+entirely (worst case: PocketBase's admin UI wide open on `:8190`). Block direct
+access so all traffic is forced through Caddy:
+
+```bash
+ufw deny 3100
+ufw deny 8190
+```
+
+### 4. Staging directory + env
 
 On the VPS, in a directory **separate from prod** (e.g. `/srv/readmepls-staging`):
 
@@ -66,12 +78,17 @@ cp .env.staging.example .env
 # PB_ADMIN_*/PB_WORKER_* passwords, and WORKER_SEARCH_SECRET (openssl rand -hex 32).
 ```
 
+`compose.yml` is hand-copied here, not pulled by CI — **re-copy it into this
+directory whenever it changes on `develop`**. The deploy job only runs `up`, so
+a stale copy (e.g. one predating an image-tag or port change) silently keeps
+running against the old file, including old production defaults.
+
 The file **must** be named `.env` — `compose.yml` declares `env_file: .env` per
 service, and `docker compose --env-file X` only redirects variable interpolation,
 not that. What keeps staging off prod's data is this separate directory plus the
 `readmepls-staging` project name, not the filename.
 
-### 4. GitHub secret
+### 5. GitHub secret
 
 Add repo secret **`VPS_STAGING_DIR`** = the staging directory path (e.g.
 `/srv/readmepls-staging`). The existing `VPS_HOST` / `VPS_USER` / `VPS_SSH_KEY`
@@ -97,7 +114,12 @@ are reused.
 docker compose -p readmepls-staging ps          # 3 services healthy
 docker volume ls | grep readmepls-staging       # readmepls-staging_pb_data exists
 docker compose -p readmepls ps                  # prod still healthy, untouched
+docker compose -p readmepls-staging images      # all three services on :develop
 ```
+
+The `ps`/`volume ls` checks confirm staging is running and isolated, but they
+can't tell you which image tag is actually deployed — check `images` explicitly
+and confirm all three services show `:develop`, not `:latest`.
 
 Then in a browser: sign up, confirm the verification email links to
 `https://staging.readmepls.com/verify?token=...`, verify, and capture an article.

@@ -42,7 +42,7 @@ jobs:
           images: ghcr.io/${{ github.repository_owner }}/readmepls-${{ matrix.name }}
           tags: |
             type=ref,event=tag
-            type=raw,value=latest,enable=${{ github.ref != 'refs/heads/develop' }}
+            type=raw,value=latest,enable=${{ github.ref == 'refs/heads/main' || startsWith(github.ref, 'refs/tags/v') }}
             type=raw,value=develop,enable=${{ github.ref == 'refs/heads/develop' }}
 
       - uses: docker/build-push-action@v6
@@ -74,7 +74,7 @@ jobs:
 
   deploy-staging:
     needs: build-push
-    if: github.event_name == 'workflow_dispatch'
+    if: github.event_name == 'workflow_dispatch' && github.ref == 'refs/heads/develop'
     runs-on: ubuntu-latest
     steps:
       - uses: appleboy/ssh-action@0ff4204d59e8e51228ff73bce53f80d53301dee2 # v1.2.5
@@ -82,7 +82,9 @@ jobs:
           host: ${{ secrets.VPS_HOST }}
           username: ${{ secrets.VPS_USER }}
           key: ${{ secrets.VPS_SSH_KEY }}
+          script_stop: true
           script: |
-            cd ${{ secrets.VPS_STAGING_DIR }}
+            DIR="${{ secrets.VPS_STAGING_DIR }}"
+            cd "${DIR:?VPS_STAGING_DIR not set}"
             docker compose -f compose.yml -p readmepls-staging up -d --pull always
             docker image prune -f
