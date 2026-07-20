@@ -1,9 +1,11 @@
 import { json, error } from "@sveltejs/kit";
 import type { RequestHandler } from "@sveltejs/kit";
 import { servicePb } from "$lib/server/pb.js";
+import { requireVerified } from "$lib/server/require-verified.js";
 
 export const POST: RequestHandler = async ({ request, locals }) => {
   if (!locals.userId) throw error(401, "unauthenticated");
+  requireVerified(locals, process.env.SELF_HOSTED === "true");
   const { articleId } = (await request.json()) as { articleId?: string };
   if (!articleId) throw error(400, "missing articleId");
 

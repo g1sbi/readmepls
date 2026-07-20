@@ -5,7 +5,7 @@ export interface PbLike {
     clear(): void;
     isValid: boolean;
     token: string;
-    model: { id?: string } | null;
+    model: { id?: string; verified?: boolean } | null;
   };
   collection(name: string): { authRefresh(): Promise<unknown> };
 }
@@ -26,13 +26,17 @@ export async function resolvePbAuth(
   pb: PbLike,
   cookie: string,
   authHeader: string | null,
-): Promise<{ userId: string | null; viaBearer: boolean }> {
+): Promise<{ userId: string | null; viaBearer: boolean; verified: boolean }> {
   pb.authStore.loadFromCookie(cookie);
   if (pb.authStore.isValid) {
     try {
       await pb.collection("users").authRefresh();
       if (pb.authStore.isValid) {
-        return { userId: pb.authStore.model?.id ?? null, viaBearer: false };
+        return {
+          userId: pb.authStore.model?.id ?? null,
+          viaBearer: false,
+          verified: Boolean(pb.authStore.model?.verified),
+        };
       }
     } catch {
       pb.authStore.clear();
@@ -45,7 +49,11 @@ export async function resolvePbAuth(
     try {
       await pb.collection("users").authRefresh();
       if (pb.authStore.isValid) {
-        return { userId: pb.authStore.model?.id ?? null, viaBearer: true };
+        return {
+          userId: pb.authStore.model?.id ?? null,
+          viaBearer: true,
+          verified: Boolean(pb.authStore.model?.verified),
+        };
       }
     } catch {
       // fall through to cleared/null
@@ -53,5 +61,5 @@ export async function resolvePbAuth(
   }
 
   pb.authStore.clear();
-  return { userId: null, viaBearer: false };
+  return { userId: null, viaBearer: false, verified: false };
 }

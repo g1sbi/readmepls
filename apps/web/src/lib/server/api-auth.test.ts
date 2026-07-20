@@ -17,10 +17,11 @@ function fakePb(opts: {
   cookieValid?: boolean;
   refreshOutcome?: "ok" | "throw";
   id?: string;
+  verified?: boolean;
 }): PbLike {
   let valid = !!opts.cookieValid;
-  let model: { id?: string } | null = opts.cookieValid
-    ? { id: opts.id ?? "u1" }
+  let model: { id?: string; verified?: boolean } | null = opts.cookieValid
+    ? { id: opts.id ?? "u1", verified: !!opts.verified }
     : null;
   return {
     authStore: {
@@ -50,7 +51,7 @@ function fakePb(opts: {
           throw new Error("401");
         }
         valid = true;
-        model = { id: opts.id ?? "u1" };
+        model = { id: opts.id ?? "u1", verified: !!opts.verified };
         return {};
       }),
     }),
@@ -61,24 +62,30 @@ describe("resolvePbAuth", () => {
   it("authenticates via a valid cookie (viaBearer false)", async () => {
     const pb = fakePb({ cookieValid: true, refreshOutcome: "ok" });
     const r = await resolvePbAuth(pb, "pb_auth=x", null);
-    expect(r).toEqual({ userId: "u1", viaBearer: false });
+    expect(r).toEqual({ userId: "u1", viaBearer: false, verified: false });
   });
 
   it("falls back to a valid bearer token (viaBearer true)", async () => {
     const pb = fakePb({ cookieValid: false, refreshOutcome: "ok", id: "u9" });
     const r = await resolvePbAuth(pb, "", "Bearer jwt");
-    expect(r).toEqual({ userId: "u9", viaBearer: true });
+    expect(r).toEqual({ userId: "u9", viaBearer: true, verified: false });
   });
 
   it("returns null when the bearer token is rejected", async () => {
     const pb = fakePb({ cookieValid: false, refreshOutcome: "throw" });
     const r = await resolvePbAuth(pb, "", "Bearer bad");
-    expect(r).toEqual({ userId: null, viaBearer: false });
+    expect(r).toEqual({ userId: null, viaBearer: false, verified: false });
   });
 
   it("returns null with no cookie and no bearer", async () => {
     const pb = fakePb({ cookieValid: false });
     const r = await resolvePbAuth(pb, "", null);
-    expect(r).toEqual({ userId: null, viaBearer: false });
+    expect(r).toEqual({ userId: null, viaBearer: false, verified: false });
+  });
+
+  it("surfaces verified=true from the auth record", async () => {
+    const pb = fakePb({ cookieValid: true, refreshOutcome: "ok", verified: true });
+    const r = await resolvePbAuth(pb, "pb_auth=x", null);
+    expect(r).toEqual({ userId: "u1", viaBearer: false, verified: true });
   });
 });

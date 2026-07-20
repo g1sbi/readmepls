@@ -12,13 +12,14 @@ const PB_URL = process.env.PB_URL ?? "http://127.0.0.1:8090";
 
 export const handle: Handle = async ({ event, resolve }) => {
   const pb = new PocketBase(PB_URL);
-  const { userId, viaBearer } = await resolvePbAuth(
+  const { userId, viaBearer, verified } = await resolvePbAuth(
     pb,
     event.request.headers.get("cookie") ?? "",
     event.request.headers.get("authorization"),
   );
   event.locals.pb = pb;
   event.locals.userId = userId;
+  event.locals.verified = verified;
 
   const origin = event.request.headers.get("origin");
   const allowed = extensionOrigins(process.env.EXTENSION_ORIGINS);
@@ -30,7 +31,13 @@ export const handle: Handle = async ({ event, resolve }) => {
     return new Response(null, { status: ph ? 204 : 403, headers: ph ?? {} });
   }
 
-  const target = routeGuard(event.url.pathname, event.locals.userId);
+  const selfHosted = process.env.SELF_HOSTED === "true";
+  const target = routeGuard(
+    event.url.pathname,
+    event.locals.userId,
+    event.locals.verified,
+    selfHosted,
+  );
   if (target) throw redirect(303, target);
 
   const response = await resolve(event);
