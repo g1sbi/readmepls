@@ -41,7 +41,7 @@ Makes the one compose file serve both prod (`latest`) and staging (`develop`) wi
 - Consumes: nothing.
 - Produces: compose variable `IMAGE_TAG` (string, defaults to `latest`). The CI deploy job (Task 2) and `.env.staging.example` (Task 3) set `IMAGE_TAG=develop`.
 
-- [ ] **Step 1: Write the failing verification**
+- [x] **Step 1: Write the failing verification**
 
 Run this now to capture the current (pre-change) rendered tag — it should still say `:latest`, proving the variable does not yet exist:
 
@@ -51,7 +51,7 @@ IMAGE_TAG=develop docker compose -f compose.yml config | grep 'readmepls-web'
 
 Expected BEFORE change: prints `image: ghcr.io/g1sbi/readmepls-web:latest` (the `IMAGE_TAG` env is ignored because the file hardcodes `latest`). This is the failing state — staging cannot select `develop`.
 
-- [ ] **Step 2: Edit the three image lines**
+- [x] **Step 2: Edit the three image lines**
 
 `compose.yml:5`:
 ```yaml
@@ -68,21 +68,21 @@ Expected BEFORE change: prints `image: ghcr.io/g1sbi/readmepls-web:latest` (the 
     image: ghcr.io/g1sbi/readmepls-worker:${IMAGE_TAG:-latest}
 ```
 
-- [ ] **Step 3: Verify the default still renders `latest` (prod-safety)**
+- [x] **Step 3: Verify the default still renders `latest` (prod-safety)**
 
 ```bash
 docker compose -f compose.yml config | grep -E 'readmepls-(pocketbase|web|worker):'
 ```
 Expected: all three print `:latest`. Prod behavior unchanged.
 
-- [ ] **Step 4: Verify the override renders `develop` (staging path)**
+- [x] **Step 4: Verify the override renders `develop` (staging path)**
 
 ```bash
 IMAGE_TAG=develop docker compose -f compose.yml config | grep -E 'readmepls-(pocketbase|web|worker):'
 ```
 Expected: all three print `:develop`.
 
-- [ ] **Step 5: Commit**
+- [x] **Step 5: Commit**
 
 ```bash
 git add compose.yml
@@ -102,7 +102,7 @@ Adds a `develop` build trigger, a `:develop` image tag (without disturbing `late
 - Consumes: `IMAGE_TAG` from Task 1; existing secrets `VPS_HOST`, `VPS_USER`, `VPS_SSH_KEY`.
 - Produces: images tagged `:develop` on push to `develop`; a `deploy-staging` job requiring a new secret `VPS_STAGING_DIR` (documented in Task 4). Runs the staging compose command with project `readmepls-staging`.
 
-- [ ] **Step 1: Add `develop` to the build trigger**
+- [x] **Step 1: Add `develop` to the build trigger**
 
 `.github/workflows/docker-publish.yml` line 5, change:
 ```yaml
@@ -113,7 +113,7 @@ to:
     branches: [main, develop]
 ```
 
-- [ ] **Step 2: Add the `:develop` tag without changing `latest`**
+- [x] **Step 2: Add the `:develop` tag without changing `latest`**
 
 Replace the `tags:` block (currently lines 40-43):
 ```yaml
@@ -131,7 +131,7 @@ with:
 
 Rationale: `latest` still applies to `main` and `v*` tag builds (ref is not `develop`), matching current prod behavior exactly; only `develop` pushes/dispatches get `:develop`, and they never move `latest`.
 
-- [ ] **Step 3: Append the `deploy-staging` job**
+- [x] **Step 3: Append the `deploy-staging` job**
 
 Add at the end of the file (after the `deploy` job's last line), at the same indentation as the other jobs (two spaces):
 ```yaml
@@ -153,7 +153,7 @@ Add at the end of the file (after the `deploy` job's last line), at the same ind
 
 Note: `build-push` has no `if`, so it runs on `workflow_dispatch` too — dispatching from the `develop` branch rebuilds `:develop` first, then this job deploys it. The runbook (Task 4) instructs dispatching from `develop`.
 
-- [ ] **Step 4: Verify the workflow is valid YAML and the jobs/keys are present**
+- [x] **Step 4: Verify the workflow is valid YAML and the jobs/keys are present**
 
 ```bash
 python3 -c "import yaml,sys; d=yaml.safe_load(open('.github/workflows/docker-publish.yml')); \
@@ -166,7 +166,7 @@ Expected: `workflow OK: ['build-push', 'deploy', 'deploy-staging']` and no asser
 
 Note: PyYAML parses the unquoted `on:` key as the boolean `True`. If the assertion on `d['on']` raises `KeyError`, retry with `d[True]['push']['branches']` — this is a PyYAML quirk, not a workflow error. GitHub Actions reads `on` correctly regardless.
 
-- [ ] **Step 5: Commit**
+- [x] **Step 5: Commit**
 
 ```bash
 git add .github/workflows/docker-publish.yml
@@ -186,7 +186,7 @@ A committed, secret-free template of the staging environment. Testers copy it to
 - Consumes: `IMAGE_TAG` (Task 1), project name `readmepls-staging` (Task 2 deploy job).
 - Produces: the documented variable set the runbook (Task 4) references.
 
-- [ ] **Step 1: Create the file**
+- [x] **Step 1: Create the file**
 
 `.env.staging.example`:
 ```bash
@@ -256,7 +256,7 @@ WORKER_URL=http://worker:8091
 EXTENSION_ORIGINS=
 ```
 
-- [ ] **Step 2: Verify it renders a valid staging config**
+- [x] **Step 2: Verify it renders a valid staging config**
 
 Render it the way the VPS will — as `.env` in a scratch dir — so the check
 exercises the real load path and cannot be masked by this repo's own `.env`:
@@ -270,7 +270,7 @@ tmp=$(mktemp -d) && cp compose.yml "$tmp/" && cp .env.staging.example "$tmp/.env
 Expected: three images print `:develop`, and published host ports show `3100` (web)
 and `8190` (pocketbase). No `site` service appears (compose.site.yml not loaded).
 
-- [ ] **Step 3: Commit**
+- [x] **Step 3: Commit**
 
 ```bash
 git add .env.staging.example
@@ -290,7 +290,7 @@ The operator guide for the manual VPS + GitHub steps that the repo cannot automa
 - Consumes: everything from Tasks 1-3.
 - Produces: nothing (documentation).
 
-- [ ] **Step 1: Create the runbook**
+- [x] **Step 1: Create the runbook**
 
 `docs/deploy/staging.md`:
 ````markdown
@@ -407,7 +407,7 @@ docker compose -f compose.yml -p readmepls-staging down -v
 Prod is a different project (`readmepls`) and is never affected by these commands.
 ````
 
-- [ ] **Step 2: Verify the doc renders and links resolve**
+- [x] **Step 2: Verify the doc renders and links resolve**
 
 ```bash
 test -f docs/deploy/staging.md && grep -q 'readmepls-staging' docs/deploy/staging.md \
@@ -416,7 +416,7 @@ test -f docs/deploy/staging.md && grep -q 'readmepls-staging' docs/deploy/stagin
 ```
 Expected: `runbook OK`.
 
-- [ ] **Step 3: Commit**
+- [x] **Step 3: Commit**
 
 ```bash
 git add docs/deploy/staging.md
@@ -429,10 +429,11 @@ git commit -m "docs(deploy): add staging environment runbook"
 
 Run once after all tasks. The app was not touched, so this proves it:
 
-- [ ] `pnpm typecheck` — expected: passes.
-- [ ] `pnpm lint` — expected: passes.
-- [ ] `pnpm test` — expected: full suite green.
-- [ ] `docker compose -f compose.yml config >/dev/null && echo prod-config-OK` — prod stack still renders (defaults to `:latest`).
+- [x] `pnpm typecheck` — expected: passes.
+- [x] `pnpm lint` — **fails on 228 pre-existing files** (README.md, pb_migrations, …); none are files this plan touched, and the same failure predates it. Not a regression from this work.
+- [x] `pnpm test` — expected: full suite green.
+- [x] `docker compose -f compose.yml config >/dev/null && echo prod-config-OK` — prod stack still renders (defaults to `:latest`).
+- [x] `pnpm env:check` — added during review: `${IMAGE_TAG}` in `compose.yml` needed a matching declaration in `.env.example` (scripts/env-parity-check.mjs enforces the pairing).
 
 ## Post-merge (manual, on the server — from the runbook)
 
