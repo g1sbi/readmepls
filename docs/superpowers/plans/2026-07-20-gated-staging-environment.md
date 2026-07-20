@@ -17,7 +17,14 @@
 - **Staging host ports:** web `3100`, PocketBase `8190` (prod uses `3000` / `8090`).
 - **Staging subdomains:** app `staging.readmepls.com`, PocketBase `pb-staging.readmepls.com`.
 - **`ORIGIN=https://staging.readmepls.com`** on staging — it drives the verification-email link (see `pocketbase/pb_hooks/verification_config.pb.js`). Getting this wrong sends testers to prod.
-- No secrets committed. `.env.staging.example` is secret-free; the real `.env.staging` lives only on the VPS.
+- No secrets committed. `.env.staging.example` is secret-free; the real filled-in
+  env file lives only on the VPS.
+- **The staging env file is named `.env` in the staging directory** (e.g.
+  `/srv/readmepls-staging/.env`). `compose.yml`'s services declare `env_file: .env`,
+  and `docker compose --env-file X` only redirects *variable interpolation* — it
+  does NOT change which file `env_file:` reads. Isolation comes from the separate
+  directory + project name, not from the filename. Do not add `--env-file` to any
+  staging command.
 
 Spec: `docs/superpowers/specs/2026-07-20-gated-staging-environment-design.md`.
 
@@ -140,7 +147,7 @@ Add at the end of the file (after the `deploy` job's last line), at the same ind
           key: ${{ secrets.VPS_SSH_KEY }}
           script: |
             cd ${{ secrets.VPS_STAGING_DIR }}
-            docker compose --env-file .env.staging -f compose.yml -p readmepls-staging up -d --pull always
+            docker compose -f compose.yml -p readmepls-staging up -d --pull always
             docker image prune -f
 ```
 
@@ -170,7 +177,7 @@ git commit -m "feat(deploy): build develop images and add manual staging deploy 
 
 ### Task 3: Add `.env.staging.example`
 
-A committed, secret-free template of the staging environment. Testers copy it to `.env.staging` on the VPS and fill in secrets.
+A committed, secret-free template of the staging environment. Testers copy it to `.env` in the VPS staging directory and fill in secrets.
 
 **Files:**
 - Create: `.env.staging.example`
@@ -184,12 +191,16 @@ A committed, secret-free template of the staging environment. Testers copy it to
 `.env.staging.example`:
 ```bash
 # ---- Staging environment (gated, develop branch) ----
-# Copy to `.env.staging` ON THE VPS staging directory and fill in secrets.
-# NEVER commit the filled-in .env.staging. Staging reuses the single compose.yml
-# under a distinct Docker project so its volumes never touch prod's.
+# Copy to `.env` IN THE VPS STAGING DIRECTORY (e.g. /srv/readmepls-staging/.env)
+# and fill in secrets. NEVER commit the filled-in file.
+#
+# It must be named `.env`: compose.yml's services declare `env_file: .env`, and
+# `--env-file` only redirects variable interpolation, not that. Isolation comes
+# from the separate directory + Docker project name, never from the filename —
+# staging reuses the single compose.yml, so its volumes never touch prod's.
 #
 # Deploy (run by the CI deploy-staging job, or by hand on the VPS):
-#   docker compose --env-file .env.staging -f compose.yml -p readmepls-staging up -d --pull always
+#   docker compose -f compose.yml -p readmepls-staging up -d --pull always
 
 # ---- Isolation + image selection ----
 # Distinct project name => volumes/networks become readmepls-staging_* (never
@@ -247,11 +258,17 @@ EXTENSION_ORIGINS=
 
 - [ ] **Step 2: Verify it renders a valid staging config**
 
+Render it the way the VPS will — as `.env` in a scratch dir — so the check
+exercises the real load path and cannot be masked by this repo's own `.env`:
+
 ```bash
-docker compose --env-file .env.staging.example -f compose.yml -p readmepls-staging config \
-  | grep -E 'readmepls-(pocketbase|web|worker):|published: "31|published: "81'
+tmp=$(mktemp -d) && cp compose.yml "$tmp/" && cp .env.staging.example "$tmp/.env" \
+  && (cd "$tmp" && docker compose -f compose.yml -p readmepls-staging config \
+       | grep -E 'readmepls-(pocketbase|web|worker):|published: "3100"|published: "8190"'); \
+  rm -rf "$tmp"
 ```
-Expected: three images print `:develop`, and published host ports show `3100` (web) and `8190` (pocketbase). No `site` service appears (compose.site.yml not loaded).
+Expected: three images print `:develop`, and published host ports show `3100` (web)
+and `8190` (pocketbase). No `site` service appears (compose.site.yml not loaded).
 
 - [ ] **Step 3: Commit**
 
@@ -340,10 +357,15 @@ On the VPS, in a directory **separate from prod** (e.g. `/srv/readmepls-staging`
 ```bash
 mkdir -p /srv/readmepls-staging && cd /srv/readmepls-staging
 # Copy compose.yml and .env.staging.example from the repo into this dir.
-cp .env.staging.example .env.staging
-# Fill in .env.staging: SMTP_* (reuse prod's), ANTHROPIC_API_KEY, staging-only
+cp .env.staging.example .env
+# Fill in .env: SMTP_* (reuse prod's), ANTHROPIC_API_KEY, staging-only
 # PB_ADMIN_*/PB_WORKER_* passwords, and WORKER_SEARCH_SECRET (openssl rand -hex 32).
 ```
+
+The file **must** be named `.env` — `compose.yml` declares `env_file: .env` per
+service, and `docker compose --env-file X` only redirects variable interpolation,
+not that. What keeps staging off prod's data is this separate directory plus the
+`readmepls-staging` project name, not the filename.
 
 ### 4. GitHub secret
 
@@ -357,7 +379,7 @@ are reused.
 2. Actions → **docker-publish** → **Run workflow** → select branch **develop** →
    Run. This rebuilds `:develop`, then the `deploy-staging` job SSHes in and runs:
    ```
-   docker compose --env-file .env.staging -f compose.yml -p readmepls-staging up -d --pull always
+   docker compose -f compose.yml -p readmepls-staging up -d --pull always
    ```
 3. Visit `https://staging.readmepls.com` → Basic Auth prompt → app.
 
@@ -377,9 +399,9 @@ Then in a browser: sign up, confirm the verification email links to
 
 ```bash
 cd /srv/readmepls-staging
-docker compose --env-file .env.staging -f compose.yml -p readmepls-staging down
+docker compose -f compose.yml -p readmepls-staging down
 # To also wipe staging data (does NOT touch prod):
-docker compose --env-file .env.staging -f compose.yml -p readmepls-staging down -v
+docker compose -f compose.yml -p readmepls-staging down -v
 ```
 
 Prod is a different project (`readmepls`) and is never affected by these commands.
@@ -418,6 +440,6 @@ Not part of the code changes; do these to actually bring staging up:
 
 - [ ] DNS records for `staging` + `pb-staging`.
 - [ ] Caddy blocks added + hashed password + reload.
-- [ ] Staging dir created on VPS with filled-in `.env.staging`.
+- [ ] Staging dir created on VPS with filled-in `.env`.
 - [ ] GitHub secret `VPS_STAGING_DIR` added.
 - [ ] Dispatch **docker-publish** from `develop`; confirm the end-to-end flow in the runbook's "Verify a deploy" section.

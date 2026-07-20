@@ -47,7 +47,7 @@ Parametrize the image tag so the one compose file serves both environments:
 Deploy command (run on the VPS by the CI deploy job):
 
 ```
-docker compose --env-file .env.staging -f compose.yml -p readmepls-staging up -d --pull always
+docker compose -f compose.yml -p readmepls-staging up -d --pull always
 ```
 
 Production stack is never touched by any staging operation.
@@ -75,7 +75,7 @@ Three changes:
    command above. Manual click only.
 
 New GitHub secret: **`VPS_STAGING_DIR`** — staging lives in its own directory on
-the VPS so its `.env.staging` and compose invocation sit apart from prod.
+the VPS so its `.env` and compose invocation sit apart from prod.
 
 Flow: push `develop` → images build automatically → click **Run workflow** when
 ready → staging redeploys with fresh `:develop` images.
@@ -119,7 +119,7 @@ Hash via `caddy hash-password`. Same shared credential in both blocks. Result:
 public visitors and crawlers hit a password wall on the app; the browser SDK's
 `/api/*` calls flow through; the PB admin UI stays gated.
 
-### Configuration — `.env.staging` (on VPS, never committed)
+### Configuration — `.env` in the staging dir (on VPS, never committed)
 
 | var | value | why |
 |---|---|---|
@@ -161,14 +161,14 @@ tester.
   tag, and the `deploy-staging` (`workflow_dispatch`) job.
 - **`.env.staging.example`** — documented, secret-free template of the table above.
 - **`docs/deploy/staging.md`** — runbook: DNS records, Caddy blocks + hashing,
-  VPS directory setup, `.env.staging` fill-in, first deploy, redeploy, teardown.
+  VPS directory setup, `.env` fill-in, first deploy, redeploy, teardown.
 
 ### Manual VPS / GitHub steps (documented in the runbook, not automatable from repo)
 
 - DNS: `staging` and `pb-staging` A records → VPS IP.
 - Caddyfile: the two blocks above; generate hash with `caddy hash-password`;
   reload Caddy.
-- Create the staging directory on the VPS; place the real `.env.staging`.
+- Create the staging directory on the VPS; place the real `.env`.
 - Add GitHub secret `VPS_STAGING_DIR`.
 
 ## Testing
