@@ -2,7 +2,7 @@ name: readmepls
 
 services:
   pocketbase:
-    image: ghcr.io/g1sbi/readmepls-pocketbase:latest
+    image: ghcr.io/g1sbi/readmepls-pocketbase:${IMAGE_TAG:-latest}
     restart: unless-stopped
     env_file: .env
     ports:
@@ -17,7 +17,7 @@ services:
       retries: 5
 
   web:
-    image: ghcr.io/g1sbi/readmepls-web:latest
+    image: ghcr.io/g1sbi/readmepls-web:${IMAGE_TAG:-latest}
     restart: unless-stopped
     env_file: .env
     environment:
@@ -32,7 +32,7 @@ services:
         condition: service_healthy
 
   worker:
-    image: ghcr.io/g1sbi/readmepls-worker:latest
+    image: ghcr.io/g1sbi/readmepls-worker:${IMAGE_TAG:-latest}
     restart: unless-stopped
     env_file: .env
     environment:
