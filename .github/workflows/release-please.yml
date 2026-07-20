@@ -13,6 +13,12 @@ jobs:
   release-please:
     runs-on: ubuntu-latest
     steps:
+      - name: TEMP diagnostic - check token scopes
+        env:
+          TOKEN: ${{ secrets.RELEASE_PLEASE_TOKEN }}
+        run: |
+          curl -sI -H "Authorization: token $TOKEN" https://api.github.com/user | grep -i x-oauth-scopes || echo "no x-oauth-scopes header returned"
+
       - uses: googleapis/release-please-action@v4
         with:
           # Classic PAT with `repo` scope — the built-in GITHUB_TOKEN can open the
