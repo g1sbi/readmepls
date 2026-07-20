@@ -439,8 +439,12 @@ Run once after all tasks. The app was not touched, so this proves it:
 
 Not part of the code changes; do these to actually bring staging up:
 
-- [ ] DNS records for `staging` + `pb-staging`.
-- [ ] Caddy blocks added + hashed password + reload.
-- [ ] Staging dir created on VPS with filled-in `.env`.
+- [x] DNS records for `staging` + `pb-staging`.
+- [x] Caddy blocks added + hashed password + reload.
+- [x] Staging dir created on VPS with filled-in `.env`. (Note: actual path is
+      `/home/gisbi/data/readmepls-staging`, not `/srv/readmepls-staging` — kept
+      consistent with where prod actually lives on this VPS, not the FHS-style
+      `/srv` example in the runbook/design. `VPS_STAGING_DIR` secret must point
+      here.)
 - [ ] GitHub secret `VPS_STAGING_DIR` added.
 - [ ] Dispatch **docker-publish** from `develop`; confirm the end-to-end flow in the runbook's "Verify a deploy" section.

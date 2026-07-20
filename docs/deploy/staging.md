@@ -68,10 +68,10 @@ ufw deny 8190
 
 ### 4. Staging directory + env
 
-On the VPS, in a directory **separate from prod** (e.g. `/srv/readmepls-staging`):
+On the VPS, in a directory **separate from prod** (e.g. `/home/gisbi/data/readmepls-staging`):
 
 ```bash
-mkdir -p /srv/readmepls-staging && cd /srv/readmepls-staging
+mkdir -p /home/gisbi/data/readmepls-staging && cd /home/gisbi/data/readmepls-staging
 # Copy compose.yml and .env.staging.example from the repo into this dir.
 cp .env.staging.example .env
 # Fill in .env: SMTP_* (reuse prod's), ANTHROPIC_API_KEY, staging-only
@@ -91,7 +91,7 @@ not that. What keeps staging off prod's data is this separate directory plus the
 ### 5. GitHub secret
 
 Add repo secret **`VPS_STAGING_DIR`** = the staging directory path (e.g.
-`/srv/readmepls-staging`). The existing `VPS_HOST` / `VPS_USER` / `VPS_SSH_KEY`
+`/home/gisbi/data/readmepls-staging`). The existing `VPS_HOST` / `VPS_USER` / `VPS_SSH_KEY`
 are reused.
 
 ## Deploy
@@ -131,7 +131,7 @@ Then in a browser: sign up, confirm the verification email links to
 ## Teardown
 
 ```bash
-cd /srv/readmepls-staging
+cd /home/gisbi/data/readmepls-staging
 docker compose -f compose.yml -p readmepls-staging down
 # To also wipe staging data (does NOT touch prod):
 docker compose -f compose.yml -p readmepls-staging down -v
