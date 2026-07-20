@@ -6,6 +6,7 @@ declare global {
     interface Locals {
       pb: PocketBase;
       userId: string | null;
+      verified: boolean;
     }
     interface PageData {
       tier: Tier | null;

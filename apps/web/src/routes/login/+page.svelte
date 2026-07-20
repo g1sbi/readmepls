@@ -22,6 +22,19 @@
         await pb.collection("users").create({
           email, password, passwordConfirm: password, tier: "standard", monthly_quota_used: 0,
         });
+        await pb.collection("users").authWithPassword(email, password);
+        if (!data.selfHosted) {
+          // SaaS: send the confirmation email and gate the user at /verify.
+          try {
+            await pb.collection("users").requestVerification(email);
+          } catch {
+            // account exists + user is authed; the /verify page handles resend if the email didn't send
+          }
+          await goto("/verify");
+          return;
+        }
+        await goto("/");
+        return;
       }
       await pb.collection("users").authWithPassword(email, password);
       await goto("/");

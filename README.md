@@ -62,6 +62,9 @@ AI features. Full walkthrough: [readmepls.com/docs](https://readmepls.com/docs).
 
 Data persists in the `pb_data` volume.
 
+**Maintainers:** deploying the gated staging environment (`develop`-branch
+images, same VPS as prod)? See [`docs/deploy/staging.md`](docs/deploy/staging.md).
+
 ## License
 
 [GNU AGPL-3.0-or-later](LICENSE). You may use, modify, and self-host freely; if you
