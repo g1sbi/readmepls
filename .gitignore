@@ -3,6 +3,7 @@ node_modules/
 .env.*
 !.env.example
 !.env.site.example
+!.env.staging.example
 dist/
 build/
 .svelte-kit/
