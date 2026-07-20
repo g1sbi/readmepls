@@ -103,7 +103,11 @@ are reused.
    docker compose -f compose.yml -p readmepls-staging up -d --pull always
    ```
 
-> **Dispatch from `develop`, not `main`.** The `deploy-staging` job has no branch guard — a dispatch from another branch still deploys, but it redeploys whatever stale image already sits at `:develop` instead of building your latest work.
+> **Dispatch from `develop`.** The `deploy-staging` job is guarded on
+> `github.ref == 'refs/heads/develop'`, so a dispatch from any other branch
+> builds images but skips the staging deploy entirely — the run goes green
+> having deployed nothing. If staging looks unchanged after a dispatch, check
+> which branch you selected.
 
 3. Visit `https://staging.readmepls.com` → Basic Auth prompt → app.
 
