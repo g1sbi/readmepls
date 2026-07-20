@@ -56,6 +56,20 @@ describe("YoutubeExtractor", () => {
     expect(res.failureReason).toBe("not a youtube video url");
   });
 
+  it("surfaces the underlying error when yt-dlp fails", async () => {
+    const res = await new YoutubeExtractor().extract(
+      "https://www.youtube.com/watch?v=dQw4w9WgXcQ",
+      io({
+        runYtDlp: async () => {
+          throw new Error("Sign in to confirm you're not a bot");
+        },
+      })
+    );
+    expect(res.status).toBe("failed");
+    expect(res.failureReason).toContain("yt-dlp failed");
+    expect(res.failureReason).toContain("Sign in to confirm you're not a bot");
+  });
+
   it("strips script tags from contentHtml even if transcript text contains them", async () => {
     const maliciousOut: YtDlpOutput = {
       meta: out.meta,

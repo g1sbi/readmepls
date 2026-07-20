@@ -29,12 +29,21 @@ FROM node:22-bookworm-slim AS runtime
 ENV NODE_ENV=production
 RUN groupadd -r app && useradd -r -g app app
 WORKDIR /app
+# Deno: modern yt-dlp needs a JavaScript runtime to solve YouTube's player
+# challenge (EJS). Without one, YouTube extraction is deprecated and formats go
+# missing. Copy the static binary from Deno's official bin-only image.
+COPY --from=denoland/deno:bin /deno /usr/local/bin/deno
 # yt-dlp (+ python runtime) for the YouTube transcript extractor. Not an apt
 # package on Debian, so install via pip; --break-system-packages is safe here,
-# there's no other Python workload in this image to conflict with.
+# there's no other Python workload in this image to conflict with. The [default]
+# extra pulls curl_cffi so yt-dlp can impersonate a browser's TLS fingerprint,
+# and bgutil-ytdlp-pot-provider is the yt-dlp plugin that fetches PO tokens from
+# the bgutil sidecar — together these get past YouTube's "Sign in to confirm
+# you're not a bot" block on datacenter IPs (see YOUTUBE_POT_PROVIDER_URL).
 RUN apt-get update \
     && apt-get install -y --no-install-recommends python3 python3-pip \
-    && pip install --no-cache-dir --break-system-packages yt-dlp \
+    && pip install --no-cache-dir --break-system-packages \
+       "yt-dlp[default,curl-cffi]" bgutil-ytdlp-pot-provider \
     && apt-get purge -y --auto-remove python3-pip \
     && rm -rf /var/lib/apt/lists/*
 COPY --from=build --chown=app:app /out ./
