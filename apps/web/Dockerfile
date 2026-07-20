@@ -1,6 +1,9 @@
 # syntax=docker/dockerfile:1
 # ---- base: workspace install ----
-FROM node:22-alpine AS base
+# glibc (not Alpine/musl) — QEMU-emulated arm64 builds of this image hang
+# indefinitely inside `pnpm install` on musl (CI runs amd64; arm64 is
+# cross-built). Matches apps/worker's base for the same class of reason.
+FROM node:22-bookworm-slim AS base
 ENV PNPM_HOME=/pnpm
 ENV PATH=$PNPM_HOME:$PATH
 RUN corepack enable
@@ -21,9 +24,9 @@ RUN pnpm --filter @readmepls/web... build
 RUN pnpm --filter @readmepls/web deploy --prod --legacy /out
 
 # ---- runtime ----
-FROM node:22-alpine AS runtime
+FROM node:22-bookworm-slim AS runtime
 ENV NODE_ENV=production
-RUN addgroup -S app && adduser -S app -G app
+RUN groupadd -r app && useradd -r -g app app
 WORKDIR /app
 COPY --from=build --chown=app:app /out ./
 USER app
