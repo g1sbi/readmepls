@@ -3,6 +3,7 @@ name: release-please
 on:
   push:
     branches: [main]
+  workflow_dispatch:
 
 permissions:
   contents: write
@@ -14,10 +15,8 @@ jobs:
     steps:
       - uses: googleapis/release-please-action@v4
         with:
-          # Classic PAT with `repo` scope. This account's fine-grained tokens and
-          # the built-in GITHUB_TOKEN both 403 on create-a-release (enterprise
-          # policy caps the fine-grained permission model), while a classic PAT
-          # works — so releases must run under it.
+          # Classic PAT with `repo` scope — the built-in GITHUB_TOKEN can open the
+          # release PR but can't create the release itself.
           token: ${{ secrets.RELEASE_PLEASE_TOKEN }}
           config-file: release-please-config.json
           manifest-file: .release-please-manifest.json

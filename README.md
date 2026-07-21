@@ -62,6 +62,13 @@ AI features. Full walkthrough: [readmepls.com/docs](https://readmepls.com/docs).
 
 Data persists in the `pb_data` volume.
 
+**YouTube on a VPS:** YouTube bot-blocks datacenter IPs (`Sign in to confirm
+you're not a bot`), so YouTube captures may fail from a cloud host even though
+they work locally. Export cookies from a browser logged into a throwaway Google
+account (Netscape `cookies.txt` format), save the file on the host, and set
+`YOUTUBE_COOKIES_HOST` in `.env` to its absolute path — the worker passes them to
+yt-dlp. Cookies expire; refresh them if extraction starts failing again.
+
 **Maintainers:** deploying the gated staging environment (`develop`-branch
 images, same VPS as prod)? See [`docs/deploy/staging.md`](docs/deploy/staging.md).
 
