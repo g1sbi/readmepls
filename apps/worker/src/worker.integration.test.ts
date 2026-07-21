@@ -9,6 +9,8 @@ import { MockAIProvider } from "./ai/mock-provider.js";
 import { NullAIProvider } from "./ai/null-provider.js";
 import { ExtractorRegistry } from "./extract/registry.js";
 import type { ExtractIO } from "./extract/extractor.js";
+import type { ResolveIO } from "./resolve/resolver.js";
+import { ResolverRegistry } from "./resolve/registry.js";
 import { FakeEmbedder } from "./embed/fake-embedder.js";
 
 const html = readFileSync(
@@ -23,10 +25,11 @@ beforeAll(async () => {
 afterAll(() => h?.stop());
 
 const registry = new ExtractorRegistry([new ArticleExtractor()]);
-function ioWith(htmlBody: string): ExtractIO {
+function ioWith(htmlBody: string): ExtractIO & ResolveIO {
   return {
     fetchHtml: async () => htmlBody,
     fetchJson: async () => { throw new Error("fetchJson not used in this test"); },
+    fetchRedirectTarget: async () => null,
     runYtDlp: async () => { throw new Error("runYtDlp not used in this test"); },
   };
 }
@@ -46,6 +49,7 @@ describe("processJob", () => {
     await processJob(h.pb, job.id, {
       io: ioWith(html),
       registry,
+      resolvers: new ResolverRegistry([]),
       ai: new MockAIProvider({ tags: ["hello"], summary: "A test." }),
       classify: classifySource,
       fetchBytes: async () => null,
@@ -82,6 +86,7 @@ describe("processJob", () => {
     await processJob(h.pb, job.id, {
       io: ioWith(html),
       registry,
+      resolvers: new ResolverRegistry([]),
       ai: new MockAIProvider({ tags: ["x"], summary: "s" }),
       classify: classifySource,
       fetchBytes: async () => null,
@@ -119,6 +124,7 @@ describe("processJob", () => {
     await processJob(h.pb, job.id, {
       io: ioWith("<html></html>"),
       registry,
+      resolvers: new ResolverRegistry([]),
       ai: new MockAIProvider(),
       classify: classifySource,
       fetchBytes: async () => null,
@@ -160,6 +166,7 @@ describe("processJob", () => {
     await processJob(h.pb, job.id, {
       io: ioWith("<html></html>"),
       registry,
+      resolvers: new ResolverRegistry([]),
       ai: new MockAIProvider(),
       classify: classifySource,
       fetchBytes: async () => null,
@@ -183,6 +190,7 @@ describe("processJob", () => {
     await processJob(h.pb, job.id, {
       io: ioWith(html),
       registry,
+      resolvers: new ResolverRegistry([]),
       ai: new NullAIProvider(),
       classify: classifySource,
       fetchBytes: async () => null,
