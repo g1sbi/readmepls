@@ -4,6 +4,7 @@ import {
   DEFAULT_INSTANCE_URL,
   type StorageArea,
 } from "./config.js";
+import { syncMarkerRegistration } from "./marker-registration.js";
 
 const storage: StorageArea = {
   get: (keys) => chrome.storage.local.get(keys),
@@ -43,6 +44,9 @@ async function save() {
     const { pbUrl } = (await res.json()) as { pbUrl: string };
     if (!pbUrl) throw new Error("config returned empty pbUrl");
     await setConfig(storage, { instanceUrl: raw, pbUrl });
+    // Host permission for `${origin}/*` was just granted above, so the marker
+    // script can register straight away for this custom instance.
+    await syncMarkerRegistration(chrome.scripting, chrome.permissions, raw);
     await chrome.storage.local.set({ token: "" });
     status.textContent = "saved ✓";
   } catch {

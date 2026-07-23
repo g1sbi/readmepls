@@ -4,10 +4,22 @@ import { cp, mkdir, rm } from "node:fs/promises";
 await rm("dist", { recursive: true, force: true });
 await mkdir("dist", { recursive: true });
 
+// popup + options load as <script type="module">; background is a module worker.
 await esbuild.build({
-  entryPoints: ["src/popup.ts", "src/options.ts"],
+  entryPoints: ["src/popup.ts", "src/options.ts", "src/background.ts"],
   bundle: true,
   format: "esm",
+  platform: "browser",
+  target: "es2022",
+  outdir: "dist",
+  sourcemap: true,
+});
+
+// Content scripts must be classic scripts, not ES modules.
+await esbuild.build({
+  entryPoints: ["src/content-marker.ts"],
+  bundle: true,
+  format: "iife",
   platform: "browser",
   target: "es2022",
   outdir: "dist",
