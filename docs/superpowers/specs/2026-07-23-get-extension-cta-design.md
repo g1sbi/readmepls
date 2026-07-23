@@ -100,8 +100,8 @@ Reactive detection state.
 
 ## Extension
 
-Version bumps `0.1.0` → `0.2.0` (new feature). Keep `manifest.json` and
-`package.json` versions in sync.
+Manifest `version` bumps `0.1.0` → `0.2.0` (new feature). `package.json` is
+currently `0.0.0` (never kept in sync) — set it to `0.2.0` to match the manifest.
 
 ### `src/content-marker.ts` (new)
 
