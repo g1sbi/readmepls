@@ -39,7 +39,7 @@ async function save() {
     await chrome.storage.local.set({ token: "" });
     status.textContent = "saved ✓";
   } catch {
-    status.textContent = "can't reach that instance — check the url";
+    status.textContent = "can't reach that instance — check the url or its EXTENSION_ORIGINS allow-list";
   }
 }
 

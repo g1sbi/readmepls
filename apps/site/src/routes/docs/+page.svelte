@@ -72,7 +72,7 @@
   </section>
 
   <section>
-    <h2>browser extension</h2>
+    <h2>8. browser extension</h2>
     <p>
       Save the page you're on to your library in one click with the readmepls
       extension — <a href={EXTENSION_URL}>get it on the Chrome Web Store</a>.
