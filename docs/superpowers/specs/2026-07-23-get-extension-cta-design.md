@@ -87,8 +87,6 @@ Reactive detection state.
 - Paper voice content:
   - heading (e.g. "save in one click")
   - one line: "save any page to your library in one click — no need to open the app"
-  - 2–3 tiny bullets (e.g. "works on any page", "one click, no copy-paste",
-    "your library, instantly")
   - primary CTA button linking to the store URL, `target="_blank"
     rel="noopener"`
   - "maybe later" closes the dialog
