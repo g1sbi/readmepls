@@ -1,20 +1,32 @@
 import { describe, it, expect, beforeEach } from "vitest";
-import { tick } from "svelte";
 import { render, screen, fireEvent } from "@testing-library/svelte";
+import { page } from "$app/stores";
 import GetExtensionButton from "./GetExtensionButton.svelte";
 import {
   initExtensionDetection,
   resetExtensionDetection,
 } from "$lib/stores/extension.svelte.js";
-import { EXTENSION_READY_EVENT } from "$lib/extension/detect.js";
+
+const basePageValue = {
+  params: {} as Record<string, string>,
+  url: new URL("http://localhost/"),
+  route: { id: null as string | null },
+  status: 200,
+  error: null,
+  data: {} as Record<string, unknown>,
+  form: null,
+  state: {} as Record<string, unknown>,
+};
 
 beforeEach(() => {
   resetExtensionDetection();
   delete document.documentElement.dataset.readmeplsExtension;
+  page.set({ ...basePageValue, data: { selfHosted: false } });
 });
 
 describe("GetExtensionButton", () => {
-  it("renders when the extension is not installed", () => {
+  it("renders on SaaS when the extension is not installed", () => {
+    initExtensionDetection();
     render(GetExtensionButton);
     expect(
       screen.getByRole("button", { name: /get the extension/i }),
@@ -22,6 +34,7 @@ describe("GetExtensionButton", () => {
   });
 
   it("opens the pitch dialog when clicked", async () => {
+    initExtensionDetection();
     render(GetExtensionButton);
     await fireEvent.click(
       screen.getByRole("button", { name: /get the extension/i }),
@@ -31,16 +44,19 @@ describe("GetExtensionButton", () => {
     ).toBeInTheDocument();
   });
 
-  it("hides the button once the extension is detected", async () => {
+  it("hides the button once the extension is detected", () => {
+    document.documentElement.dataset.readmeplsExtension = "0.2.1";
     initExtensionDetection();
     render(GetExtensionButton);
     expect(
-      screen.getByRole("button", { name: /get the extension/i }),
-    ).toBeInTheDocument();
+      screen.queryByRole("button", { name: /get the extension/i }),
+    ).not.toBeInTheDocument();
+  });
 
-    window.dispatchEvent(new CustomEvent(EXTENSION_READY_EVENT));
-    await tick();
-
+  it("never renders on a self-hosted instance, even when not installed", () => {
+    page.set({ ...basePageValue, data: { selfHosted: true } });
+    initExtensionDetection();
+    render(GetExtensionButton);
     expect(
       screen.queryByRole("button", { name: /get the extension/i }),
     ).not.toBeInTheDocument();

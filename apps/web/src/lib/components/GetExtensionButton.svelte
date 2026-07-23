@@ -1,14 +1,17 @@
 <!-- Desktop-only "get the extension!" pill. Lives in TopBar's `.right` cluster
-     (hidden ≤640px), and only while the extension isn't detected. -->
+     (hidden ≤640px). SaaS-only: never shown on self-hosted instances (they get
+     the extension via the docs); on SaaS it shows only while the extension
+     isn't detected. -->
 <script lang="ts">
   import { Puzzle } from "@lucide/svelte";
+  import { page } from "$app/stores";
   import { extensionStore } from "$lib/stores/extension.svelte.js";
   import GetExtensionDialog from "./GetExtensionDialog.svelte";
 
   let open = $state(false);
 </script>
 
-{#if !extensionStore.installed}
+{#if !$page.data.selfHosted && !extensionStore.installed}
   <button type="button" class="get-ext" onclick={() => (open = true)}>
     <Puzzle class="icon-sm" aria-hidden="true" />
     <span>get the extension!</span>
