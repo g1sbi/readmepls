@@ -2,14 +2,10 @@ name: docker-publish
 
 on:
   push:
-    branches: [main]
+    # Build on release-please's version tag, not on every main push — a merge to
+    # main only opens/updates the release PR; the actual release (tag) is what we
+    # ship. This avoids building main twice (once on merge, once on the release).
     tags: ["v*"]
-    paths-ignore:
-      - "docs/**"
-      - "**/*.md"
-      - ".claude/**"
-      - "LICENSE"
-      - ".release-please-manifest.json"
   workflow_dispatch:
 
 permissions:
@@ -48,7 +44,7 @@ jobs:
           images: ghcr.io/${{ github.repository_owner }}/readmepls-${{ matrix.name }}
           tags: |
             type=ref,event=tag
-            type=raw,value=latest,enable=${{ github.ref == 'refs/heads/main' || startsWith(github.ref, 'refs/tags/v') }}
+            type=raw,value=latest,enable=${{ startsWith(github.ref, 'refs/tags/v') }}
             type=raw,value=develop,enable=${{ github.ref == 'refs/heads/develop' }}
 
       - uses: docker/build-push-action@v6
@@ -64,7 +60,7 @@ jobs:
 
   deploy:
     needs: build-push
-    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+    if: github.event_name == 'push' && startsWith(github.ref, 'refs/tags/v')
     runs-on: ubuntu-latest
     steps:
       - uses: appleboy/ssh-action@0ff4204d59e8e51228ff73bce53f80d53301dee2 # v1.2.5
