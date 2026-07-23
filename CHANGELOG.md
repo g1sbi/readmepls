@@ -1,5 +1,13 @@
 # Changelog
 
+## [0.4.2](https://github.com/g1sbi/readmepls/compare/v0.4.1...v0.4.2) (2026-07-23)
+
+
+### Features
+
+* add "get the extension!" CTA with install detection ([41e29b6](https://github.com/g1sbi/readmepls/commit/41e29b6b9159f140e89e327977c2077a45fb39de))
+* **web:** restyle get-extension pill and dialog ([1661722](https://github.com/g1sbi/readmepls/commit/1661722af7f43496f8859e75fac4eb163c014ab0))
+
 ## [0.4.1](https://github.com/g1sbi/readmepls/compare/v0.4.0...v0.4.1) (2026-07-20)
 
 
