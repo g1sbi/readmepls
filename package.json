@@ -8,7 +8,8 @@
     "typecheck": "tsc -p tsconfig.json --pretty",
     "lint": "prettier --check . && eslint .",
     "env:check": "node scripts/env-parity-check.mjs",
-    "smoke": "bash scripts/smoke-test.sh"
+    "smoke": "bash scripts/smoke-test.sh",
+    "deploy:staging": "gh workflow run docker-publish.yml --ref develop"
   },
   "devDependencies": {
     "@types/node": "^22.0.0",

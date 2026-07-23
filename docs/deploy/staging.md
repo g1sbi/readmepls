@@ -7,10 +7,12 @@ Design: `docs/superpowers/specs/2026-07-20-gated-staging-environment-design.md`.
 
 ## How it works
 
-- CI (`.github/workflows/docker-publish.yml`) builds `:develop` images on every
-  push to `develop`.
-- Deploy is **manual**: the `deploy-staging` job runs only on `workflow_dispatch`.
-  **Dispatch it from the `develop` branch** so it builds and deploys `:develop`.
+- Build **and** deploy are **manual**: pushing to `develop` triggers nothing.
+  The `workflow_dispatch` run builds `:develop` images and then the
+  `deploy-staging` job pulls and deploys them.
+- **Dispatch it from the `develop` branch** so it builds and deploys `:develop` —
+  run `pnpm deploy:staging` (or `gh workflow run docker-publish.yml --ref develop`,
+  or the **Run workflow** button in the Actions tab).
 - Staging runs the same `compose.yml` under Docker project `readmepls-staging`,
   so its volumes are `readmepls-staging_pb_data` etc. — never prod's
   `readmepls_pb_data`. PocketBase starts empty; migrations run on first boot.

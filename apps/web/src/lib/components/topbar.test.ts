@@ -48,4 +48,11 @@ describe("TopBar", () => {
     await fireEvent.click(screen.getByRole("button", { name: /search/i }));
     expect(spy).toHaveBeenCalled();
   });
+
+  it("shows a get-the-extension button in the desktop cluster", () => {
+    render(TopBar, { theme: "light", onTheme: () => {}, onSignOut: () => {} });
+    expect(
+      screen.getByRole("button", { name: /get the extension/i }),
+    ).toBeInTheDocument();
+  });
 });

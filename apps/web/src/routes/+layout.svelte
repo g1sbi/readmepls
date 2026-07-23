@@ -14,6 +14,7 @@
   import BottomNav from "$lib/components/BottomNav.svelte";
   import SearchPalette from "$lib/components/SearchPalette.svelte";
   import { handleSearchKeydown } from "$lib/search/handle-keydown.js";
+  import { initExtensionDetection } from "$lib/stores/extension.svelte.js";
 
   let { children } = $props();
   const pb = browserPb();
@@ -63,6 +64,7 @@
     const prefTheme = pb.authStore.model?.reader_prefs?.theme ?? null;
     theme = resolveTheme(readStoredTheme(), prefTheme);
     applyTheme(theme);
+    initExtensionDetection();
   });
 
   function setTheme(t: Theme) {

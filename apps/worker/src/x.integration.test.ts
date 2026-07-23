@@ -8,6 +8,8 @@ import { ExtractorRegistry } from "./extract/registry.js";
 import { ArticleExtractor } from "./extract/article-extractor.js";
 import { XExtractor } from "./extract/x-extractor.js";
 import type { ExtractIO } from "./extract/extractor.js";
+import type { ResolveIO } from "./resolve/resolver.js";
+import { ResolverRegistry } from "./resolve/registry.js";
 import { MockAIProvider } from "./ai/mock-provider.js";
 import { FakeEmbedder } from "./embed/fake-embedder.js";
 
@@ -34,15 +36,17 @@ describe("processJob routes X urls to the X extractor", () => {
       attempts: 0,
     });
 
-    const io: ExtractIO = {
+    const io: ExtractIO & ResolveIO = {
       fetchHtml: async () => { throw new Error("unused"); },
       fetchJson: async () => tweet,
+      fetchRedirectTarget: async () => null,
       runYtDlp: async () => { throw new Error("unused"); },
     };
 
     await processJob(h.pb, job.id, {
       io,
       registry: new ExtractorRegistry([new ArticleExtractor(), new XExtractor()]),
+      resolvers: new ResolverRegistry([]),
       ai: new MockAIProvider({ tags: ["x"], summary: "tweet." }),
       classify: classifySource,
       fetchBytes: async () => null,

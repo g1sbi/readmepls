@@ -11,10 +11,19 @@ import { ClaudeProvider } from "./ai/claude-provider.js";
 import { selectAiProvider } from "./ai/select-provider.js";
 import { LocalEmbedder } from "./embed/local-embedder.js";
 import { selectEmbedder } from "./embed/select-embedder.js";
-import { createSafeFetchHtml, createSafeFetchBytes } from "./fetch/safe-fetch.js";
+import {
+  createSafeFetchHtml,
+  createSafeFetchBytes,
+  defaultSafeFetchRedirectTarget,
+} from "./fetch/safe-fetch.js";
 import { runLoopOnce } from "./run-loop.js";
 import { ExtractorRegistry } from "./extract/registry.js";
 import type { ExtractIO } from "./extract/extractor.js";
+import { ResolverRegistry } from "./resolve/registry.js";
+import { DailyDevResolver } from "./resolve/daily-dev-resolver.js";
+import { HackerNewsResolver } from "./resolve/hacker-news-resolver.js";
+import { LobstersResolver } from "./resolve/lobsters-resolver.js";
+import type { ResolveIO } from "./resolve/resolver.js";
 import type { ProcessDeps } from "./worker.js";
 import { backfillSources } from "./source/backfill-sources.js";
 import { backfillEmbeddings } from "./embed/backfill-embeddings.js";
@@ -38,22 +47,29 @@ async function main(): Promise<void> {
   pb.autoCancellation(false);
   await pb
     .collection("_superusers")
-    .authWithPassword(requireEnv("PB_WORKER_EMAIL"), requireEnv("PB_WORKER_PASSWORD"));
+    .authWithPassword(
+      requireEnv("PB_WORKER_EMAIL"),
+      requireEnv("PB_WORKER_PASSWORD"),
+    );
 
   const fetchHtml = createSafeFetchHtml({
-    lookup: async (host) => (await dnsLookup(host, { all: true })).map((a) => a.address),
+    lookup: async (host) =>
+      (await dnsLookup(host, { all: true })).map((a) => a.address),
     fetchFn: (url) => fetch(url, { redirect: "manual" }),
   });
 
   // The Anthropic client is built lazily inside the factory so mock mode
   // (smoke test) needs no ANTHROPIC_API_KEY.
   const ai = selectAiProvider(process.env, () => {
-    const anthropic = new Anthropic({ apiKey: requireEnv("ANTHROPIC_API_KEY") });
+    const anthropic = new Anthropic({
+      apiKey: requireEnv("ANTHROPIC_API_KEY"),
+    });
     return new ClaudeProvider(anthropic, model);
   });
 
   const fetchBytes = createSafeFetchBytes({
-    lookup: async (host) => (await dnsLookup(host, { all: true })).map((a) => a.address),
+    lookup: async (host) =>
+      (await dnsLookup(host, { all: true })).map((a) => a.address),
     fetchFn: (url) => fetch(url, { redirect: "manual" }),
   });
 
@@ -62,15 +78,20 @@ async function main(): Promise<void> {
 
   // Lazy, same as the AI provider: EMBED_PROVIDER=fake (used by the offline
   // smoke path) skips loading the local ONNX model entirely.
-  const embedder = selectEmbedder(process.env, () => new LocalEmbedder(process.env.TRANSFORMERS_CACHE));
-  const maybeWarmup = (embedder as unknown as { warmup?: () => Promise<void> }).warmup;
+  const embedder = selectEmbedder(
+    process.env,
+    () => new LocalEmbedder(process.env.TRANSFORMERS_CACHE),
+  );
+  const maybeWarmup = (embedder as unknown as { warmup?: () => Promise<void> })
+    .warmup;
   if (typeof maybeWarmup === "function") {
     await maybeWarmup.call(embedder);
   }
 
-  const io: ExtractIO = {
+  const io: ExtractIO & ResolveIO = {
     fetchHtml,
     fetchJson,
+    fetchRedirectTarget: defaultSafeFetchRedirectTarget(),
     runYtDlp: defaultRunYtDlp(fetchHtml),
   };
 
@@ -80,9 +101,16 @@ async function main(): Promise<void> {
     new YoutubeExtractor(),
   ]);
 
+  const resolvers = new ResolverRegistry([
+    new DailyDevResolver(),
+    new HackerNewsResolver(),
+    new LobstersResolver(),
+  ]);
+
   const deps: ProcessDeps = {
     io,
     registry,
+    resolvers,
     ai,
     classify: classifySource,
     fetchBytes,
@@ -91,12 +119,16 @@ async function main(): Promise<void> {
 
   if (process.env.BACKFILL_SOURCES === "1") {
     const { linked } = await backfillSources(pb, { fetchHtml, fetchBytes });
-    console.log(`[worker ${workerId}] backfilled ${linked} content rows with sources`);
+    console.log(
+      `[worker ${workerId}] backfilled ${linked} content rows with sources`,
+    );
   }
 
   if (process.env.BACKFILL_EMBEDDINGS === "1") {
     const { indexed } = await backfillEmbeddings(pb, embedder);
-    console.log(`[worker ${workerId}] backfilled embeddings for ${indexed} content rows`);
+    console.log(
+      `[worker ${workerId}] backfilled embeddings for ${indexed} content rows`,
+    );
   }
 
   const searchSecret = process.env.WORKER_SEARCH_SECRET ?? "";
@@ -108,9 +140,14 @@ async function main(): Promise<void> {
   if (searchSecret) {
     const server = createSearchServer({ pb, embedder, secret: searchSecret });
     server.listen(searchPort, searchHost, () =>
-      console.log(`[worker ${workerId}] /search on ${searchHost}:${searchPort}`));
+      console.log(
+        `[worker ${workerId}] /search on ${searchHost}:${searchPort}`,
+      ),
+    );
   } else {
-    console.warn(`[worker ${workerId}] WORKER_SEARCH_SECRET unset — semantic /search disabled`);
+    console.warn(
+      `[worker ${workerId}] WORKER_SEARCH_SECRET unset — semantic /search disabled`,
+    );
   }
 
   console.log(`[worker ${workerId}] polling ${pbUrl} every ${pollMs}ms`);

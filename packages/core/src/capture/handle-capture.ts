@@ -9,15 +9,28 @@ export interface CaptureOutcome {
 }
 
 /**
- * True when a PocketBase create error is a unique-index violation — the SDK
- * surfaces field errors on `.data` (or `.response.data`) keyed by field name.
+ * True when a PocketBase create/update error is a unique-index violation.
+ * The real pocketbase JS SDK's `ClientResponseError.data` getter returns the
+ * raw `{code, message, data}` response body, so field errors are nested one
+ * level deeper (`err.data.data.<field>.code`) than `err.data.<field>.code`.
+ * Support both: some callers (and this file's own unit tests) pass the
+ * field-error map directly on `.data`/`.response.data`.
  */
-function isUniqueViolation(err: unknown): boolean {
+export function isUniqueViolation(err: unknown): boolean {
   const e = err as {
-    data?: Record<string, { code?: string }>;
-    response?: { data?: Record<string, { code?: string }> };
+    data?:
+      | { data?: Record<string, { code?: string }> }
+      | Record<string, { code?: string }>;
+    response?: {
+      data?:
+        | { data?: Record<string, { code?: string }> }
+        | Record<string, { code?: string }>;
+    };
   };
-  const fields = e?.data ?? e?.response?.data;
+  const body = e?.data ?? e?.response?.data;
+  const fields =
+    (body as { data?: Record<string, { code?: string }> } | undefined)?.data ??
+    (body as Record<string, { code?: string }> | undefined);
   return (
     !!fields &&
     Object.values(fields).some((f) => f?.code === "validation_not_unique")
@@ -27,7 +40,7 @@ function isUniqueViolation(err: unknown): boolean {
 export async function handleCapture(
   pb: PocketBase,
   userId: string,
-  rawUrl: string
+  rawUrl: string,
 ): Promise<CaptureOutcome> {
   let canonical: string;
   try {
@@ -59,7 +72,7 @@ export async function handleCapture(
   const user = await pb.collection("users").getOne(userId);
   const quota = checkQuota(
     { tier: user.tier ?? "standard", used: user.monthly_quota_used ?? 0 },
-    Boolean(user.ai_key_enc)
+    Boolean(user.ai_key_enc),
   );
   if (!quota.ok) return { status: 402, body: { error: "quota exceeded" } };
 

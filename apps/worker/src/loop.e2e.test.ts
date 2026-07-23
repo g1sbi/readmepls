@@ -9,6 +9,8 @@ import { ArticleExtractor } from "./extract/article-extractor.js";
 import { MockAIProvider } from "./ai/mock-provider.js";
 import { ExtractorRegistry } from "./extract/registry.js";
 import type { ExtractIO } from "./extract/extractor.js";
+import type { ResolveIO } from "./resolve/resolver.js";
+import { ResolverRegistry } from "./resolve/registry.js";
 import { FakeEmbedder } from "./embed/fake-embedder.js";
 
 const html = readFileSync(
@@ -25,9 +27,10 @@ beforeAll(async () => {
 afterAll(() => h?.stop());
 
 const registry = new ExtractorRegistry([new ArticleExtractor()]);
-const io: ExtractIO = {
+const io: ExtractIO & ResolveIO = {
   fetchHtml: async () => html,
   fetchJson: async () => { throw new Error("fetchJson not used in this test"); },
+  fetchRedirectTarget: async () => null,
   runYtDlp: async () => { throw new Error("runYtDlp not used in this test"); },
 };
 
@@ -42,6 +45,7 @@ describe("phase-1 end-to-end loop", () => {
     await processJob(h.pb, job!.id, {
       io,
       registry,
+      resolvers: new ResolverRegistry([]),
       ai: new MockAIProvider({ tags: ["hello"], summary: "A test." }),
       classify: classifySource,
       fetchBytes: async () => null,

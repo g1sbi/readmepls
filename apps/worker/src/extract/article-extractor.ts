@@ -8,8 +8,10 @@ import { isThinExtraction, recoverFromArchive } from "./archive-fallback.js";
 // Limitation: purely client-rendered SPA blogs (content injected by JS, no SSR)
 // won't extract — safe-fetch pulls static HTML, there's no headless browser.
 // Rare for blogs (Substack/Medium SSR their content), so headless rendering is
-// deliberately out of scope. Paywalled/preview-only posts read as thin and fall
-// through to the archive fallback (see phase-5 extractors design §4.4).
+// deliberately out of scope. Aggregator wrappers that are client-rendered
+// (daily.dev) are handled upstream instead — see resolve/, which maps them to
+// the article's real URL before extraction reaches here. daily.dev's own native
+// posts have no external target and still read as thin.
 export class ArticleExtractor implements Extractor {
   readonly source: SourceType = "article";
 
