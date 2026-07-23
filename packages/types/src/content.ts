@@ -1,6 +1,7 @@
 import { z } from "zod";
 import { SourceType } from "./source.js";
 import { ExtractStatus } from "./extract.js";
+import { TocEntry } from "./toc.js";
 
 export const Content = z.object({
   id: z.string(),
@@ -14,6 +15,7 @@ export const Content = z.object({
   excerpt: z.string(),
   content_html: z.string(),
   content_text: z.string(),
+  toc: z.array(TocEntry).default([]),
   word_count: z.number().int().nonnegative(),
   read_time: z.number().int().nonnegative(),
   hero_image: z.string().nullable(),
