@@ -17,22 +17,27 @@
 {/if}
 
 <style>
+  /* App primary-button treatment: solid terracotta, compact for the top bar. */
   .get-ext {
     display: inline-flex;
     align-items: center;
     gap: var(--space-1);
-    min-height: 44px;
-    padding: 0.25rem 0.7rem;
-    border: 1px solid var(--color-border);
+    padding: 0.35rem 0.7rem;
+    border: none;
     border-radius: var(--radius-pill);
-    background: var(--color-accent-wash);
-    color: var(--color-text);
+    background: var(--color-accent);
+    color: var(--color-text-on-accent);
     font-family: var(--font-ui);
-    font-size: 0.8rem;
+    font-size: var(--text-sm);
+    font-weight: var(--weight-medium);
     cursor: pointer;
+    transition: background-color var(--dur-fast) var(--ease-out);
   }
   .get-ext:hover {
-    border-color: var(--color-ring);
+    background: var(--color-accent-hover);
+  }
+  .get-ext:active {
+    transform: translateY(1px);
   }
   .get-ext:focus-visible {
     outline: 2px solid var(--color-ring);
