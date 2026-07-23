@@ -1,4 +1,5 @@
 import type PocketBase from "pocketbase";
+import { ClientResponseError } from "pocketbase";
 import { Job } from "@readmepls/types";
 
 const STALE_MS = 5 * 60 * 1000;
@@ -17,8 +18,9 @@ export async function claimNextJob(
     candidate = await pb
       .collection("jobs")
       .getFirstListItem(filter, { sort: "created" });
-  } catch {
-    return null; // none found
+  } catch (err) {
+    if (isBenign(err)) return null; // none found
+    throw err; // auth/network/server errors must surface, not look like an empty queue
   }
 
   try {
@@ -31,7 +33,18 @@ export async function claimNextJob(
     });
     if (updated.locked_by !== workerId) return null;
     return Job.parse(updated);
-  } catch {
-    return null;
+  } catch (err) {
+    if (isBenign(err)) return null; // another worker claimed/removed it first
+    throw err;
   }
+}
+
+// 404 (record gone/not found) and an SDK auto-cancellation (a concurrent
+// duplicate request to the same URL from the same client superseded this
+// one — see claim.test.ts's contention test) both mean "someone else got
+// there first," not a real failure. Anything else — auth, network, server
+// errors — must propagate so it doesn't masquerade as an empty queue.
+function isBenign(err: unknown): boolean {
+  if (!(err instanceof ClientResponseError)) return false;
+  return err.status === 404 || err.isAbort;
 }

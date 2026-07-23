@@ -1,4 +1,5 @@
 import { describe, it, expect, beforeAll, afterAll } from "vitest";
+import PocketBase from "pocketbase";
 import { startEphemeralPb, type PbHandle } from "@readmepls/core/src/pb/test-harness.js";
 import { claimNextJob } from "./claim.js";
 
@@ -33,5 +34,13 @@ describe("claimNextJob", () => {
   it("returns null when no queued jobs remain", async () => {
     const job = await claimNextJob(h.pb, "worker-A");
     expect(job).toBeNull();
+  });
+
+  it("throws instead of treating an auth failure as an empty queue", async () => {
+    await seedJob("https://example.com/auth-failure");
+    // jobs has listRule: null (superuser-only) — an unauthenticated client
+    // mirrors what happens once the worker's superuser token expires.
+    const unauthed = new PocketBase(h.url);
+    await expect(claimNextJob(unauthed, "worker-A")).rejects.toThrow();
   });
 });
