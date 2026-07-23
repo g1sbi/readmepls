@@ -72,6 +72,19 @@ yt-dlp. Cookies expire; refresh them if extraction starts failing again.
 **Maintainers:** deploying the gated staging environment (`develop`-branch
 images, same VPS as prod)? See [`docs/deploy/staging.md`](docs/deploy/staging.md).
 
+## Browser extension
+
+The [readmepls extension](https://chromewebstore.google.com/detail/cjnlkadkjleamnkjehbnblnblcappaje)
+saves the page you're on to your library in one click. Point it at your
+instance from its options screen.
+
+Self-hosting? Add the extension's origin to `EXTENSION_ORIGINS` in your `.env`
+(comma-separated) so capture requests are allowed through CORS, then restart:
+
+```
+EXTENSION_ORIGINS=chrome-extension://cjnlkadkjleamnkjehbnblnblcappaje
+```
+
 ## License
 
 [GNU AGPL-3.0-or-later](LICENSE). You may use, modify, and self-host freely; if you

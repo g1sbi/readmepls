@@ -9,6 +9,12 @@ export const APP_URL = env.PUBLIC_APP_URL || "http://localhost:3000";
 
 export const GITHUB_URL = "https://github.com/g1sbi/readmepls";
 
+// The published Chrome Web Store listing. `site` and `web` are separate apps
+// with no shared constants package, so this URL is intentionally duplicated
+// from the web app's GetExtensionDialog.
+export const EXTENSION_URL =
+  "https://chromewebstore.google.com/detail/cjnlkadkjleamnkjehbnblnblcappaje";
+
 // Hero line 2. The reel (Hero.svelte) renders line 1: "save any <reel>".
 export const TAGLINE = "actually read it. pls.";
 

@@ -1,7 +1,7 @@
 <script lang="ts">
   import type { PageData } from "./$types";
   import CodeBlock from "$lib/components/CodeBlock.svelte";
-  import { GITHUB_URL } from "$lib/site";
+  import { GITHUB_URL, EXTENSION_URL } from "$lib/site";
 
   let { data }: { data: PageData } = $props();
 </script>
@@ -69,6 +69,23 @@
       (auto-tagging and friends) switch on for everyone using your instance.
       One switch, not a choice between plans.
     </p>
+  </section>
+
+  <section>
+    <h2>browser extension</h2>
+    <p>
+      Save the page you're on to your library in one click with the readmepls
+      extension — <a href={EXTENSION_URL}>get it on the Chrome Web Store</a>.
+      Point it at your instance from its options screen.
+    </p>
+    <p>
+      For it to reach a self-hosted instance, add its origin to
+      <code>EXTENSION_ORIGINS</code> in your <code>.env</code> (comma-separated),
+      then restart:
+    </p>
+    <CodeBlock
+      code={"EXTENSION_ORIGINS=chrome-extension://cjnlkadkjleamnkjehbnblnblcappaje"}
+    />
   </section>
 
   <p class="more">

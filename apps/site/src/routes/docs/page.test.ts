@@ -26,3 +26,14 @@ test("renders the AI on/off explainer, not a tiers/plans pitch", () => {
     screen.getByText(/no tiers, no plans, no subscriptions/i),
   ).toBeTruthy();
 });
+
+test("surfaces the browser extension with a store link", () => {
+  render(Page, { props: { data } });
+  expect(
+    screen.getByRole("heading", { name: /browser extension/i }),
+  ).toBeTruthy();
+  const link = screen.getByRole("link", { name: /chrome web store/i });
+  expect(link.getAttribute("href")).toBe(
+    "https://chromewebstore.google.com/detail/cjnlkadkjleamnkjehbnblnblcappaje",
+  );
+});
