@@ -4,9 +4,9 @@ import { cp, mkdir, rm } from "node:fs/promises";
 await rm("dist", { recursive: true, force: true });
 await mkdir("dist", { recursive: true });
 
-// popup + options load as <script type="module">; background is a module worker.
+// popup + options load as <script type="module">.
 await esbuild.build({
-  entryPoints: ["src/popup.ts", "src/options.ts", "src/background.ts"],
+  entryPoints: ["src/popup.ts", "src/options.ts"],
   bundle: true,
   format: "esm",
   platform: "browser",

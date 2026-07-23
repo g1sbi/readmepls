@@ -1,19 +1,14 @@
 {
   "manifest_version": 3,
   "name": "readmepls — save to library",
-  "version": "0.2.0",
+  "version": "0.2.1",
   "description": "Save the page you're on to your readmepls library in one click.",
   "action": {
     "default_popup": "popup.html",
     "default_title": "save to readmepls"
   },
   "options_page": "options.html",
-  "background": {
-    "service_worker": "background.js",
-    "type": "module"
-  },
-  "permissions": ["activeTab", "storage", "scripting"],
-  "optional_host_permissions": ["*://*/*"],
+  "permissions": ["activeTab", "storage"],
   "content_scripts": [
     {
       "matches": ["https://app.readmepls.com/*"],
