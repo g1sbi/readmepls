@@ -1,6 +1,7 @@
 <script lang="ts">
   import { THEMES, type Theme } from "$lib/theme/theme.js";
   import Sheet from "$lib/components/ui/Sheet.svelte";
+  import GetExtensionButton from "./GetExtensionButton.svelte";
   import { searchPalette } from "$lib/stores/search-palette.svelte.js";
   import { Search, Library, Sun, Moon, Coffee, LogOut, Menu } from "@lucide/svelte";
 
@@ -39,6 +40,7 @@
     <kbd class="search-kbd">⌘K</kbd>
   </button>
   <div class="right">
+    <GetExtensionButton />
     {@render themeControls()}
     {@render signOutButton()}
   </div>

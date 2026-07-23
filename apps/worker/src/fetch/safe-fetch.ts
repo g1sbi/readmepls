@@ -23,7 +23,7 @@ export interface SafeFetchDeps {
  * manually so a 302 to an internal address cannot bypass the check.
  */
 export function createSafeFetchHtml(
-  deps: SafeFetchDeps
+  deps: SafeFetchDeps,
 ): (url: string) => Promise<string> {
   const maxRedirects = deps.maxRedirects ?? 5;
 
@@ -50,7 +50,7 @@ export function createSafeFetchHtml(
  * adapter that supplies the real network seams.
  */
 export function defaultSafeFetchHtml(
-  opts: { maxRedirects?: number } = {}
+  opts: { maxRedirects?: number } = {},
 ): (url: string) => Promise<string> {
   return createSafeFetchHtml({
     lookup: async (host) => {
@@ -80,7 +80,7 @@ export interface SafeFetchBytesDeps {
  * favicon probing can fall through to the next candidate without throwing.
  */
 export function createSafeFetchBytes(
-  deps: SafeFetchBytesDeps
+  deps: SafeFetchBytesDeps,
 ): (url: string) => Promise<{ bytes: Uint8Array; contentType: string } | null> {
   const maxRedirects = deps.maxRedirects ?? 5;
   return async function fetchBytes(url) {
@@ -105,9 +105,64 @@ export function createSafeFetchBytes(
   };
 }
 
+export interface SafeFetchRedirectDeps {
+  lookup: (host: string) => Promise<string[]>;
+  /** One HTTP request WITHOUT following redirects (redirect: 'manual'). */
+  fetchFn: (url: string) => Promise<ResponseLike>;
+}
+
+/**
+ * Reads a single redirect's Location without following it — the seam link
+ * resolvers need to turn an aggregator's short link into its target.
+ *
+ * The request URL is validated exactly like the other fetchers (throws if
+ * private). The *target* is attacker-influenced, so a private target returns
+ * null rather than throwing: an aggregator pointing at an internal address is
+ * a resolution miss, not a caller bug.
+ */
+export function createSafeFetchRedirectTarget(
+  deps: SafeFetchRedirectDeps,
+): (url: string) => Promise<string | null> {
+  return async function fetchRedirectTarget(
+    url: string,
+  ): Promise<string | null> {
+    await assertSafe(url, deps.lookup);
+    const r = await deps.fetchFn(url);
+    if (r.status < 300 || r.status >= 400) return null;
+    const location = r.headers.get("location");
+    if (!location) return null;
+
+    let target: string;
+    try {
+      target = new URL(location, url).toString();
+    } catch {
+      return null;
+    }
+    try {
+      await assertSafe(target, deps.lookup);
+    } catch {
+      return null;
+    }
+    return target;
+  };
+}
+
+/** Production wiring: node DNS + global fetch with manual redirects. */
+export function defaultSafeFetchRedirectTarget(): (
+  url: string,
+) => Promise<string | null> {
+  return createSafeFetchRedirectTarget({
+    lookup: async (host) => {
+      const records = await dnsLookup(host, { all: true });
+      return records.map((r) => r.address);
+    },
+    fetchFn: (url) => fetch(url, { redirect: "manual" }),
+  });
+}
+
 async function assertSafe(
   url: string,
-  lookup: SafeFetchDeps["lookup"]
+  lookup: SafeFetchDeps["lookup"],
 ): Promise<void> {
   const u = new URL(url);
   if (u.protocol !== "http:" && u.protocol !== "https:") {

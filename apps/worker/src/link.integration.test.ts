@@ -8,6 +8,8 @@ import { ArticleExtractor } from "./extract/article-extractor.js";
 import { MockAIProvider } from "./ai/mock-provider.js";
 import { ExtractorRegistry } from "./extract/registry.js";
 import type { ExtractIO } from "./extract/extractor.js";
+import type { ResolveIO } from "./resolve/resolver.js";
+import { ResolverRegistry } from "./resolve/registry.js";
 import { FakeEmbedder } from "./embed/fake-embedder.js";
 
 const html = readFileSync(
@@ -22,10 +24,11 @@ beforeAll(async () => {
 afterAll(() => h?.stop());
 
 const registry = new ExtractorRegistry([new ArticleExtractor()]);
-function ioWith(htmlBody: string): ExtractIO {
+function ioWith(htmlBody: string): ExtractIO & ResolveIO {
   return {
     fetchHtml: async () => htmlBody,
     fetchJson: async () => { throw new Error("fetchJson not used in this test"); },
+    fetchRedirectTarget: async () => null,
     runYtDlp: async () => { throw new Error("runYtDlp not used in this test"); },
   };
 }
@@ -50,6 +53,7 @@ describe("processJob article linking", () => {
     await processJob(h.pb, job.id, {
       io: ioWith(html),
       registry,
+      resolvers: new ResolverRegistry([]),
       ai: new MockAIProvider({ tags: ["t"], summary: "s" }),
       classify: classifySource,
       fetchBytes: async () => null,
