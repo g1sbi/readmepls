@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.4.3](https://github.com/g1sbi/readmepls/compare/v0.4.2...v0.4.3) (2026-07-23)
+
+
+### Bug Fixes
+
+* **worker:** refresh PocketBase auth token and stop masking claim errors ([84838e7](https://github.com/g1sbi/readmepls/commit/84838e77b7cec53890d44f0dca4889b71fb6cbab))
+
 ## [0.4.2](https://github.com/g1sbi/readmepls/compare/v0.4.1...v0.4.2) (2026-07-23)
 
 
