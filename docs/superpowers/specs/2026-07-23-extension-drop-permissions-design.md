@@ -66,9 +66,12 @@ Neither Privacy-practices justification is required anymore.
   `readmepls:extension-ready` custom event and the version detail — nothing
   consumes them. `stampMarker` becomes a one-line attribute set; keep it a pure
   function taking `Document` so `marker.test.ts` stays a unit test.
-- `src/options.ts`: already trimmed (host-permission `permissions.request` and
-  `syncMarkerRegistration` removed). Confirm no dangling imports of
-  `marker-registration` remain. Self-host capture/auth continue over CORS.
+- `src/options.ts`: trim — remove the `syncMarkerRegistration` import, the
+  `chrome.permissions.request(...)` block, and the `syncMarkerRegistration(...)`
+  call, keeping the `/api/config` fetch → `setConfig` → token-clear flow.
+  Self-host capture/auth continue over CORS.
+- `build.mjs`: remove `src/background.ts` from the esbuild `entryPoints`
+  (deleting the file without this breaks the build).
 - `src/popup.ts`, `src/config.ts`, `src/auth.ts`, `src/capture-client.ts`,
   `src/can-capture.ts`: unchanged.
 
@@ -86,9 +89,12 @@ Neither Privacy-practices justification is required anymore.
 ### 3. Docs
 
 - `apps/site/src/lib/site.ts`: add an `EXTENSION_URL` constant for the Chrome Web
-  Store listing. Until the listing is live, point it at the GitHub repo
-  (`GITHUB_URL`) as a placeholder, with a comment to swap it for the store URL on
-  publish.
+  Store listing. The listing already exists — reuse the store URL hardcoded in
+  the web app's `GetExtensionDialog.svelte`
+  (`https://chromewebstore.google.com/detail/cjnlkadkjleamnkjehbnblnblcappaje`).
+  (`site` and `web` are separate apps with no shared constants package, so this
+  URL is duplicated across the app boundary, matching how other links like
+  `GITHUB_URL` are handled.)
 - `apps/site/src/routes/docs/+page.svelte`: add a "browser extension" `<section>`
   — one line on what it does, a link using `EXTENSION_URL`, and a note that
   self-hosters must add their extension origin to `EXTENSION_ORIGINS` in `.env`
@@ -123,8 +129,8 @@ Write the failing test first for each behavioral change.
   detection at the cost of a hardcoded extension ID and console noise) — rejected
   in favor of the simpler docs approach.
 - Any change to the CORS mechanism or `EXTENSION_ORIGINS` handling itself.
-- Publishing/store-submission steps (the `EXTENSION_URL` swap is a follow-up once
-  the listing is live).
+- Publishing/store-submission steps (the store listing already exists;
+  submitting the repermissioned build is a manual follow-up outside this plan).
 
 ## Verification
 
