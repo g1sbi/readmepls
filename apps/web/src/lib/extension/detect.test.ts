@@ -11,7 +11,7 @@ describe("hasMarker", () => {
   });
 
   it("is true when the extension stamped a version", () => {
-    document.documentElement.dataset.readmeplsExtension = "0.2.0";
+    document.documentElement.dataset.readmeplsExtension = "0.2.1";
     expect(hasMarker(document)).toBe(true);
   });
 

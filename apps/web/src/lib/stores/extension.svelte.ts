@@ -1,7 +1,6 @@
-import { hasMarker, EXTENSION_READY_EVENT } from "$lib/extension/detect.js";
+import { hasMarker } from "$lib/extension/detect.js";
 
 let installed = $state(false);
-let wired = false;
 
 export const extensionStore = {
   get installed() {
@@ -9,14 +8,10 @@ export const extensionStore = {
   },
 };
 
-/** Wire detection once on the client: read the document_start marker, and
- *  listen for the late-injection event (self-host scripts register post-load). */
+/** Wire detection once on the client: the extension's static content script
+ *  stamps its marker at document_start, so it's present by the time this runs. */
 export function initExtensionDetection(): void {
   if (typeof document !== "undefined" && hasMarker(document)) installed = true;
-  if (typeof window !== "undefined" && !wired) {
-    wired = true;
-    window.addEventListener(EXTENSION_READY_EVENT, () => (installed = true));
-  }
 }
 
 /** Test seam: restore the pre-detection state between cases. */

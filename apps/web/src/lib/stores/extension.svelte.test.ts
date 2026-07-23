@@ -4,7 +4,6 @@ import {
   initExtensionDetection,
   resetExtensionDetection,
 } from "./extension.svelte.js";
-import { EXTENSION_READY_EVENT } from "$lib/extension/detect.js";
 
 beforeEach(() => {
   resetExtensionDetection();
@@ -18,15 +17,8 @@ describe("extensionStore", () => {
   });
 
   it("detects a marker already present at init", () => {
-    document.documentElement.dataset.readmeplsExtension = "0.2.0";
+    document.documentElement.dataset.readmeplsExtension = "0.2.1";
     initExtensionDetection();
-    expect(extensionStore.installed).toBe(true);
-  });
-
-  it("flips to installed on the ready event", () => {
-    initExtensionDetection();
-    expect(extensionStore.installed).toBe(false);
-    window.dispatchEvent(new CustomEvent(EXTENSION_READY_EVENT));
     expect(extensionStore.installed).toBe(true);
   });
 });
