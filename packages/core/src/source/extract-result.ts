@@ -10,7 +10,10 @@ export function escapeHtml(s: string): string {
 }
 
 /** A schema-valid failed result for a graceful, non-blocking extraction failure. */
-export function failedResult(source: SourceType, reason: string): ExtractResult {
+export function failedResult(
+  source: SourceType,
+  reason: string,
+): ExtractResult {
   return {
     status: "failed",
     sourceType: source,
@@ -20,6 +23,7 @@ export function failedResult(source: SourceType, reason: string): ExtractResult 
     lang: null,
     contentHtml: "",
     contentText: "",
+    toc: [],
     excerpt: "",
     wordCount: 0,
     readTime: 0,

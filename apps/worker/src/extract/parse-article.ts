@@ -2,6 +2,7 @@ import { JSDOM } from "jsdom";
 import { Readability } from "@mozilla/readability";
 import type { ExtractResult } from "@readmepls/types";
 import { sanitizeContentHtml } from "./sanitize.js";
+import { buildToc } from "./toc.js";
 
 const WORDS_PER_MIN = 220;
 
@@ -12,13 +13,17 @@ export function parseArticleHtml(url: string, html: string): ExtractResult {
   const author =
     doc.querySelector('meta[name="author"]')?.getAttribute("content") ?? null;
   const siteName =
-    doc.querySelector('meta[property="og:site_name"]')?.getAttribute("content") ??
-    null;
+    doc
+      .querySelector('meta[property="og:site_name"]')
+      ?.getAttribute("content") ?? null;
   const lang = doc.documentElement.getAttribute("lang") || null;
   const hero =
-    doc.querySelector('meta[property="og:image"]')?.getAttribute("content") ?? null;
+    doc.querySelector('meta[property="og:image"]')?.getAttribute("content") ??
+    null;
   const publishedAt =
-    doc.querySelector('meta[property="article:published_time"]')?.getAttribute("content") ??
+    doc
+      .querySelector('meta[property="article:published_time"]')
+      ?.getAttribute("content") ??
     doc.querySelector('meta[name="date"]')?.getAttribute("content") ??
     doc.querySelector("time[datetime]")?.getAttribute("datetime") ??
     null;
@@ -35,6 +40,7 @@ export function parseArticleHtml(url: string, html: string): ExtractResult {
       lang,
       contentHtml: "",
       contentText: "",
+      toc: [],
       excerpt: "",
       wordCount: 0,
       readTime: 0,
@@ -46,6 +52,9 @@ export function parseArticleHtml(url: string, html: string): ExtractResult {
 
   const text = parsed.textContent.trim();
   const wordCount = text.split(/\s+/).filter(Boolean).length;
+  const { html: contentHtml, toc } = buildToc(
+    sanitizeContentHtml(parsed.content ?? ""),
+  );
   return {
     status: "ok",
     sourceType: "article",
@@ -53,7 +62,8 @@ export function parseArticleHtml(url: string, html: string): ExtractResult {
     author: parsed.byline || author,
     siteName: parsed.siteName || siteName,
     lang: parsed.lang || lang,
-    contentHtml: sanitizeContentHtml(parsed.content ?? ""),
+    contentHtml,
+    toc,
     contentText: text,
     excerpt: parsed.excerpt || text.slice(0, 280),
     wordCount,

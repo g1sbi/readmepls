@@ -36,8 +36,8 @@ export function parseSyndicationThread(raw: unknown): ExtractResult {
     const q = t.quoted_tweet;
     blocks.push(
       `<blockquote><p>${escapeHtml(q.text)}</p><cite>@${escapeHtml(
-        q.user.screen_name
-      )}</cite></blockquote>`
+        q.user.screen_name,
+      )}</cite></blockquote>`,
     );
     textParts.push(`${q.user.name} (@${q.user.screen_name}): ${q.text}`);
   }
@@ -54,6 +54,7 @@ export function parseSyndicationThread(raw: unknown): ExtractResult {
     siteName: "X",
     lang: null,
     contentHtml: blocks.join("\n"),
+    toc: [],
     contentText,
     excerpt: contentText.slice(0, 280),
     wordCount,
