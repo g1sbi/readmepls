@@ -1,6 +1,6 @@
 import type PocketBase from "pocketbase";
 import { ClientResponseError } from "pocketbase";
-import type { SourceType, ExtractStatus } from "@readmepls/types";
+import type { SourceType, ExtractStatus, TocEntry } from "@readmepls/types";
 
 export interface ContentFields {
   content_hash: string;
@@ -12,6 +12,7 @@ export interface ContentFields {
   excerpt: string;
   content_html: string;
   content_text: string;
+  toc: TocEntry[];
   word_count: number;
   read_time: number;
   hero_image: string | null;
@@ -33,7 +34,7 @@ export interface ContentFields {
 export async function upsertContent(
   pb: PocketBase,
   canonicalUrl: string,
-  fields: ContentFields
+  fields: ContentFields,
 ) {
   const existing = await findByCanonicalUrl(pb, canonicalUrl);
   if (existing) {
@@ -41,7 +42,9 @@ export async function upsertContent(
   }
 
   try {
-    return await pb.collection("content").create({ canonical_url: canonicalUrl, ...fields });
+    return await pb
+      .collection("content")
+      .create({ canonical_url: canonicalUrl, ...fields });
   } catch (err) {
     // Lost a create race on the unique canonical_url index — re-read the winner.
     if (err instanceof ClientResponseError && err.status === 400) {
@@ -56,7 +59,9 @@ async function findByCanonicalUrl(pb: PocketBase, canonicalUrl: string) {
   try {
     return await pb
       .collection("content")
-      .getFirstListItem(pb.filter("canonical_url = {:url}", { url: canonicalUrl }));
+      .getFirstListItem(
+        pb.filter("canonical_url = {:url}", { url: canonicalUrl }),
+      );
   } catch (err) {
     if (err instanceof ClientResponseError && err.status === 404) return null;
     throw err;

@@ -66,6 +66,7 @@ export async function processJob(
       excerpt: ai.summary || result.excerpt,
       content_html: result.contentHtml,
       content_text: result.contentText,
+      toc: result.toc,
       word_count: result.wordCount,
       read_time: result.readTime,
       hero_image: result.heroImage,
