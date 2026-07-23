@@ -30,9 +30,16 @@ export function nestHeadings(items: FlatHeading[]): TocEntry[] {
 }
 
 /** Returns a function that yields collision-free slug ids: "intro", "intro-2",
- *  … An empty base becomes "section". */
-export function makeIdDeduper(): (base: string) => string {
+ *  … An empty base becomes "section". Pass `reserved` (e.g. ids already present
+ *  on other headings) to seed the dedupe table up front, so a later generated
+ *  slug never collides with one of those pre-existing ids. */
+export function makeIdDeduper(
+  reserved?: Iterable<string>,
+): (base: string) => string {
   const seen = new Map<string, number>();
+  if (reserved) {
+    for (const r of reserved) if (r) seen.set(r, (seen.get(r) ?? 0) + 1);
+  }
   return (base: string): string => {
     const key = base || "section";
     const n = (seen.get(key) ?? 0) + 1;

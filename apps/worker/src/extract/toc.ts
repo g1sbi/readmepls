@@ -16,7 +16,10 @@ export function buildToc(html: string): { html: string; toc: TocEntry[] } {
   const headings = [...doc.querySelectorAll("h1,h2,h3,h4,h5,h6")];
   if (headings.length === 0) return { html, toc: [] };
 
-  const dedupe = makeIdDeduper();
+  const existingIds = headings
+    .map((h) => h.getAttribute("id"))
+    .filter((v): v is string => !!v);
+  const dedupe = makeIdDeduper(existingIds);
   const flat: FlatHeading[] = [];
   for (const h of headings) {
     const text = (h.textContent ?? "").trim();

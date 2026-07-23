@@ -28,6 +28,15 @@ describe("buildTocFromDom", () => {
     expect(el.querySelector("h2")!.id).toBe("keep");
   });
 
+  it("does not generate a slug that collides with an existing heading id", () => {
+    const el = root('<h2 id="usage">Intro</h2><h2>Usage</h2>');
+    const tree = buildTocFromDom(el);
+    const [first, second] = [...el.querySelectorAll("h2")];
+    expect(first!.id).toBe("usage");
+    expect(second!.id).toBe("usage-2");
+    expect(tree.map((n) => n.id)).toEqual(["usage", "usage-2"]);
+  });
+
   it("returns [] when there are no headings", () => {
     expect(buildTocFromDom(root("<p>nope</p>"))).toEqual([]);
   });

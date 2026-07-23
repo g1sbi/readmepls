@@ -46,4 +46,9 @@ describe("makeIdDeduper", () => {
     expect(dedupe("")).toBe("section");
     expect(dedupe("")).toBe("section-2");
   });
+
+  it("reserves seeded ids so a later generated slug skips them", () => {
+    const dedupe = makeIdDeduper(["usage"]);
+    expect(dedupe("usage")).toBe("usage-2");
+  });
 });

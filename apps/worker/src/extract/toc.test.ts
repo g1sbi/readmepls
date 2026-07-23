@@ -23,6 +23,13 @@ describe("buildToc", () => {
     expect(toc[0]!.id).toBe("custom");
   });
 
+  it("does not generate a slug that collides with an existing heading id", () => {
+    const { html, toc } = buildToc('<h2 id="usage">Intro</h2><h2>Usage</h2>');
+    expect(toc.map((n) => n.id)).toEqual(["usage", "usage-2"]);
+    expect(html).toContain('<h2 id="usage">Intro</h2>');
+    expect(html).toContain('<h2 id="usage-2">Usage</h2>');
+  });
+
   it("returns html unchanged and empty toc when there are no headings", () => {
     const input = "<p>just a paragraph</p>";
     expect(buildToc(input)).toEqual({ html: input, toc: [] });

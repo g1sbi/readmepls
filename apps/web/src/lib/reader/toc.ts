@@ -11,7 +11,10 @@ import type { TocEntry } from "@readmepls/types";
  *  only when a content record carries no worker-emitted toc. */
 export function buildTocFromDom(root: HTMLElement): TocEntry[] {
   const headings = [...root.querySelectorAll<HTMLElement>("h1,h2,h3,h4,h5,h6")];
-  const dedupe = makeIdDeduper();
+  const existingIds = headings
+    .map((h) => h.getAttribute("id"))
+    .filter((v): v is string => !!v);
+  const dedupe = makeIdDeduper(existingIds);
   const flat: FlatHeading[] = [];
   for (const h of headings) {
     const text = (h.textContent ?? "").trim();
