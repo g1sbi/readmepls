@@ -222,7 +222,7 @@ Expected: `"permissions": ["activeTab", "storage"]`, no `optional_host_permissio
 ```bash
 git add apps/extension
 git commit -m "$(cat <<'EOF'
-feat!: drop extension scripting + host permissions
+feat: drop extension scripting + host permissions
 
 Remove the self-hosted marker machinery (dynamic content-script
 registration, background worker) that was the sole consumer of the
@@ -236,7 +236,8 @@ EOF
 )"
 ```
 
-Note the `feat!:` — dropping declared permissions is a user-visible breaking change to the extension's capabilities (and, per release-please config, `!` bumps the repo minor on the `0.x` line, which is the right signal for this).
+Use `feat:` (not `feat!:`) — a patch bump on the `0.x` line, per the user's
+decision.
 
 ---
 
