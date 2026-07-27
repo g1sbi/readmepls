@@ -15,6 +15,7 @@
   import SearchPalette from "$lib/components/SearchPalette.svelte";
   import { handleSearchKeydown } from "$lib/search/handle-keydown.js";
   import { initExtensionDetection } from "$lib/stores/extension.svelte.js";
+  import { showsGlobalNav } from "$lib/components/bottom-nav-scroll.js";
 
   let { children } = $props();
   const pb = browserPb();
@@ -94,7 +95,9 @@
   {/if}
   <div class="page" class:page--wide={isReader} use:releaseTransformContainingBlock>{@render children()}</div>
   {#if chrome}
-    <BottomNav pathname={$page.url.pathname} />
+    {#if showsGlobalNav($page.url.pathname)}
+      <BottomNav pathname={$page.url.pathname} />
+    {/if}
     <SearchPalette />
   {/if}
 </div>

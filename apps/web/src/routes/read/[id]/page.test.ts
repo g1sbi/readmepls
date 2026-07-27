@@ -1,4 +1,4 @@
-import { describe, it, expect, vi, beforeEach } from "vitest";
+import { describe, it, expect, vi, beforeEach, beforeAll } from "vitest";
 import { render, screen, fireEvent, waitFor, within } from "@testing-library/svelte";
 
 // jsdom doesn't implement IntersectionObserver (github.com/jsdom/jsdom/issues/2032).
@@ -19,6 +19,19 @@ class IntersectionObserverStub implements IntersectionObserver {
 }
 globalThis.IntersectionObserver =
   IntersectionObserverStub as unknown as typeof IntersectionObserver;
+
+// Reader page reads matchMedia for the desktop/mobile split; default to mobile
+// so the mobile chrome (bottom bar, sheets, floating back link) renders here.
+beforeAll(() => {
+  Object.defineProperty(window, "matchMedia", {
+    writable: true,
+    value: (query: string) => ({
+      matches: false, media: query, onchange: null,
+      addEventListener: () => {}, removeEventListener: () => {},
+      addListener: () => {}, removeListener: () => {}, dispatchEvent: () => false,
+    }),
+  });
+});
 
 // --- mocks (vi.mock calls are hoisted by vitest above all imports) ----------
 
@@ -171,6 +184,10 @@ describe("reader page — delete error path", () => {
       expect(screen.getByText("Test Article")).toBeInTheDocument(),
     );
 
+    // Article actions (archive/delete/add to collection) live in the mobile
+    // "more" sheet — open it before interacting with anything inside.
+    await fireEvent.click(screen.getByText("more"));
+
     // Trigger the confirm-delete dialog
     await fireEvent.click(
       screen.getByRole("button", { name: "delete article" }),
@@ -193,6 +210,7 @@ describe("reader page — delete error path", () => {
   it("no longer offers to create collections from the reader", async () => {
     render(ReaderPage);
     await waitFor(() => expect(screen.getByText("Test Article")).toBeInTheDocument());
+    await fireEvent.click(screen.getByText("more"));
     expect(screen.queryByLabelText(/new collection/i)).not.toBeInTheDocument();
     expect(screen.getByRole("button", { name: "add to collection" })).toBeInTheDocument();
   });
@@ -200,6 +218,7 @@ describe("reader page — delete error path", () => {
   it("archives the article and navigates to the library", async () => {
     render(ReaderPage);
     await waitFor(() => expect(screen.getByText("Test Article")).toBeInTheDocument());
+    await fireEvent.click(screen.getByText("more"));
     await fireEvent.click(screen.getByRole("button", { name: "archive article" }));
     await waitFor(() => expect(goto).toHaveBeenCalledWith("/library"));
   });
@@ -213,6 +232,7 @@ describe("reader page — delete error path", () => {
 
     const { unmount } = render(ReaderPage);
     await waitFor(() => expect(screen.getByText("Test Article")).toBeInTheDocument());
+    await fireEvent.click(screen.getByText("more"));
 
     await fireEvent.click(screen.getByRole("button", { name: "delete article" }));
     await fireEvent.click(screen.getByRole("button", { name: "delete" }));
@@ -433,7 +453,7 @@ describe("reader page — chapters sidebar", () => {
     articleUpdate.mockResolvedValue({});
   });
 
-  it("shows a chapters sidebar built from article headings", async () => {
+  it("shows a chapters sidebar built from article headings, opened from the mobile bar", async () => {
     // No worker-emitted toc on this content record — legacy fallback path
     // should parse the rendered headings out of content_html itself.
     articleGetOne.mockResolvedValueOnce({
@@ -451,6 +471,52 @@ describe("reader page — chapters sidebar", () => {
     render(ReaderPage);
     await waitFor(() => expect(screen.getByText("Test Article")).toBeInTheDocument());
 
+    // On mobile the toc lives inside a sheet, not on the page by default —
+    // it only appears once the bar's "chapters" item is tapped.
+    // The bar's "chapters" item only appears once resolveToc() has run (a tick
+    // or more after the article heading first renders) — findByText retries
+    // until then rather than racing a synchronous getByText.
+    await fireEvent.click(await screen.findByText("chapters"));
+
+    const nav = await screen.findByRole("navigation", { name: "chapters" });
+    expect(nav).toBeTruthy();
+    // Scoped to the nav — content_html's real <h2>First Chapter</h2> also
+    // renders in the article body itself, so an unscoped query would match twice.
+    expect(within(nav).getByText("First Chapter")).toBeTruthy();
+  });
+});
+
+describe("reader page — mobile control chrome", () => {
+  beforeEach(() => {
+    vi.clearAllMocks();
+    articleUpdate.mockResolvedValue({});
+  });
+
+  it("shows the mobile control bar and opens chapters from it", async () => {
+    articleGetOne.mockResolvedValueOnce({
+      ...defaultArticle(),
+      expand: {
+        content: {
+          id: "c1",
+          title: "Test Article",
+          content_html: "<h2>First Chapter</h2><p>...</p><h2>Second Chapter</h2>",
+          extract_status: "ok",
+        },
+      },
+    });
+
+    render(ReaderPage);
+    await waitFor(() => expect(screen.getByText("Test Article")).toBeInTheDocument());
+
+    // bar present
+    expect(await screen.findByRole("navigation", { name: "reader controls" })).toBeTruthy();
+    // floating exit present
+    expect(screen.getByRole("link", { name: "library" })).toBeTruthy();
+    // no visible chapters nav until the bar item is tapped
+    // The bar's "chapters" item only appears once resolveToc() has run (a tick
+    // or more after the article heading first renders) — findByText retries
+    // until then rather than racing a synchronous getByText.
+    await fireEvent.click(await screen.findByText("chapters"));
     const nav = await screen.findByRole("navigation", { name: "chapters" });
     expect(nav).toBeTruthy();
     // Scoped to the nav — content_html's real <h2>First Chapter</h2> also

@@ -14,3 +14,9 @@ export function nextNavVisible(
   if (Math.abs(delta) < threshold) return wasVisible; // ignore jitter
   return delta < 0; // scrolling up → visible, down → hidden
 }
+
+// The reader route renders its own bottom control bar, so the global bottom
+// nav is suppressed there to avoid two stacked bottom bars.
+export function showsGlobalNav(pathname: string): boolean {
+  return !pathname.startsWith("/read/");
+}

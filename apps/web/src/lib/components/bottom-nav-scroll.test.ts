@@ -1,5 +1,5 @@
 import { describe, it, expect } from "vitest";
-import { nextNavVisible, NAV_SCROLL_THRESHOLD, NAV_TOP_ZONE } from "./bottom-nav-scroll.js";
+import { nextNavVisible, NAV_SCROLL_THRESHOLD, NAV_TOP_ZONE, showsGlobalNav } from "./bottom-nav-scroll.js";
 
 describe("nextNavVisible", () => {
   it("is always visible near the top of the page", () => {
@@ -18,5 +18,15 @@ describe("nextNavVisible", () => {
   it("ignores sub-threshold jitter, keeping the previous state", () => {
     expect(nextNavVisible(300, 302, true)).toBe(true);
     expect(nextNavVisible(300, 302, false)).toBe(false);
+  });
+});
+
+describe("showsGlobalNav", () => {
+  it("hides the global nav on reader routes", () => {
+    expect(showsGlobalNav("/read/abc123")).toBe(false);
+  });
+  it("shows the global nav elsewhere", () => {
+    expect(showsGlobalNav("/library")).toBe(true);
+    expect(showsGlobalNav("/collections")).toBe(true);
   });
 });
