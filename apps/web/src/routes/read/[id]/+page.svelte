@@ -20,9 +20,8 @@
   import ConfirmDialog from "$lib/components/ui/ConfirmDialog.svelte";
   import TagEditor from "$lib/components/TagEditor.svelte";
   import Rail from "$lib/components/ui/Rail.svelte";
-  import DropdownMenu from "$lib/components/ui/DropdownMenu.svelte";
-  import MenuItem from "$lib/components/ui/MenuItem.svelte";
-  import { ArrowLeft, Archive, Trash2, FolderPlus, ArrowUpRight } from "@lucide/svelte";
+  import ArticleActions from "$lib/components/ArticleActions.svelte";
+  import { ArrowLeft, ArrowUpRight } from "@lucide/svelte";
   import Skeleton from "$lib/components/ui/Skeleton.svelte";
   import HighlightPopover from "$lib/components/HighlightPopover.svelte";
   import HighlightsSidebar from "$lib/components/HighlightsSidebar.svelte";
@@ -378,23 +377,12 @@
         {/if}
         <ReaderControls {prefs} onChange={savePrefs} />
         <TagEditor tags={manualTags.map(t => ({ id: t.id, name: t.name }))} onadd={addTag} onremove={removeTag} />
-        <div class="article-actions" role="group" aria-label="article actions">
-          <DropdownMenu label="add to collection" align="start">
-            {#snippet trigger()}<FolderPlus class="icon-md" aria-hidden="true" />{/snippet}
-            {#snippet children()}
-              <div class="menu-label">add to collection</div>
-              {#if collections.length > 0}
-                {#each collections as c (c.id)}
-                  <MenuItem onSelect={() => addToCollection(c.id)}>{c.name}</MenuItem>
-                {/each}
-              {:else}
-                <div class="menu-empty">no collections yet</div>
-              {/if}
-            {/snippet}
-          </DropdownMenu>
-          <button class="action-icon" onclick={archive} aria-label="archive article"><Archive class="icon-md" aria-hidden="true" /></button>
-          <button class="action-icon" onclick={() => (confirmingDelete = true)} aria-label="delete article"><Trash2 class="icon-md" aria-hidden="true" /></button>
-        </div>
+        <ArticleActions
+          {collections}
+          onAddToCollection={addToCollection}
+          onArchive={archive}
+          onDelete={() => (confirmingDelete = true)}
+        />
       </Rail>
 
       <div class="reader-main">
@@ -465,23 +453,6 @@
   @media (min-width: 1024px) {
     .rail-chapters { display: block; }
     .toc-trigger { display: none; }
-  }
-
-  .article-actions { display: flex; gap: var(--space-2); }
-  .article-actions :global(.dropdown__trigger),
-  .action-icon {
-    display: inline-flex; align-items: center; justify-content: center;
-    width: 2.25rem; height: 2.25rem; padding: 0;
-    background: var(--color-surface); border: 1px solid var(--color-border);
-    border-radius: var(--radius-md); color: var(--color-text-muted); cursor: pointer;
-    transition: color var(--dur-fast) var(--ease-out), box-shadow var(--dur-fast) var(--ease-out);
-  }
-  .article-actions :global(.dropdown__trigger):hover,
-  .action-icon:hover { color: var(--color-accent); box-shadow: var(--shadow-sm); }
-  .article-actions :global(.dropdown__trigger):focus-visible,
-  .action-icon:focus-visible { outline: var(--focus-ring-width) solid var(--color-ring); outline-offset: var(--focus-ring-offset); }
-  @media (prefers-reduced-motion: reduce) {
-    .article-actions :global(.dropdown__trigger), .action-icon { transition: none; }
   }
 
   .reader {
