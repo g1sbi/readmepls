@@ -371,7 +371,7 @@
     <div class="reader-layout">
       <Rail label="reading tools">
         {#if toc.length}
-          <section class="rail-chapters" aria-label="chapters">
+          <section class="rail-chapters">
             <h2 class="rail-heading">chapters</h2>
             <ChaptersSidebar {toc} activeId={activeHeadingId} onjump={jumpToHeading} />
           </section>

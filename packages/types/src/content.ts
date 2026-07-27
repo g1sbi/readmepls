@@ -15,7 +15,12 @@ export const Content = z.object({
   excerpt: z.string(),
   content_html: z.string(),
   content_text: z.string(),
-  toc: z.array(TocEntry).default([]),
+  // .default([]) only coerces `undefined`; legacy PocketBase rows created
+  // before the `toc` json column existed on this branch return `null`, which
+  // would otherwise fail this field's parse and (via export.ts's
+  // Content.partial() boundary) drop the entire content record. .catch([])
+  // absorbs `null` (and any other malformed stored value) as an empty tree.
+  toc: z.array(TocEntry).default([]).catch([]),
   word_count: z.number().int().nonnegative(),
   read_time: z.number().int().nonnegative(),
   hero_image: z.string().nullable(),

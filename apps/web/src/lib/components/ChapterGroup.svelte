@@ -49,6 +49,8 @@
   }
   .link {
     flex: 1;
+    min-width: 0;
+    overflow-wrap: anywhere;
     text-align: left;
     min-height: 44px;
     padding: var(--space-2);
