@@ -555,6 +555,11 @@
   .back-floating:hover { color: var(--color-accent); }
   .back-floating[data-hidden="true"] { transform: translateY(calc(-100% - var(--space-4))); opacity: 0; pointer-events: none; }
   /* Keep the last lines of prose clear of the fixed bottom bar on mobile. */
-  @media (max-width: 1023.98px) { .reader-shell { padding-bottom: 72px; } }
+  /* Below 1024px the global TopBar is hidden and the floating back-link takes
+     its place — pad the top so the article title clears the pill, and the
+     bottom so the last lines clear the fixed control bar. */
+  @media (max-width: 1023.98px) {
+    .reader-shell { padding-top: calc(env(safe-area-inset-top) + 3.25rem); padding-bottom: 72px; }
+  }
   @media (prefers-reduced-motion: reduce) { .back-floating { transition: none; } }
 </style>

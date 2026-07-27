@@ -86,7 +86,7 @@
 
 <svelte:window onkeydown={handleSearchKeydown} />
 
-<div class="app">
+<div class="app" class:reader={isReader}>
   {#if chrome}
     <TopBar {theme} onTheme={setTheme} onSignOut={signOut} />
   {/if}
@@ -118,5 +118,13 @@
   @media (prefers-reduced-motion: reduce) { .page { animation: none; } }
   @media (max-width: 640px) {
     .page { padding-bottom: calc(56px + env(safe-area-inset-bottom) + 1rem); }
+  }
+  /* The reader owns its own chrome below 1024px (floating back-link + bottom
+     control bar), so the global TopBar is suppressed there — otherwise its
+     opaque sticky bar covers the floating back-link, which is trapped in
+     .page's stacking context and can't outrank it. Desktop reader keeps the
+     TopBar and its in-flow back link. */
+  @media (max-width: 1023.98px) {
+    .app.reader :global(.topbar) { display: none; }
   }
 </style>
