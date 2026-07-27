@@ -1,5 +1,24 @@
 import { describe, it, expect, vi, beforeEach } from "vitest";
-import { render, screen, fireEvent, waitFor } from "@testing-library/svelte";
+import { render, screen, fireEvent, waitFor, within } from "@testing-library/svelte";
+
+// jsdom doesn't implement IntersectionObserver (github.com/jsdom/jsdom/issues/2032).
+// The reader page's chapters scroll-spy constructs one on mount, so mounting it
+// here needs this to exist. Scoped to this file only (not vitest-setup.ts) —
+// reveal.test.ts specifically asserts behavior for when it's ABSENT, so a
+// global polyfill would break that test.
+class IntersectionObserverStub implements IntersectionObserver {
+  readonly root: Element | Document | null = null;
+  readonly rootMargin: string = "";
+  readonly thresholds: ReadonlyArray<number> = [];
+  observe(): void {}
+  unobserve(): void {}
+  disconnect(): void {}
+  takeRecords(): IntersectionObserverEntry[] {
+    return [];
+  }
+}
+globalThis.IntersectionObserver =
+  IntersectionObserverStub as unknown as typeof IntersectionObserver;
 
 // --- mocks (vi.mock calls are hoisted by vitest above all imports) ----------
 
@@ -91,6 +110,30 @@ vi.mock("@readmepls/core", () => ({
   slugify: (s: string) => s.toLowerCase().replace(/\s+/g, "-"),
   STARTED_THRESHOLD: 0.02,
   FINISHED_THRESHOLD: 0.98,
+  // Real (not stubbed) — pure functions with no problematic transitive deps,
+  // needed by buildTocFromDom's legacy-fallback toc parsing.
+  nestHeadings: (items: { id: string; text: string; level: number }[]) => {
+    const roots: unknown[] = [];
+    const stack: { level: number; children: unknown[] }[] = [];
+    for (const it of items) {
+      const node = { ...it, children: [] as unknown[] };
+      while (stack.length && stack[stack.length - 1]!.level >= node.level) stack.pop();
+      if (stack.length === 0) roots.push(node);
+      else stack[stack.length - 1]!.children.push(node);
+      stack.push(node);
+    }
+    return roots;
+  },
+  makeIdDeduper: (reserved?: Iterable<string>) => {
+    const seen = new Map<string, number>();
+    if (reserved) for (const r of reserved) if (r) seen.set(r, (seen.get(r) ?? 0) + 1);
+    return (base: string) => {
+      const key = base || "section";
+      const n = (seen.get(key) ?? 0) + 1;
+      seen.set(key, n);
+      return n === 1 ? key : `${key}-${n}`;
+    };
+  },
 }));
 
 // Stub DOM highlight helpers. unmarkAll is always called (even with 0
@@ -381,5 +424,37 @@ describe("reader page — progress", () => {
 
     await waitFor(() => expect(articleUpdate).toHaveBeenCalledWith("art1", { progress: 1 }));
     expect(setProgress).toHaveBeenCalledWith(1);
+  });
+});
+
+describe("reader page — chapters sidebar", () => {
+  beforeEach(() => {
+    vi.clearAllMocks();
+    articleUpdate.mockResolvedValue({});
+  });
+
+  it("shows a chapters sidebar built from article headings", async () => {
+    // No worker-emitted toc on this content record — legacy fallback path
+    // should parse the rendered headings out of content_html itself.
+    articleGetOne.mockResolvedValueOnce({
+      ...defaultArticle(),
+      expand: {
+        content: {
+          id: "c1",
+          title: "Test Article",
+          content_html: "<h2>First Chapter</h2><p>...</p><h2>Second Chapter</h2>",
+          extract_status: "ok",
+        },
+      },
+    });
+
+    render(ReaderPage);
+    await waitFor(() => expect(screen.getByText("Test Article")).toBeInTheDocument());
+
+    const nav = await screen.findByRole("navigation", { name: "chapters" });
+    expect(nav).toBeTruthy();
+    // Scoped to the nav — content_html's real <h2>First Chapter</h2> also
+    // renders in the article body itself, so an unscoped query would match twice.
+    expect(within(nav).getByText("First Chapter")).toBeTruthy();
   });
 });

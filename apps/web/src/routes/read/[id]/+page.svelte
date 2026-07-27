@@ -4,7 +4,7 @@
   import { browserPb } from "$lib/pb.js";
   import { httpUrlOrNull } from "$lib/url/http-url.js";
   import { withReaderDefaults, anchoring, rangeOver, slugify, STARTED_THRESHOLD, FINISHED_THRESHOLD } from "@readmepls/core";
-  import { Highlight, type ReaderPrefs, type HighlightColor } from "@readmepls/types";
+  import { Highlight, TocEntry, type ReaderPrefs, type HighlightColor } from "@readmepls/types";
   import type { Theme } from "$lib/theme/theme.js";
   import type { ArticleRecord } from "$lib/article/record.js";
   import type { RecordModel } from "pocketbase";
@@ -14,6 +14,9 @@
   import { markRange, unmarkAll } from "$lib/highlight/render";
   import { deleteArticle } from "$lib/article/delete.js";
   import ReaderControls from "$lib/components/ReaderControls.svelte";
+  import ChaptersSidebar from "$lib/components/ChaptersSidebar.svelte";
+  import Sheet from "$lib/components/ui/Sheet.svelte";
+  import { buildTocFromDom } from "$lib/reader/toc.js";
   import ConfirmDialog from "$lib/components/ui/ConfirmDialog.svelte";
   import TagEditor from "$lib/components/TagEditor.svelte";
   import Rail from "$lib/components/ui/Rail.svelte";
@@ -65,6 +68,12 @@
   let confirmingDelete = $state(false);
   // Shared inline error for reader actions (archive / delete).
   let actionError = $state("");
+
+  // Chapters sidebar state
+  let toc = $state<TocEntry[]>([]);
+  let activeHeadingId = $state<string | null>(null);
+  let mobileTocOpen = $state(false);
+  let tocObserver: IntersectionObserver | null = null;
 
   async function loadHighlights(articleId: string) {
     const raw = await pb.collection("highlights").getFullList({
@@ -239,6 +248,29 @@
     }
   }
 
+  // Prefer the worker-emitted toc (validated); fall back to parsing the DOM.
+  function resolveToc() {
+    const parsed = TocEntry.array().safeParse(content?.toc);
+    toc = parsed.success && parsed.data.length ? parsed.data : buildTocFromDom(bodyEl);
+  }
+
+  function observeHeadings() {
+    const headings = bodyEl.querySelectorAll<HTMLElement>("h1,h2,h3,h4,h5,h6");
+    if (headings.length === 0) return;
+    tocObserver = new IntersectionObserver(
+      (entries) => {
+        for (const e of entries) if (e.isIntersecting && e.target.id) activeHeadingId = e.target.id;
+      },
+      { rootMargin: "0px 0px -70% 0px", threshold: 0 },
+    );
+    headings.forEach((h) => tocObserver!.observe(h));
+  }
+
+  function jumpToHeading(id: string) {
+    bodyEl.querySelector(`#${CSS.escape(id)}`)?.scrollIntoView({ behavior: "smooth", block: "start" });
+    mobileTocOpen = false;
+  }
+
   onMount(async () => {
     const id = $page.params.id;
     if (!id) return;
@@ -259,6 +291,8 @@
     // Load highlights and manual tags after article HTML is in the DOM (next tick).
     await tick();
     resolveInitialScroll();
+    resolveToc();
+    observeHeadings();
     // Attach before the remaining loads (not after) so a scroll during those
     // network calls is never silently dropped.
     window.addEventListener("scroll", onScroll, { passive: true });
@@ -272,6 +306,7 @@
   // flush any pending debounced save so navigating away doesn't lose it.
   onDestroy(() => {
     progressCtx?.set(0);
+    tocObserver?.disconnect();
     if (typeof window === "undefined") return;
     window.removeEventListener("scroll", onScroll);
     document.removeEventListener("visibilitychange", onVisibilityChange);
@@ -321,6 +356,9 @@
 <div class="reader-shell" style={readerCssVars(prefs)}>
   <div class="bar">
     <a class="back" href="/library"><ArrowLeft class="icon-sm" aria-hidden="true" /> library</a>
+    {#if toc.length}
+      <button class="toc-trigger" onclick={() => (mobileTocOpen = true)}>chapters</button>
+    {/if}
   </div>
 
   {#if actionError}
@@ -332,6 +370,12 @@
   {:else}
     <div class="reader-layout">
       <Rail label="reading tools">
+        {#if toc.length}
+          <section class="rail-chapters" aria-label="chapters">
+            <h2 class="rail-heading">chapters</h2>
+            <ChaptersSidebar {toc} activeId={activeHeadingId} onjump={jumpToHeading} />
+          </section>
+        {/if}
         <ReaderControls {prefs} onChange={savePrefs} />
         <TagEditor tags={manualTags.map(t => ({ id: t.id, name: t.name }))} onadd={addTag} onremove={removeTag} />
         <div class="article-actions" role="group" aria-label="article actions">
@@ -394,6 +438,10 @@
   onCancel={() => (confirmingDelete = false)}
 />
 
+<Sheet open={mobileTocOpen} onClose={() => (mobileTocOpen = false)} title="chapters">
+  <ChaptersSidebar {toc} activeId={activeHeadingId} onjump={jumpToHeading} />
+</Sheet>
+
 <style>
   /* --reading-measure is set inline on .reader-shell so the column width
      follows the pref (narrow/normal/wide) end-to-end (FIX 2).
@@ -402,6 +450,22 @@
   .bar { display: flex; align-items: center; gap: var(--space-3); margin-bottom: var(--space-4); }
   .bar .back { display: inline-flex; align-items: center; gap: var(--space-1); font-family: var(--font-ui); color: var(--color-text-muted); text-decoration: none; }
   .bar .back:hover { color: var(--color-text); }
+
+  .rail-heading { font-family: var(--font-ui); font-size: var(--text-sm); color: var(--color-text-muted); margin: 0 0 var(--space-2); }
+  /* Chapters live in the Rail on desktop; on mobile they move into the Sheet. */
+  .rail-chapters { display: none; }
+  .toc-trigger {
+    display: inline-flex; align-items: center; min-height: 44px; padding: 0 var(--space-2);
+    background: var(--color-surface); border: 1px solid var(--color-border);
+    border-radius: var(--radius-md); color: var(--color-text-muted);
+    font-family: var(--font-ui); font-size: var(--text-sm); cursor: pointer;
+    margin-left: auto;
+  }
+  .toc-trigger:hover { color: var(--color-accent); }
+  @media (min-width: 1024px) {
+    .rail-chapters { display: block; }
+    .toc-trigger { display: none; }
+  }
 
   .article-actions { display: flex; gap: var(--space-2); }
   .article-actions :global(.dropdown__trigger),
