@@ -48,7 +48,9 @@ export function parseJson3Captions(text: string): YtCaptions | null {
       .replace(/\s+/g, " ")
       .trim();
     if (!joined) continue;
-    const startSec = Math.floor(((e as { tStartMs?: number }).tStartMs ?? 0) / 1000);
+    const startSec = Math.floor(
+      ((e as { tStartMs?: number }).tStartMs ?? 0) / 1000,
+    );
     cues.push({ startSec, text: joined });
   }
   return cues.length ? { cues } : null;
@@ -63,7 +65,7 @@ function stamp(sec: number): string {
 /** Fold metadata + captions into a readable result; partial when no captions. */
 export function parseYtTranscript(
   meta: YtMeta,
-  captions: YtCaptions | null
+  captions: YtCaptions | null,
 ): ExtractResult {
   const base = {
     sourceType: "youtube" as const,
@@ -81,6 +83,7 @@ export function parseYtTranscript(
       ...base,
       status: "partial",
       contentHtml: text ? `<p>${escapeHtml(text)}</p>` : "",
+      toc: [],
       contentText: text,
       excerpt: text.slice(0, 280),
       wordCount,
@@ -102,13 +105,16 @@ export function parseYtTranscript(
   const contentHtml = paragraphs
     .map((p) => `<p>${stamp(p.start)} ${escapeHtml(p.text)}</p>`)
     .join("\n");
-  const contentText = paragraphs.map((p) => `${stamp(p.start)} ${p.text}`).join("\n\n");
+  const contentText = paragraphs
+    .map((p) => `${stamp(p.start)} ${p.text}`)
+    .join("\n\n");
   const wordCount = contentText.split(/\s+/).filter(Boolean).length;
 
   return {
     ...base,
     status: "ok",
     contentHtml,
+    toc: [],
     contentText,
     excerpt: (meta.description ?? contentText).slice(0, 280),
     wordCount,

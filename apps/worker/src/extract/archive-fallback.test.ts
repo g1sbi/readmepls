@@ -6,9 +6,22 @@ import type { ExtractResult } from "@readmepls/types";
 
 function result(over: Partial<ExtractResult>): ExtractResult {
   return {
-    status: "ok", sourceType: "article", title: "t", author: null, siteName: null,
-    lang: null, contentHtml: "", contentText: "", excerpt: "", wordCount: 1000,
-    readTime: 5, heroImage: null, publishedAt: null, failureReason: null, ...over,
+    status: "ok",
+    sourceType: "article",
+    title: "t",
+    author: null,
+    siteName: null,
+    lang: null,
+    contentHtml: "",
+    contentText: "",
+    toc: [],
+    excerpt: "",
+    wordCount: 1000,
+    readTime: 5,
+    heroImage: null,
+    publishedAt: null,
+    failureReason: null,
+    ...over,
   };
 }
 
@@ -17,9 +30,15 @@ const RICH = `<html><head><title>Recovered</title></head><body><article>
 
 function io(over: Partial<ExtractIO>): ExtractIO {
   return {
-    fetchHtml: async () => { throw new Error("unused"); },
-    fetchJson: async () => { throw new Error("unused"); },
-    runYtDlp: async () => { throw new Error("unused"); },
+    fetchHtml: async () => {
+      throw new Error("unused");
+    },
+    fetchJson: async () => {
+      throw new Error("unused");
+    },
+    runYtDlp: async () => {
+      throw new Error("unused");
+    },
     ...over,
   };
 }
@@ -33,7 +52,12 @@ describe("isThinExtraction", () => {
   });
   it("is true for short content with a paywall phrase", () => {
     expect(
-      isThinExtraction(result({ wordCount: 200, contentText: "Subscribe to continue reading this story." }))
+      isThinExtraction(
+        result({
+          wordCount: 200,
+          contentText: "Subscribe to continue reading this story.",
+        }),
+      ),
     ).toBe(true);
   });
   it("is false for a normal full article", () => {
@@ -43,12 +67,20 @@ describe("isThinExtraction", () => {
 
 describe("recoverFromArchive", () => {
   it("re-parses the closest snapshot and marks it recovered", async () => {
-    const res = await recoverFromArchive("https://paywalled.example/post", io({
-      fetchJson: async () => ({
-        archived_snapshots: { closest: { available: true, url: "https://web.archive.org/web/123/https://paywalled.example/post" } },
+    const res = await recoverFromArchive(
+      "https://paywalled.example/post",
+      io({
+        fetchJson: async () => ({
+          archived_snapshots: {
+            closest: {
+              available: true,
+              url: "https://web.archive.org/web/123/https://paywalled.example/post",
+            },
+          },
+        }),
+        fetchHtml: async () => RICH,
       }),
-      fetchHtml: async () => RICH,
-    }));
+    );
     expect(res).not.toBeNull();
     expect(res!.status).toBe("partial");
     expect(res!.failureReason).toBe("recovered from web archive");
@@ -56,17 +88,30 @@ describe("recoverFromArchive", () => {
   });
 
   it("returns null when no snapshot is available", async () => {
-    const res = await recoverFromArchive("https://x.example/p", io({
-      fetchJson: async () => ({ archived_snapshots: {} }),
-    }));
+    const res = await recoverFromArchive(
+      "https://x.example/p",
+      io({
+        fetchJson: async () => ({ archived_snapshots: {} }),
+      }),
+    );
     expect(res).toBeNull();
   });
 
   it("returns null when the snapshot itself is thin", async () => {
-    const res = await recoverFromArchive("https://x.example/p", io({
-      fetchJson: async () => ({ archived_snapshots: { closest: { available: true, url: "https://web.archive.org/web/1/x" } } }),
-      fetchHtml: async () => "<html></html>",
-    }));
+    const res = await recoverFromArchive(
+      "https://x.example/p",
+      io({
+        fetchJson: async () => ({
+          archived_snapshots: {
+            closest: {
+              available: true,
+              url: "https://web.archive.org/web/1/x",
+            },
+          },
+        }),
+        fetchHtml: async () => "<html></html>",
+      }),
+    );
     expect(res).toBeNull();
   });
 });

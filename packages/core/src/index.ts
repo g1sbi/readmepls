@@ -27,3 +27,4 @@ export * from "./library/facet-options.js";
 export * from "./library/fetch.js";
 export * from "./library/live-search.js";
 export * from "./library/progress.js";
+export * from "./toc/nest.js";

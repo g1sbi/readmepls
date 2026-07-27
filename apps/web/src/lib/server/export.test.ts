@@ -134,4 +134,25 @@ describe("loadArticleExports", () => {
     expect(out[0]!.aiTags).toEqual(["ai", "ml"]);
     expect(out[0]!.summary).toBe("an ai summary");
   });
+
+  it("still exports title and body for a legacy pre-migration row with toc: null", async () => {
+    const { pb } = fakePb(
+      { highlights: [], article_tags: [] },
+      {
+        a1: {
+          id: "a1", url: "https://x.test/p", status: "unread", created: "2026",
+          expand: {
+            content: {
+              title: "Legacy Article", ai_tags_json: [], content_html: "<p>full body</p>",
+              excerpt: "", fetched_at: "2026", toc: null,
+            },
+          },
+        },
+      }
+    );
+    const out = await loadArticleExports(pb, ["a1"], "pro");
+    expect(out).toHaveLength(1);
+    expect(out[0]!.title).toBe("Legacy Article");
+    expect(out[0]!.contentHtml).toBe("<p>full body</p>");
+  });
 });

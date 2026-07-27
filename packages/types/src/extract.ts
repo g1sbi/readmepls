@@ -1,5 +1,6 @@
 import { z } from "zod";
 import { SourceType } from "./source.js";
+import { TocEntry } from "./toc.js";
 
 export const ExtractStatus = z.enum(["pending", "ok", "partial", "failed"]);
 export type ExtractStatus = z.infer<typeof ExtractStatus>;
@@ -14,6 +15,7 @@ export const ExtractResult = z.object({
   contentHtml: z.string(),
   contentText: z.string(),
   excerpt: z.string(),
+  toc: z.array(TocEntry).default([]),
   wordCount: z.number().int().nonnegative(),
   readTime: z.number().int().nonnegative(),
   heroImage: z.string().nullable(),

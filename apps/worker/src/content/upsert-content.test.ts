@@ -21,12 +21,13 @@ const fields: ContentFields = {
   fetched_at: "2026-01-01T00:00:00.000Z",
   extract_status: "failed",
   failure_reason: "no readable content",
+  toc: [],
 };
 
 function fakePb(
   existing: { id: string } | null,
   ops: { create: ReturnType<typeof vi.fn>; update: ReturnType<typeof vi.fn> },
-  getFirstListItemError?: Error
+  getFirstListItemError?: Error,
 ): PocketBase {
   const pb = {
     filter: (s: string) => s,
@@ -52,20 +53,29 @@ function fakePb(
 
 describe("upsertContent", () => {
   it("creates a new content row when none exists for the canonical_url", async () => {
-    const create = vi.fn(async (payload: unknown) => ({ id: "c1", ...(payload as object) }));
+    const create = vi.fn(async (payload: unknown) => ({
+      id: "c1",
+      ...(payload as object),
+    }));
     const update = vi.fn();
     const pb = fakePb(null, { create, update });
 
     const result = await upsertContent(pb, "https://example.com/x", fields);
 
-    expect(create).toHaveBeenCalledWith({ canonical_url: "https://example.com/x", ...fields });
+    expect(create).toHaveBeenCalledWith({
+      canonical_url: "https://example.com/x",
+      ...fields,
+    });
     expect(update).not.toHaveBeenCalled();
     expect(result.id).toBe("c1");
   });
 
   it("updates the existing content row when one already exists for the canonical_url", async () => {
     const create = vi.fn();
-    const update = vi.fn(async (id: string, payload: unknown) => ({ id, ...(payload as object) }));
+    const update = vi.fn(async (id: string, payload: unknown) => ({
+      id,
+      ...(payload as object),
+    }));
     const pb = fakePb({ id: "existing1" }, { create, update });
 
     const result = await upsertContent(pb, "https://example.com/x", fields);
@@ -86,7 +96,7 @@ describe("upsertContent", () => {
     const pb = fakePb(null, { create, update }, networkError);
 
     await expect(
-      upsertContent(pb, "https://example.com/x", fields)
+      upsertContent(pb, "https://example.com/x", fields),
     ).rejects.toThrow(networkError);
 
     expect(create).not.toHaveBeenCalled();
@@ -105,7 +115,10 @@ describe("upsertContent", () => {
     const create = vi.fn(async () => {
       throw conflictError;
     });
-    const update = vi.fn(async (id: string, payload: unknown) => ({ id, ...(payload as object) }));
+    const update = vi.fn(async (id: string, payload: unknown) => ({
+      id,
+      ...(payload as object),
+    }));
 
     let getFirstListItemCalls = 0;
     const pb = {
@@ -148,9 +161,24 @@ describe("upsertContent", () => {
     const pb = fakePb(null, { create, update });
 
     await expect(
-      upsertContent(pb, "https://example.com/x", fields)
+      upsertContent(pb, "https://example.com/x", fields),
     ).rejects.toThrow(serverError);
 
     expect(update).not.toHaveBeenCalled();
+  });
+
+  it("forwards toc to the created content record", async () => {
+    const create = vi.fn(async () => ({ id: "c1" }));
+    const update = vi.fn();
+    const pb = fakePb(null, { create, update }); // 404 → create path
+    await upsertContent(pb, "https://example.com/a", {
+      ...fields,
+      toc: [{ id: "intro", text: "Intro", level: 2, children: [] }],
+    });
+    expect(create).toHaveBeenCalledWith(
+      expect.objectContaining({
+        toc: [{ id: "intro", text: "Intro", level: 2, children: [] }],
+      }),
+    );
   });
 });
