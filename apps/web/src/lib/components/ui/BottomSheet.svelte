@@ -27,8 +27,8 @@
     background: var(--color-surface) !important;
     border-top-left-radius: var(--radius-lg) !important;
     border-top-right-radius: var(--radius-lg) !important;
-    box-shadow: var(--shadow-lg) !important;
-    padding: var(--space-3) var(--space-4) calc(var(--space-4) + env(safe-area-inset-bottom)) !important;
+    box-shadow: var(--shadow-lg);
+    padding: var(--space-3) var(--space-4) calc(var(--space-4) + env(safe-area-inset-bottom));
     max-height: 85vh !important;
     margin-top: 0 !important;
   }

@@ -1,6 +1,5 @@
 <script lang="ts">
-  import type { Component } from "svelte";
-  import { Type, List, Highlighter, MoreHorizontal } from "@lucide/svelte";
+  import { Type, List, Highlighter, MoreHorizontal, type LucideIcon } from "@lucide/svelte";
   import type { SheetKey } from "$lib/reader/control-bar.js";
 
   let { hasChapters, hidden = false, active = null, onOpen }: {
@@ -10,8 +9,7 @@
     onOpen: (sheet: SheetKey) => void;
   } = $props();
 
-  // lucide icon component
-  const items: { key: SheetKey; label: string; icon: Component<any> }[] = [
+  const items: { key: SheetKey; label: string; icon: LucideIcon }[] = [
     { key: "type", label: "text", icon: Type },
     { key: "chapters", label: "chapters", icon: List },
     { key: "highlights", label: "highlights", icon: Highlighter },
