@@ -15,7 +15,6 @@
   import { deleteArticle } from "$lib/article/delete.js";
   import ReaderControls from "$lib/components/ReaderControls.svelte";
   import ChaptersSidebar from "$lib/components/ChaptersSidebar.svelte";
-  import Sheet from "$lib/components/ui/Sheet.svelte";
   import { buildTocFromDom } from "$lib/reader/toc.js";
   import ConfirmDialog from "$lib/components/ui/ConfirmDialog.svelte";
   import TagEditor from "$lib/components/TagEditor.svelte";
@@ -28,6 +27,10 @@
   import SourcePill from "$lib/components/ui/SourcePill.svelte";
   import { Button } from "$lib/components/ui/button";
   import { sourceView } from "$lib/source/source-view.js";
+  import ReaderControlBar from "$lib/components/ReaderControlBar.svelte";
+  import BottomSheet from "$lib/components/ui/BottomSheet.svelte";
+  import { nextNavVisible } from "$lib/components/bottom-nav-scroll.js";
+  import type { SheetKey } from "$lib/reader/control-bar.js";
 
   // Global theme context provided by +layout.svelte. May be undefined when
   // the reader is rendered in isolation (e.g. unit tests without the layout).
@@ -71,8 +74,17 @@
   // Chapters sidebar state
   let toc = $state<TocEntry[]>([]);
   let activeHeadingId = $state<string | null>(null);
-  let mobileTocOpen = $state(false);
   let tocObserver: IntersectionObserver | null = null;
+
+  // Mobile control chrome: one sheet open at a time, and the bar/floating
+  // back link hide on scroll-down, reveal on scroll-up (see bottom-nav-scroll.js).
+  let activeSheet = $state<SheetKey | null>(null);
+  let controlsVisible = $state(true);
+  let prevScrollY = 0;
+  let isDesktop = $state(false);
+  let desktopMq: MediaQueryList | null = null;
+  const hasChapters = $derived(toc.length > 0);
+  function onDesktopChange(e: MediaQueryListEvent) { isDesktop = e.matches; }
 
   async function loadHighlights(articleId: string) {
     const raw = await pb.collection("highlights").getFullList({
@@ -207,6 +219,10 @@
   }
 
   function onScroll() {
+    const curY = window.scrollY;
+    controlsVisible = nextNavVisible(prevScrollY, curY, controlsVisible);
+    prevScrollY = curY;
+
     // Measure now, while this page's DOM is definitely still the live one —
     // not inside the debounced callback, which may run (or be pre-empted by
     // flushSave) after navigation has already started swapping the DOM.
@@ -267,7 +283,7 @@
 
   function jumpToHeading(id: string) {
     bodyEl.querySelector(`#${CSS.escape(id)}`)?.scrollIntoView({ behavior: "smooth", block: "start" });
-    mobileTocOpen = false;
+    activeSheet = null;
   }
 
   onMount(async () => {
@@ -294,6 +310,10 @@
     observeHeadings();
     // Attach before the remaining loads (not after) so a scroll during those
     // network calls is never silently dropped.
+    prevScrollY = window.scrollY;
+    desktopMq = window.matchMedia("(min-width: 1024px)");
+    isDesktop = desktopMq.matches;
+    desktopMq.addEventListener("change", onDesktopChange);
     window.addEventListener("scroll", onScroll, { passive: true });
     document.addEventListener("visibilitychange", onVisibilityChange);
     await loadHighlights(id);
@@ -306,6 +326,7 @@
   onDestroy(() => {
     progressCtx?.set(0);
     tocObserver?.disconnect();
+    desktopMq?.removeEventListener("change", onDesktopChange);
     if (typeof window === "undefined") return;
     window.removeEventListener("scroll", onScroll);
     document.removeEventListener("visibilitychange", onVisibilityChange);
@@ -353,12 +374,11 @@
 
 <!-- reader vars live on the shell so the width pref governs the shell, not just the article -->
 <div class="reader-shell" style={readerCssVars(prefs)}>
-  <div class="bar">
-    <a class="back" href="/library"><ArrowLeft class="icon-sm" aria-hidden="true" /> library</a>
-    {#if toc.length}
-      <button class="toc-trigger" onclick={() => (mobileTocOpen = true)}>chapters</button>
-    {/if}
-  </div>
+  {#if isDesktop}
+    <div class="bar">
+      <a class="back" href="/library"><ArrowLeft class="icon-sm" aria-hidden="true" /> library</a>
+    </div>
+  {/if}
 
   {#if actionError}
     <p class="delete-error" role="alert">{actionError}</p>
@@ -368,22 +388,24 @@
     <Skeleton lines={8} />
   {:else}
     <div class="reader-layout">
-      <Rail label="reading tools">
-        {#if toc.length}
-          <section class="rail-chapters">
-            <h2 class="rail-heading">chapters</h2>
-            <ChaptersSidebar {toc} activeId={activeHeadingId} onjump={jumpToHeading} />
-          </section>
-        {/if}
-        <ReaderControls {prefs} onChange={savePrefs} />
-        <TagEditor tags={manualTags.map(t => ({ id: t.id, name: t.name }))} onadd={addTag} onremove={removeTag} />
-        <ArticleActions
-          {collections}
-          onAddToCollection={addToCollection}
-          onArchive={archive}
-          onDelete={() => (confirmingDelete = true)}
-        />
-      </Rail>
+      {#if isDesktop}
+        <Rail label="reading tools">
+          {#if toc.length}
+            <section class="rail-chapters">
+              <h2 class="rail-heading">chapters</h2>
+              <ChaptersSidebar {toc} activeId={activeHeadingId} onjump={jumpToHeading} />
+            </section>
+          {/if}
+          <ReaderControls {prefs} onChange={savePrefs} />
+          <TagEditor tags={manualTags.map(t => ({ id: t.id, name: t.name }))} onadd={addTag} onremove={removeTag} />
+          <ArticleActions
+            {collections}
+            onAddToCollection={addToCollection}
+            onArchive={archive}
+            onDelete={() => (confirmingDelete = true)}
+          />
+        </Rail>
+      {/if}
 
       <div class="reader-main">
         <!-- data-theme uses the live global context so TopBar changes retone the article (FIX 1) -->
@@ -409,7 +431,9 @@
         </article>
       </div>
 
-      <HighlightsSidebar {highlights} {orphans} onjump={jumpTo} ondelete={deleteHighlight} />
+      {#if isDesktop}
+        <HighlightsSidebar {highlights} {orphans} onjump={jumpTo} ondelete={deleteHighlight} />
+      {/if}
     </div>
   {/if}
 </div>
@@ -426,9 +450,42 @@
   onCancel={() => (confirmingDelete = false)}
 />
 
-<Sheet open={mobileTocOpen} onClose={() => (mobileTocOpen = false)} title="chapters">
-  <ChaptersSidebar {toc} activeId={activeHeadingId} onjump={jumpToHeading} />
-</Sheet>
+{#if content && !isDesktop}
+  <a class="back-floating" href="/library" data-hidden={!controlsVisible}>
+    <ArrowLeft class="icon-sm" aria-hidden="true" /> library
+  </a>
+
+  <ReaderControlBar
+    {hasChapters}
+    hidden={!controlsVisible}
+    active={activeSheet}
+    onOpen={(s) => (activeSheet = s)}
+  />
+
+  <BottomSheet open={activeSheet === "type"} onClose={() => (activeSheet = null)} title="text">
+    <ReaderControls {prefs} onChange={savePrefs} />
+  </BottomSheet>
+
+  {#if hasChapters}
+    <BottomSheet open={activeSheet === "chapters"} onClose={() => (activeSheet = null)} title="chapters">
+      <ChaptersSidebar {toc} activeId={activeHeadingId} onjump={jumpToHeading} />
+    </BottomSheet>
+  {/if}
+
+  <BottomSheet open={activeSheet === "highlights"} onClose={() => (activeSheet = null)} title="highlights">
+    <HighlightsSidebar {highlights} {orphans} onjump={(id) => { jumpTo(id); activeSheet = null; }} ondelete={deleteHighlight} />
+  </BottomSheet>
+
+  <BottomSheet open={activeSheet === "more"} onClose={() => (activeSheet = null)} title="more">
+    <TagEditor tags={manualTags.map(t => ({ id: t.id, name: t.name }))} onadd={addTag} onremove={removeTag} />
+    <ArticleActions
+      {collections}
+      onAddToCollection={addToCollection}
+      onArchive={archive}
+      onDelete={() => (confirmingDelete = true)}
+    />
+  </BottomSheet>
+{/if}
 
 <style>
   /* --reading-measure is set inline on .reader-shell so the column width
@@ -440,20 +497,6 @@
   .bar .back:hover { color: var(--color-text); }
 
   .rail-heading { font-family: var(--font-ui); font-size: var(--text-sm); color: var(--color-text-muted); margin: 0 0 var(--space-2); }
-  /* Chapters live in the Rail on desktop; on mobile they move into the Sheet. */
-  .rail-chapters { display: none; }
-  .toc-trigger {
-    display: inline-flex; align-items: center; min-height: 44px; padding: 0 var(--space-2);
-    background: var(--color-surface); border: 1px solid var(--color-border);
-    border-radius: var(--radius-md); color: var(--color-text-muted);
-    font-family: var(--font-ui); font-size: var(--text-sm); cursor: pointer;
-    margin-left: auto;
-  }
-  .toc-trigger:hover { color: var(--color-accent); }
-  @media (min-width: 1024px) {
-    .rail-chapters { display: block; }
-    .toc-trigger { display: none; }
-  }
 
   .reader {
     background: var(--reading-bg); color: var(--reading-text);
@@ -491,4 +534,21 @@
   .reader-source { display: flex; align-items: center; gap: var(--space-2); flex-wrap: wrap; margin: 0 0 var(--space-4); }
   .reader-source .dot { color: var(--color-text-muted); }
   .reader-source :global(.open-original) { font-family: var(--font-ui); font-size: var(--text-sm); height: auto; padding: 0; gap: var(--space-1); }
+
+  .back-floating {
+    display: inline-flex; align-items: center; gap: var(--space-1);
+    position: fixed; z-index: 30;
+    top: calc(env(safe-area-inset-top) + var(--space-2)); left: var(--space-2);
+    min-height: 44px; padding: 0 var(--space-3);
+    background: var(--color-surface); border: 1px solid var(--color-border);
+    border-radius: var(--radius-pill); box-shadow: var(--shadow-lg);
+    font-family: var(--font-ui); font-size: var(--text-sm);
+    color: var(--color-text-muted); text-decoration: none;
+    transition: transform var(--dur-base) var(--ease-paper), opacity var(--dur-base) var(--ease-paper);
+  }
+  .back-floating:hover { color: var(--color-accent); }
+  .back-floating[data-hidden="true"] { transform: translateY(calc(-100% - var(--space-4))); opacity: 0; pointer-events: none; }
+  /* Keep the last lines of prose clear of the fixed bottom bar on mobile. */
+  @media (max-width: 1023.98px) { .reader-shell { padding-bottom: 72px; } }
+  @media (prefers-reduced-motion: reduce) { .back-floating { transition: none; } }
 </style>

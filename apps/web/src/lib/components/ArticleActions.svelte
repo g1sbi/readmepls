@@ -34,11 +34,14 @@
   .article-actions :global(.dropdown__trigger),
   .action-icon {
     display: inline-flex; align-items: center; justify-content: center;
-    width: 2.25rem; height: 2.25rem; padding: 0;
+    padding: 0;
     background: var(--color-surface); border: 1px solid var(--color-border);
     border-radius: var(--radius-md); color: var(--color-text-muted); cursor: pointer;
     transition: color var(--dur-fast) var(--ease-out), box-shadow var(--dur-fast) var(--ease-out);
   }
+  .article-actions :global(.dropdown__trigger) { width: 2.25rem; height: 2.25rem; }
+  /* Bumped to a 44px touch target — this now appears in the mobile "more" sheet. */
+  .action-icon { width: 44px; height: 44px; }
   .article-actions :global(.dropdown__trigger):hover,
   .action-icon:hover { color: var(--color-accent); box-shadow: var(--shadow-sm); }
   .article-actions :global(.dropdown__trigger):focus-visible,
