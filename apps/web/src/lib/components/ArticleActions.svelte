@@ -39,8 +39,8 @@
     border-radius: var(--radius-md); color: var(--color-text-muted); cursor: pointer;
     transition: color var(--dur-fast) var(--ease-out), box-shadow var(--dur-fast) var(--ease-out);
   }
-  .article-actions :global(.dropdown__trigger) { width: 2.25rem; height: 2.25rem; }
-  /* Bumped to a 44px touch target — this now appears in the mobile "more" sheet. */
+  /* 44px touch targets — all three render together in the mobile "more" sheet. */
+  .article-actions :global(.dropdown__trigger),
   .action-icon { width: 44px; height: 44px; }
   .article-actions :global(.dropdown__trigger):hover,
   .action-icon:hover { color: var(--color-accent); box-shadow: var(--shadow-sm); }
