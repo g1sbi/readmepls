@@ -287,6 +287,13 @@
   }
 
   onMount(async () => {
+    // Set up before the article fetch (not after) so isDesktop is correct
+    // from the very first paint — including during the loading skeleton,
+    // which otherwise had no back link on either breakpoint.
+    desktopMq = window.matchMedia("(min-width: 1024px)");
+    isDesktop = desktopMq.matches;
+    desktopMq.addEventListener("change", onDesktopChange);
+
     const id = $page.params.id;
     if (!id) return;
     article = await pb.collection("articles").getOne(id, { expand: "content.source" });
@@ -311,9 +318,6 @@
     // Attach before the remaining loads (not after) so a scroll during those
     // network calls is never silently dropped.
     prevScrollY = window.scrollY;
-    desktopMq = window.matchMedia("(min-width: 1024px)");
-    isDesktop = desktopMq.matches;
-    desktopMq.addEventListener("change", onDesktopChange);
     window.addEventListener("scroll", onScroll, { passive: true });
     document.addEventListener("visibilitychange", onVisibilityChange);
     await loadHighlights(id);
@@ -450,11 +454,13 @@
   onCancel={() => (confirmingDelete = false)}
 />
 
-{#if content && !isDesktop}
+{#if !isDesktop}
   <a class="back-floating" href="/library" data-hidden={!controlsVisible}>
     <ArrowLeft class="icon-sm" aria-hidden="true" /> library
   </a>
+{/if}
 
+{#if content && !isDesktop}
   <ReaderControlBar
     {hasChapters}
     hidden={!controlsVisible}
