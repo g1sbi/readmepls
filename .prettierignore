@@ -1,0 +1,17 @@
+node_modules/
+dist/
+.svelte-kit/
+pnpm-lock.yaml
+
+# release-please owns this file
+CHANGELOG.md
+
+# PocketBase's own JS dialect, not our style
+pocketbase/pb_migrations/
+pocketbase/pb_hooks/
+
+# tooling scratch, not project source
+.superpowers/
+
+# design source of truth; reformatting churns the palette reference
+assets/_banner.html
