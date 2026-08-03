@@ -3,6 +3,7 @@ import { Readability } from "@mozilla/readability";
 import type { ExtractResult } from "@readmepls/types";
 import { sanitizeContentHtml } from "./sanitize.js";
 import { buildToc } from "./toc.js";
+import { preprocessHeadings } from "./preprocess-headings.js";
 
 const WORDS_PER_MIN = 220;
 
@@ -28,6 +29,9 @@ export function parseArticleHtml(url: string, html: string): ExtractResult {
     doc.querySelector("time[datetime]")?.getAttribute("datetime") ??
     null;
 
+  // Lift headings out of MediaWiki-style wrappers before Readability, which
+  // would otherwise discard them (leaving the article with no chapters).
+  preprocessHeadings(doc);
   const parsed = new Readability(doc).parse();
 
   if (!parsed || !parsed.textContent.trim()) {
