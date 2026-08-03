@@ -112,11 +112,18 @@ Two environment facts the workflow must handle, both discovered during design:
   CI downloads it, reading the pinned version out of `pocketbase/Dockerfile`
   (`ARG PB_VERSION=0.39.4`) rather than duplicating the number, so there stays
   one source of truth.
-- **`.svelte-kit/` is gitignored with no `prepare` script.** A fresh checkout
-  has no generated SvelteKit types, so typecheck fails. Add
-  `"prepare": "svelte-kit sync"` to `apps/web/package.json` — this makes
-  `pnpm install` self-sufficient in CI and also removes the fresh-worktree
-  bootstrap step that currently has to be done by hand.
+- **`.svelte-kit/` is gitignored with no `prepare` script.** `apps/web/tsconfig.json`
+  and `apps/site/tsconfig.json` both `extends` `./.svelte-kit/tsconfig.json`,
+  which only exists after `svelte-kit sync` runs. On a fresh checkout Vite
+  cannot resolve that extends chain, and **all 84 web test files fail to
+  collect** (verified by moving the directory aside: `84 failed (84)`,
+  `Tests no tests`). Root `pnpm typecheck` is unaffected — `tsconfig.json`
+  includes only `packages/types/src`, `packages/core/src`, and
+  `apps/worker/src`, deliberately excluding the SvelteKit apps. So this breaks
+  the **test** step, not typecheck. Add `"prepare": "svelte-kit sync"` to
+  `apps/web/package.json` and `apps/site/package.json` so `pnpm install` is
+  self-sufficient; this also removes the fresh-worktree bootstrap step
+  currently done by hand.
 
 ## Risks
 
