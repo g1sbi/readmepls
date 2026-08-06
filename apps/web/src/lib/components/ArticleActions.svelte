@@ -14,16 +14,14 @@
 <div class="article-actions" role="group" aria-label="article actions">
   <DropdownMenu label="add to collection" align="start">
     {#snippet trigger()}<FolderPlus class="icon-md" aria-hidden="true" />{/snippet}
-    {#snippet children()}
-      <div class="menu-label">add to collection</div>
-      {#if collections.length > 0}
-        {#each collections as c (c.id)}
-          <MenuItem onSelect={() => onAddToCollection(c.id)}>{c.name}</MenuItem>
-        {/each}
-      {:else}
-        <div class="menu-empty">no collections yet</div>
-      {/if}
-    {/snippet}
+    <div class="menu-label">add to collection</div>
+    {#if collections.length > 0}
+      {#each collections as c (c.id)}
+        <MenuItem onSelect={() => onAddToCollection(c.id)}>{c.name}</MenuItem>
+      {/each}
+    {:else}
+      <div class="menu-empty">no collections yet</div>
+    {/if}
   </DropdownMenu>
   <button class="action-icon" onclick={onArchive} aria-label="archive article"><Archive class="icon-md" aria-hidden="true" /></button>
   <button class="action-icon" onclick={onDelete} aria-label="delete article"><Trash2 class="icon-md" aria-hidden="true" /></button>

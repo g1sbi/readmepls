@@ -1,8 +1,9 @@
 import { describe, it, expect } from "vitest";
+import type PocketBase from "pocketbase";
 import { sourceView } from "./source-view.js";
 
 // Minimal pb stub: only files.getUrl is used.
-const pb = { files: { getUrl: (rec: { id: string }, file: string) => `https://pb/${rec.id}/${file}` } } as any;
+const pb = { files: { getUrl: (rec: { id: string }, file: string) => `https://pb/${rec.id}/${file}` } } as unknown as PocketBase;
 
 describe("sourceView", () => {
   it("builds host, name and favicon url from an expanded source", () => {

@@ -1,4 +1,5 @@
 import { describe, it, expect, vi } from "vitest";
+import type Anthropic from "@anthropic-ai/sdk";
 import { ClaudeProvider } from "./claude-provider.js";
 
 describe("ClaudeProvider", () => {
@@ -11,7 +12,7 @@ describe("ClaudeProvider", () => {
         },
       ],
     });
-    const fakeClient = { messages: { create } } as any;
+    const fakeClient = { messages: { create } } as unknown as Pick<Anthropic, "messages">;
     const provider = new ClaudeProvider(fakeClient, "claude-haiku-4-5");
 
     const res = await provider.tagAndSummarize("some long article text");
@@ -25,7 +26,10 @@ describe("ClaudeProvider", () => {
     const create = vi.fn().mockResolvedValue({
       content: [{ type: "text", text: "not json" }],
     });
-    const provider = new ClaudeProvider({ messages: { create } } as any, "m");
+    const provider = new ClaudeProvider(
+      { messages: { create } } as unknown as Pick<Anthropic, "messages">,
+      "m",
+    );
     await expect(provider.tagAndSummarize("x")).rejects.toThrow();
   });
 });

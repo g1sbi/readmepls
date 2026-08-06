@@ -29,7 +29,7 @@
 <Popover.Root open onOpenChange={onOpenChange}>
   <Popover.Content customAnchor={anchor} class="hl-popover" role="dialog" aria-label="add highlight" sideOffset={4}>
     <div class="swatches">
-      {#each colors as c}
+      {#each colors as c (c)}
         <button
           class="swatch"
           style="background: var(--hl-{c});"

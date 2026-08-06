@@ -161,7 +161,6 @@ async function main(): Promise<void> {
   }
 
   console.log(`[worker ${workerId}] polling ${pbUrl} every ${pollMs}ms`);
-  // eslint-disable-next-line no-constant-condition
   while (true) {
     try {
       const worked = await runLoopOnce(pb, workerId, deps);

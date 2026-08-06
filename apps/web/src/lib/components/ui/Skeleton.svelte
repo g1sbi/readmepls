@@ -5,7 +5,7 @@
 </script>
 
 <div class="skeleton" aria-hidden="true">
-  {#each Array(lines) as _}
+  {#each Array(lines) as _, i (i)}
     <span class="skeleton-line" style="border-radius: {radius};"></span>
   {/each}
 </div>

@@ -26,7 +26,7 @@ function pbStub(over: Partial<Record<string, unknown>> = {}) {
     },
   };
   return {
-    filter: (expr: string, params?: Record<string, unknown>) =>
+    filter: (expr: string, _params?: Record<string, unknown>) =>
       `FILTER(${expr})`,
     collection: (name: string) => {
       if (name === "articles")

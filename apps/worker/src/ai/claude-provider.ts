@@ -17,7 +17,7 @@ export class ClaudeProvider implements AIProvider {
       max_tokens: 512,
       messages: [{ role: "user", content: PROMPT + text.slice(0, 12000) }],
     });
-    const block = msg.content.find((b: any) => b.type === "text");
+    const block = msg.content.find((b) => b.type === "text");
     const raw = block && "text" in block ? (block.text as string) : "";
     return AITagResult.parse(JSON.parse(raw));
   }
