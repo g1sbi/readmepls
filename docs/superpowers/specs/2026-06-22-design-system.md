@@ -1,14 +1,14 @@
 # readmepls — design system
 
 Derived from `assets/_banner.html`. The canonical, machine-readable source of
-truth is `apps/web/src/lib/styles/tokens.css`. This doc explains the *why* and
+truth is `apps/web/src/lib/styles/tokens.css`. This doc explains the _why_ and
 the rules that keep components retheme-able by the Phase 3 design phase.
 
 ## Concept
 
 **warm-paper stationery.** A well-loved-paperback feel: warm paper substrate,
 warm ink for type, exactly **one hot accent** (terracotta), and tactile analog
-motifs — dog-ear folds, faint grain, soft *brown* shadows, generous rounding.
+motifs — dog-ear folds, faint grain, soft _brown_ shadows, generous rounding.
 Friendly, lowercase voice. Reading is the hero; chrome stays quiet.
 
 Anti-goals: cold grays, neon, purple-on-white gradients, hard 90° corners,
@@ -45,7 +45,7 @@ Two families, clear division of labor:
   the one screen where the user reads thousands of words. Fredoka is a display
   face and would fatigue at article length, so it never sets body copy.
 - **IBM Plex Mono** (`--font-mono`) — code inside articles, metadata, token
-  values. Its slab terminals echo Newsreader's serifs, so code sits *with* the
+  values. Its slab terminals echo Newsreader's serifs, so code sits _with_ the
   reading column rather than clashing — warmer and more on-brand than the cold
   geometric coder monos. Embedded weights: 400 (code) + 600 (emphasis).
 
@@ -55,7 +55,7 @@ prefs (`--reading-size/leading/measure/font`) the typography panel writes to.
 Fonts are self-hosted (no external CDN): woff2 in `apps/web/static/fonts/`,
 `@font-face` in `apps/web/src/lib/styles/fonts.css`, loaded by the root
 `+layout.svelte`. Latin subset only for now. tokens.css declares the family
-*stacks*; fonts.css loads the *files*.
+_stacks_; fonts.css loads the _files_.
 
 ## Shape, depth, texture
 

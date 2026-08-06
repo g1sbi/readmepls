@@ -5,7 +5,8 @@ import Button from "./Button.svelte";
 import Tag from "./Tag.svelte";
 import Spinner from "./Spinner.svelte";
 
-const text = (s: string) => createRawSnippet(() => ({ render: () => `<span>${s}</span>` }));
+const text = (s: string) =>
+  createRawSnippet(() => ({ render: () => `<span>${s}</span>` }));
 
 describe("ui primitives", () => {
   it("Button renders children and fires onclick", async () => {
@@ -27,7 +28,9 @@ describe("ui primitives", () => {
   });
 
   it("Tag renders its label through the shadcn Badge", () => {
-    render(Tag, { props: { children: createRawSnippet(() => ({ render: () => "ai" })) } });
+    render(Tag, {
+      props: { children: createRawSnippet(() => ({ render: () => "ai" })) },
+    });
     const el = screen.getByText("ai");
     // shadcn Badge renders a data-slot="badge" attribute on its root element.
     expect(el.closest('[data-slot="badge"]')).not.toBeNull();
@@ -40,6 +43,9 @@ describe("ui primitives", () => {
 
   it("Button exposes its variant for styling", () => {
     render(Button, { children: text("Go"), variant: "accent" });
-    expect(screen.getByRole("button", { name: "Go" })).toHaveAttribute("data-variant", "accent");
+    expect(screen.getByRole("button", { name: "Go" })).toHaveAttribute(
+      "data-variant",
+      "accent",
+    );
   });
 });

@@ -3,7 +3,11 @@ import { createSafeFetchBytes } from "./safe-fetch.js";
 
 const publicIp = ["93.184.216.34"];
 
-function resLike(status: number, body: Uint8Array, headers: Record<string, string> = {}) {
+function resLike(
+  status: number,
+  body: Uint8Array,
+  headers: Record<string, string> = {},
+) {
   return {
     status,
     headers: { get: (n: string) => headers[n.toLowerCase()] ?? null },
@@ -11,7 +15,10 @@ function resLike(status: number, body: Uint8Array, headers: Record<string, strin
     // literals below), but TS 5.7 widens Uint8Array's buffer type to
     // ArrayBufferLike, so .slice() types as ArrayBuffer | SharedArrayBuffer.
     arrayBuffer: async () =>
-      body.buffer.slice(body.byteOffset, body.byteOffset + body.byteLength) as ArrayBuffer,
+      body.buffer.slice(
+        body.byteOffset,
+        body.byteOffset + body.byteLength,
+      ) as ArrayBuffer,
   };
 }
 
@@ -40,7 +47,9 @@ describe("createSafeFetchBytes", () => {
       lookup: async () => ["127.0.0.1"],
       fetchFn: async () => resLike(200, new Uint8Array([1])),
     });
-    await expect(fetchBytes("https://internal/favicon.ico")).rejects.toThrow(/blocked address/);
+    await expect(fetchBytes("https://internal/favicon.ico")).rejects.toThrow(
+      /blocked address/,
+    );
   });
 
   it("refuses a redirect hop that points at a private address", async () => {
@@ -48,8 +57,12 @@ describe("createSafeFetchBytes", () => {
       lookup: async (host: string) =>
         host === "example.com" ? publicIp : ["127.0.0.1"],
       fetchFn: async () =>
-        resLike(302, new Uint8Array(), { location: "http://internal.evil.com/favicon.ico" }),
+        resLike(302, new Uint8Array(), {
+          location: "http://internal.evil.com/favicon.ico",
+        }),
     });
-    await expect(fetchBytes("https://example.com/favicon.ico")).rejects.toThrow(/blocked address/);
+    await expect(fetchBytes("https://example.com/favicon.ico")).rejects.toThrow(
+      /blocked address/,
+    );
   });
 });

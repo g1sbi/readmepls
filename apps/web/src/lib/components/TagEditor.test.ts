@@ -14,7 +14,11 @@ describe("TagEditor", () => {
 
   it("emits remove for an existing tag", async () => {
     const onremove = vi.fn();
-    render(TagEditor, { tags: [{ id: "t1", name: "ml" }], onadd: vi.fn(), onremove });
+    render(TagEditor, {
+      tags: [{ id: "t1", name: "ml" }],
+      onadd: vi.fn(),
+      onremove,
+    });
     await fireEvent.click(screen.getByRole("button", { name: /remove ml/i }));
     expect(onremove).toHaveBeenCalledWith("t1");
   });

@@ -16,7 +16,7 @@
 - PocketBase version is single-sourced from `pocketbase/Dockerfile` (`ARG PB_VERSION=0.39.4`). Never hardcode the number in a second place.
 - Prettier formatting options stay at defaults (double quotes, semicolons, 2-space, 80 cols, trailing commas). The config exists to register the Svelte plugin, not to pick a style.
 - ESLint stays at `recommended` tiers. No type-aware linting. No new `eslint-disable` comments to silence genuine findings — if violations are real, stop and report.
-- `.prettierignore` and `eslint.config.js` `ignores` must agree on every path they *both* care about — build output, `pocketbase/pb_migrations/`, `pocketbase/pb_hooks/`, `.superpowers/`. Entries for file types ESLint never reads (`CHANGELOG.md`, `pnpm-lock.yaml`, `assets/_banner.html`) belong in `.prettierignore` only.
+- `.prettierignore` and `eslint.config.js` `ignores` must agree on every path they _both_ care about — build output, `pocketbase/pb_migrations/`, `pocketbase/pb_hooks/`, `.superpowers/`. Entries for file types ESLint never reads (`CHANGELOG.md`, `pnpm-lock.yaml`, `assets/_banner.html`) belong in `.prettierignore` only.
 - Conventional Commits. The reformat commit is `style:` and contains nothing but formatting.
 
 ---
@@ -26,11 +26,13 @@
 Registers `prettier-plugin-svelte` so the 107 currently-invisible `.svelte` files get checked, and scopes Prettier to real source.
 
 **Files:**
+
 - Create: `.prettierrc`
 - Create: `.prettierignore`
 - Modify: `package.json` (devDependencies)
 
 **Interfaces:**
+
 - Consumes: nothing.
 - Produces: `.prettierignore` path list, reused verbatim as `ignores` in Task 2's `eslint.config.js`.
 
@@ -109,10 +111,12 @@ git commit -m "chore: add prettier config with svelte plugin and ignore list"
 ESLint 9 currently refuses to run at all — no config file exists. This makes `eslint .` execute.
 
 **Files:**
+
 - Create: `eslint.config.js`
 - Modify: `package.json` (devDependencies)
 
 **Interfaces:**
+
 - Consumes: the ignore path list from Task 1's `.prettierignore`.
 - Produces: a working `eslint .`; Task 5's CI job depends on `pnpm lint` exiting 0.
 
@@ -195,7 +199,7 @@ Expected: it runs to completion. Some violations are likely.
 
 **STOP CONDITION — this is a decision gate, not a step to push through.**
 If violations are auto-fixable style leftovers, run `pnpm exec eslint . --fix`.
-If they are *genuine* findings (unused vars, unsafe patterns, real bugs) across many files, **halt and report the list to the user**. Do not add `eslint-disable` comments and do not weaken rules to force a green run. The spec names this explicitly as a non-goal.
+If they are _genuine_ findings (unused vars, unsafe patterns, real bugs) across many files, **halt and report the list to the user**. Do not add `eslint-disable` comments and do not weaken rules to force a green run. The spec names this explicitly as a non-goal.
 
 - [x] **Step 5: Confirm ESLint is clean**
 
@@ -219,9 +223,11 @@ git commit -m "chore: add eslint flat config at recommended tier"
 The only task touching application source. Mechanical, and gated by the full test suite.
 
 **Files:**
+
 - Modify: ~340 files across `apps/`, `packages/`, `docs/`, plus root Markdown.
 
 **Interfaces:**
+
 - Consumes: `.prettierrc` + `.prettierignore` from Task 1.
 - Produces: the commit SHA that Task 4 records in `.git-blame-ignore-revs`.
 
@@ -286,10 +292,12 @@ git commit -m "style: format repo with prettier"
 A 340-file reformat destroys blame attribution unless recorded.
 
 **Files:**
+
 - Create: `.git-blame-ignore-revs`
 - Modify: `CLAUDE.md` (document the one-time local setup)
 
 **Interfaces:**
+
 - Consumes: the `style:` commit SHA from Task 3.
 
 - [ ] **Step 1: Capture the reformat SHA and write the file**
@@ -318,7 +326,7 @@ Add to the Working agreements section:
 ```markdown
 - **Blame ignores the reformat.** A one-time repo-wide prettier reformat would
   otherwise own every line. Run `git config blame.ignoreRevsFile
-  .git-blame-ignore-revs` once per clone so `git blame` shows real authors.
+.git-blame-ignore-revs` once per clone so `git blame` shows real authors.
 ```
 
 - [ ] **Step 4: Commit**
@@ -335,10 +343,12 @@ git commit -m "chore: ignore reformat commit in git blame"
 No workflow currently runs lint, typecheck, or tests — the reason the missing configs went unnoticed for so long.
 
 **Files:**
+
 - Create: `.github/workflows/ci.yml`
 - Modify: `apps/web/package.json`, `apps/site/package.json` (add `prepare`)
 
 **Interfaces:**
+
 - Consumes: working `pnpm lint` from Tasks 1–3.
 
 - [ ] **Step 1: Add `prepare` scripts so a fresh checkout can run tests**
@@ -438,6 +448,7 @@ git commit -m "ci: run lint, typecheck, and tests on push and pull request"
 Per CLAUDE.md working agreements, a fully implemented plan and its paired spec are deleted once merged.
 
 **Files:**
+
 - Delete: `docs/superpowers/specs/2026-08-03-lint-tooling-design.md`
 - Delete: `docs/superpowers/plans/2026-08-03-lint-tooling.md`
 
@@ -474,7 +485,7 @@ git commit -m "docs: remove shipped lint tooling plan and spec"
 
 The whole plan is done when:
 
-- `pnpm lint` exits 0 (both halves — Prettier *and* ESLint)
+- `pnpm lint` exits 0 (both halves — Prettier _and_ ESLint)
 - `pnpm typecheck` exits 0
 - `pnpm test` reports 199 files / 762 tests passing, unchanged from before the reformat
 - `pnpm exec prettier --check apps/web/src/routes/+layout.svelte` succeeds, proving Svelte coverage is real

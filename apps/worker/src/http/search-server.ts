@@ -11,7 +11,10 @@ import type { EmbeddingProvider } from "../embed/provider.js";
  * byte at a time. `timingSafeEqual` compares in fixed time; it throws on
  * unequal-length buffers, so we length-check first (the length is not the secret).
  */
-function secretMatches(provided: string | string[] | undefined, expected: string): boolean {
+function secretMatches(
+  provided: string | string[] | undefined,
+  expected: string,
+): boolean {
   if (!expected || typeof provided !== "string") return false;
   const a = Buffer.from(provided);
   const b = Buffer.from(expected);

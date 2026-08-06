@@ -27,6 +27,7 @@
 Installs Playwright, adds config with the three-project structure, and a script that boots PocketBase + web + worker locally. Deliverable: `pnpm e2e` boots the stack and passes a trivial spec.
 
 **Files:**
+
 - Create: `playwright.config.ts`
 - Create: `e2e/support/stack.ts`
 - Create: `e2e/support/global-setup.ts`
@@ -36,6 +37,7 @@ Installs Playwright, adds config with the three-project structure, and a script 
 - Modify: `.gitignore` (ignore Playwright output)
 
 **Interfaces:**
+
 - Consumes: `startEphemeralPb` from `@readmepls/core/src/pb/test-harness.js` — `startEphemeralPb(opts?: { dir?, migrationsDir?, env? }): Promise<PbHandle>` where `PbHandle = { url: string; pb: PocketBase; stop: () => Promise<void> }`. Note the `/src/` segment and the `.js` extension: core's export map is `{"./*": "./*"}`, so the specifier maps literally to the on-disk path. This is the form every existing consumer uses (see `apps/worker/src/run-loop.test.ts:4`).
 - Produces: `E2E_BASE_URL` convention (defaults to `http://127.0.0.1:4173`); `e2e/support/stack.ts` exporting `startStack(): Promise<StackHandle>` and `StackHandle = { baseUrl: string; pbUrl: string; stop: () => Promise<void> }`.
 - Produces: `globalSetup`/`globalTeardown` wiring so `pnpm e2e` is self-contained locally, and a no-op when `E2E_BASE_URL` is set (CI drives its own stack).
@@ -73,7 +75,10 @@ Create `e2e/support/stack.ts`:
 
 ```ts
 import { spawn, type ChildProcess } from "node:child_process";
-import { startEphemeralPb, type PbHandle } from "@readmepls/core/src/pb/test-harness.js";
+import {
+  startEphemeralPb,
+  type PbHandle,
+} from "@readmepls/core/src/pb/test-harness.js";
 
 export interface StackHandle {
   baseUrl: string;
@@ -109,17 +114,21 @@ export async function startStack(): Promise<StackHandle> {
     },
   });
 
-  const web = spawn("pnpm", ["--filter", "@readmepls/web", "preview", "--port", String(WEB_PORT)], {
-    stdio: "inherit",
-    env: {
-      ...process.env,
-      PUBLIC_PB_URL: pb.url,
-      PB_URL: pb.url,
-      SELF_HOSTED: "true",
-      WORKER_SEARCH_SECRET: SEARCH_SECRET,
-      WORKER_SEARCH_URL: `http://127.0.0.1:${WORKER_SEARCH_PORT}`,
+  const web = spawn(
+    "pnpm",
+    ["--filter", "@readmepls/web", "preview", "--port", String(WEB_PORT)],
+    {
+      stdio: "inherit",
+      env: {
+        ...process.env,
+        PUBLIC_PB_URL: pb.url,
+        PB_URL: pb.url,
+        SELF_HOSTED: "true",
+        WORKER_SEARCH_SECRET: SEARCH_SECRET,
+        WORKER_SEARCH_URL: `http://127.0.0.1:${WORKER_SEARCH_PORT}`,
+      },
     },
-  });
+  );
 
   const baseUrl = `http://127.0.0.1:${WEB_PORT}`;
   await waitForHttp(baseUrl);
@@ -210,7 +219,9 @@ export default defineConfig({
   forbidOnly: !!process.env.CI,
   retries: process.env.CI ? 1 : 0,
   workers: process.env.CI ? 2 : undefined,
-  reporter: process.env.CI ? [["github"], ["html", { open: "never" }]] : [["list"]],
+  reporter: process.env.CI
+    ? [["github"], ["html", { open: "never" }]]
+    : [["list"]],
   use: {
     baseURL,
     trace: "on-first-retry",
@@ -282,9 +293,10 @@ git commit -m "test: add playwright harness and local stack orchestration"
 
 Adds `FixtureFetcher` and `selectFetcher`, mirroring the existing `selectAiProvider`/`selectEmbedder` pattern, and wires it into `main.ts`. The SSRF guard is untouched.
 
-**Why this is safe:** the rejected alternative (`SAFE_FETCH_ALLOW_PRIVATE`) would let a *user-supplied URL* reach internal addresses — a real SSRF hole. `FETCH_PROVIDER=fixture` serves only from a fixture directory and performs no network IO at all. Misconfiguring it in production breaks extraction loudly; it cannot exfiltrate anything.
+**Why this is safe:** the rejected alternative (`SAFE_FETCH_ALLOW_PRIVATE`) would let a _user-supplied URL_ reach internal addresses — a real SSRF hole. `FETCH_PROVIDER=fixture` serves only from a fixture directory and performs no network IO at all. Misconfiguring it in production breaks extraction loudly; it cannot exfiltrate anything.
 
 **Files:**
+
 - Create: `apps/worker/src/fetch/fixture-fetcher.ts`
 - Create: `apps/worker/src/fetch/fixture-fetcher.test.ts`
 - Create: `apps/worker/src/fetch/select-fetcher.ts`
@@ -295,6 +307,7 @@ Adds `FixtureFetcher` and `selectFetcher`, mirroring the existing `selectAiProvi
 - Modify: `.env.example` (document `FETCH_PROVIDER` / `FIXTURE_DIR`)
 
 **Interfaces:**
+
 - Consumes: `createSafeFetchHtml` from `./safe-fetch.js` (existing).
 - Produces:
   - `createFixtureFetchHtml(dir: string): (url: string) => Promise<string>`
@@ -316,10 +329,13 @@ import { createFixtureFetchHtml } from "./fixture-fetcher.js";
 
 function fixtureDir(): string {
   const dir = mkdtempSync(join(tmpdir(), "fixtures-"));
-  writeFileSync(join(dir, "a.html"), "<html><body><h1>Hello</h1></body></html>");
+  writeFileSync(
+    join(dir, "a.html"),
+    "<html><body><h1>Hello</h1></body></html>",
+  );
   writeFileSync(
     join(dir, "manifest.json"),
-    JSON.stringify({ "https://example.com/a": "a.html" })
+    JSON.stringify({ "https://example.com/a": "a.html" }),
   );
   return dir;
 }
@@ -327,13 +343,15 @@ function fixtureDir(): string {
 describe("createFixtureFetchHtml", () => {
   it("serves the mapped file for a known url", async () => {
     const fetchHtml = createFixtureFetchHtml(fixtureDir());
-    await expect(fetchHtml("https://example.com/a")).resolves.toContain("<h1>Hello</h1>");
+    await expect(fetchHtml("https://example.com/a")).resolves.toContain(
+      "<h1>Hello</h1>",
+    );
   });
 
   it("throws on an unmapped url so tests fail loudly", async () => {
     const fetchHtml = createFixtureFetchHtml(fixtureDir());
     await expect(fetchHtml("https://example.com/missing")).rejects.toThrow(
-      /no fixture for/
+      /no fixture for/,
     );
   });
 
@@ -344,7 +362,7 @@ describe("createFixtureFetchHtml", () => {
     writeFileSync(join(dir, "local.html"), "<p>local</p>");
     writeFileSync(
       join(dir, "manifest.json"),
-      JSON.stringify({ "http://127.0.0.1:9/x": "local.html" })
+      JSON.stringify({ "http://127.0.0.1:9/x": "local.html" }),
     );
     const fetchHtml = createFixtureFetchHtml(dir);
     await expect(fetchHtml("http://127.0.0.1:9/x")).resolves.toContain("local");
@@ -375,10 +393,12 @@ import { join } from "node:path";
  * An unmapped URL throws rather than returning empty, so a spec that captures
  * the wrong URL fails loudly instead of silently extracting nothing.
  */
-export function createFixtureFetchHtml(dir: string): (url: string) => Promise<string> {
+export function createFixtureFetchHtml(
+  dir: string,
+): (url: string) => Promise<string> {
   return async (url: string): Promise<string> => {
     const manifest = JSON.parse(
-      readFileSync(join(dir, "manifest.json"), "utf8")
+      readFileSync(join(dir, "manifest.json"), "utf8"),
     ) as Record<string, string>;
     const file = manifest[url];
     if (!file) throw new Error(`no fixture for ${url}`);
@@ -410,7 +430,7 @@ describe("selectFetcher", () => {
     const makeSafe = vi.fn();
     const f = selectFetcher(
       { FETCH_PROVIDER: "fixture", FIXTURE_DIR: "e2e/fixtures" },
-      makeSafe
+      makeSafe,
     );
     expect(makeSafe).not.toHaveBeenCalled();
     expect(typeof f).toBe("function");
@@ -425,7 +445,7 @@ describe("selectFetcher", () => {
 
   it("throws when fixture mode is requested without a directory", () => {
     expect(() => selectFetcher({ FETCH_PROVIDER: "fixture" }, vi.fn())).toThrow(
-      /FIXTURE_DIR/
+      /FIXTURE_DIR/,
     );
   });
 });
@@ -456,7 +476,7 @@ export type FetchHtml = (url: string) => Promise<string>;
  */
 export function selectFetcher(
   env: { FETCH_PROVIDER?: string; FIXTURE_DIR?: string },
-  makeSafe: () => FetchHtml
+  makeSafe: () => FetchHtml,
 ): FetchHtml {
   if (env.FETCH_PROVIDER === "fixture") {
     if (!env.FIXTURE_DIR) {
@@ -487,23 +507,23 @@ import { selectFetcher } from "./fetch/select-fetcher.js";
 Then replace the existing `fetchHtml` construction:
 
 ```ts
-  const fetchHtml = createSafeFetchHtml({
-    lookup: async (host) =>
-      (await dnsLookup(host, { all: true })).map((a) => a.address),
-    fetchFn: (url) => fetch(url, { redirect: "manual" }),
-  });
+const fetchHtml = createSafeFetchHtml({
+  lookup: async (host) =>
+    (await dnsLookup(host, { all: true })).map((a) => a.address),
+  fetchFn: (url) => fetch(url, { redirect: "manual" }),
+});
 ```
 
 with:
 
 ```ts
-  const fetchHtml = selectFetcher(process.env, () =>
-    createSafeFetchHtml({
-      lookup: async (host) =>
-        (await dnsLookup(host, { all: true })).map((a) => a.address),
-      fetchFn: (url) => fetch(url, { redirect: "manual" }),
-    }),
-  );
+const fetchHtml = selectFetcher(process.env, () =>
+  createSafeFetchHtml({
+    lookup: async (host) =>
+      (await dnsLookup(host, { all: true })).map((a) => a.address),
+    fetchFn: (url) => fetch(url, { redirect: "manual" }),
+  }),
+);
 ```
 
 `fetchBytes` and `fetchRedirectTarget` stay on the real safe-fetch path — the article extractor only needs `fetchHtml`, and leaving the others untouched keeps the swap minimal.
@@ -584,11 +604,13 @@ git commit -m "feat(worker): add env-selected fixture fetcher for e2e"
 Signs up and logs in once, saving `storageState` for every downstream spec. This is the only place the signup flow is asserted.
 
 **Files:**
+
 - Create: `e2e/auth.setup.ts`
 - Create: `e2e/support/user.ts`
 - Modify: `apps/web/src/routes/login/+page.svelte` (add testids)
 
 **Interfaces:**
+
 - Consumes: `storageState` path `e2e/.auth/user.json` from Task 1's config.
 - Produces: `e2e/support/user.ts` exporting `TEST_USER: { email: string; password: string }` and `uniqueEmail(): string`.
 
@@ -597,9 +619,21 @@ Signs up and logs in once, saving `storageState` for every downstream spec. This
 In `apps/web/src/routes/login/+page.svelte`, add `data-testid` attributes. The email/password inputs and the toggle:
 
 ```svelte
-      <Input bind:value={email} type="email" placeholder="email" data-testid="auth-email" />
-      <Input bind:value={password} type="password" placeholder="password" data-testid="auth-password" />
-      <Button type="submit" variant="accent" data-testid="auth-submit">{mode === "signin" ? "sign in" : "sign up"}</Button>
+<Input
+  bind:value={email}
+  type="email"
+  placeholder="email"
+  data-testid="auth-email"
+/>
+<Input
+  bind:value={password}
+  type="password"
+  placeholder="password"
+  data-testid="auth-password"
+/>
+<Button type="submit" variant="accent" data-testid="auth-submit"
+  >{mode === "signin" ? "sign in" : "sign up"}</Button
+>
 ```
 
 and on the mode toggle button:
@@ -654,7 +688,7 @@ setup("sign up and persist the session", async ({ page }) => {
   // Anchored on the homepage's existing sr-only h1 rather than a testid, so
   // this task passes its own verification before Task 4 instruments the UI.
   await expect(
-    page.getByRole("heading", { name: "save any link and actually read it" })
+    page.getByRole("heading", { name: "save any link and actually read it" }),
   ).toBeVisible();
 
   await page.context().storageState({ path: AUTH_FILE });
@@ -691,6 +725,7 @@ git commit -m "test(e2e): add auth setup project with persisted session"
 The app has only two `data-testid` attributes today. Text selectors are brittle against this app's playful lowercase copy, so the flows under test get stable ids. This task adds them; Tasks 5 and 6 consume them.
 
 **Files:**
+
 - Modify: `apps/web/src/lib/components/CaptureBar.svelte`
 - Modify: `apps/web/src/lib/components/ArticleCard.svelte`
 - Modify: `apps/web/src/lib/components/SearchPalette.svelte`
@@ -699,6 +734,7 @@ The app has only two `data-testid` attributes today. Text selectors are brittle 
 - Modify: `apps/web/src/routes/read/[id]/+page.svelte`
 
 **Interfaces:**
+
 - Produces, consumed by Tasks 3, 5, and 6:
   - `capture-input`, `capture-submit` — homepage capture bar
   - `article-card` — one per card, with `data-article-id` carrying the record id
@@ -719,6 +755,7 @@ In `apps/web/src/lib/components/CaptureBar.svelte`, add `data-testid="capture-in
 - [ ] **Step 2: Instrument the article card**
 
 In `apps/web/src/lib/components/ArticleCard.svelte`:
+
 - On the root `.card` element: `data-testid="article-card"` and `data-article-id={article.id}`.
 - On the dropdown trigger inside `.card-menu`: `data-testid="article-card-menu"`.
 - On each collection menu item in the `{#each collections as c (c.id)}` loop: `data-testid="article-add-to-collection"` and `data-collection-id={c.id}`.
@@ -766,10 +803,12 @@ git commit -m "test(web): add data-testid hooks for the e2e suite"
 The one spec that runs the real pipeline: capture → worker extraction → library → search → reader. Serial, because each stage consumes the prior stage's artifact.
 
 **Files:**
+
 - Create: `e2e/capture.spec.ts`
 - Delete: `e2e/smoke.spec.ts` (superseded — this spec covers page loading)
 
 **Interfaces:**
+
 - Consumes: testids from Task 4; fixture URL `https://fixtures.e2e.test/sample-article`, title `Deterministic Fixture Article`, and search term `quokka` from Task 2.
 
 - [ ] **Step 1: Write the capture spec**
@@ -797,7 +836,9 @@ test.describe.serial("capture through read", () => {
       await page.goto("/library");
       // The worker polls every 500ms in e2e; extraction plus AI-mock plus
       // fake-embedding indexing lands well inside this window.
-      await expect(page.getByText(FIXTURE_TITLE)).toBeVisible({ timeout: 30_000 });
+      await expect(page.getByText(FIXTURE_TITLE)).toBeVisible({
+        timeout: 30_000,
+      });
     });
 
     await test.step("search finds it", async () => {
@@ -805,14 +846,16 @@ test.describe.serial("capture through read", () => {
       await page.getByTestId("search-input").fill(SEARCH_TERM);
       await expect(page.getByTestId("search-result").first()).toContainText(
         FIXTURE_TITLE,
-        { timeout: 15_000 }
+        { timeout: 15_000 },
       );
     });
 
     await test.step("opening it renders the article body", async () => {
       await page.getByTestId("search-result").first().click();
       await expect(page).toHaveURL(/\/read\/[a-z0-9]+/);
-      await expect(page.getByTestId("reader-article")).toContainText(SEARCH_TERM);
+      await expect(page.getByTestId("reader-article")).toContainText(
+        SEARCH_TERM,
+      );
     });
   });
 });
@@ -849,10 +892,12 @@ git commit -m "test(e2e): cover capture through read"
 Tag, collection, highlight, and delete as independent parallel tests, each on a freshly seeded article. No capture, no worker wait.
 
 **Files:**
+
 - Create: `e2e/support/seed.ts`
 - Create: `e2e/article-ops.spec.ts`
 
 **Interfaces:**
+
 - Consumes: testids from Task 4; `ContentFields` shape from `apps/worker/src/content/upsert-content.ts:5-23`; the article record shape from `packages/core/src/capture/handle-capture.ts:59-68`.
 - Produces: `seedArticle(pbUrl: string, userId: string, opts?: { title?: string }): Promise<{ articleId: string }>`.
 
@@ -876,7 +921,7 @@ const SU_PASS = "password12345";
 export async function seedArticle(
   pbUrl: string,
   userId: string,
-  opts: { title?: string } = {}
+  opts: { title?: string } = {},
 ): Promise<{ articleId: string }> {
   const title = opts.title ?? "Seeded Article";
   const canonicalUrl = `https://fixtures.e2e.test/seed-${Date.now()}-${Math.floor(Math.random() * 1e6)}`;
@@ -895,7 +940,8 @@ export async function seedArticle(
     excerpt: "A seeded article for e2e operations.",
     content_html:
       "<article><p>Seeded body text that is long enough to select and highlight.</p></article>",
-    content_text: "Seeded body text that is long enough to select and highlight.",
+    content_text:
+      "Seeded body text that is long enough to select and highlight.",
     word_count: 11,
     read_time: 1,
     hero_image: null,
@@ -926,7 +972,10 @@ export function userIdFromStorageState(state: {
   for (const origin of state.origins) {
     for (const entry of origin.localStorage) {
       if (entry.name !== "pocketbase_auth") continue;
-      const parsed = JSON.parse(entry.value) as { record?: { id?: string }; model?: { id?: string } };
+      const parsed = JSON.parse(entry.value) as {
+        record?: { id?: string };
+        model?: { id?: string };
+      };
       const id = parsed.record?.id ?? parsed.model?.id;
       if (id) return id;
     }
@@ -946,7 +995,10 @@ import { seedArticle, userIdFromStorageState } from "./support/seed.js";
 const PB_URL = process.env.E2E_PB_URL ?? "http://127.0.0.1:8090";
 
 /** Fresh article per test so these run in parallel without interfering. */
-async function freshArticle(page: import("@playwright/test").Page, title: string) {
+async function freshArticle(
+  page: import("@playwright/test").Page,
+  title: string,
+) {
   const state = await page.context().storageState();
   const userId = userIdFromStorageState(state);
   return seedArticle(PB_URL, userId, { title });
@@ -959,10 +1011,14 @@ test("tags an article from the reader", async ({ page }) => {
   await page.getByTestId("tag-input").fill("e2e-tag");
   await page.getByTestId("tag-input").press("Enter");
 
-  await expect(page.getByTestId("tag-chip").filter({ hasText: "e2e-tag" })).toBeVisible();
+  await expect(
+    page.getByTestId("tag-chip").filter({ hasText: "e2e-tag" }),
+  ).toBeVisible();
 
   await page.reload();
-  await expect(page.getByTestId("tag-chip").filter({ hasText: "e2e-tag" })).toBeVisible();
+  await expect(
+    page.getByTestId("tag-chip").filter({ hasText: "e2e-tag" }),
+  ).toBeVisible();
 });
 
 test("adds an article to a collection", async ({ page }) => {
@@ -972,16 +1028,27 @@ test("adds an article to a collection", async ({ page }) => {
   const collectionName = `e2e-collection-${Date.now()}`;
 
   // Create the collection via the library's collections strip.
-  await page.getByRole("button", { name: /new collection|create/i }).first().click();
+  await page
+    .getByRole("button", { name: /new collection|create/i })
+    .first()
+    .click();
   await page.getByRole("textbox").last().fill(collectionName);
   await page.keyboard.press("Enter");
   await expect(page.getByText(collectionName)).toBeVisible();
 
-  const card = page.getByTestId("article-card").filter({ has: page.locator(`[data-article-id="${articleId}"]`) }).first();
-  const target = (await card.count()) ? card : page.locator(`[data-article-id="${articleId}"]`);
+  const card = page
+    .getByTestId("article-card")
+    .filter({ has: page.locator(`[data-article-id="${articleId}"]`) })
+    .first();
+  const target = (await card.count())
+    ? card
+    : page.locator(`[data-article-id="${articleId}"]`);
   await target.hover();
   await target.getByTestId("article-card-menu").click();
-  await page.getByTestId("article-add-to-collection").filter({ hasText: collectionName }).click();
+  await page
+    .getByTestId("article-add-to-collection")
+    .filter({ hasText: collectionName })
+    .click();
 
   await page.goto("/library");
   await expect(page.getByText(collectionName)).toBeVisible();
@@ -1039,9 +1106,9 @@ test("deletes an article", async ({ page }) => {
 The seeding helper needs the ephemeral PocketBase URL, which is random per run. In `e2e/support/stack.ts`, immediately after `const pb: PbHandle = await startEphemeralPb();`, add:
 
 ```ts
-  // globalSetup runs before Playwright forks its workers, so workers inherit
-  // this. Specs read it as E2E_PB_URL.
-  process.env.E2E_PB_URL = pb.url;
+// globalSetup runs before Playwright forks its workers, so workers inherit
+// this. Specs read it as E2E_PB_URL.
+process.env.E2E_PB_URL = pb.url;
 ```
 
 For the CI compose run, `E2E_PB_URL` is set explicitly in the workflow (Task 7).
@@ -1076,9 +1143,11 @@ git commit -m "test(e2e): cover tag, collection, highlight, and delete"
 Restructure `docker-publish.yml` so images are built, tested, then pushed only on green. Prevents a broken `v*` tag from ever being published.
 
 **Files:**
+
 - Modify: `.github/workflows/docker-publish.yml`
 
 **Interfaces:**
+
 - Consumes: `pnpm e2e` and `E2E_BASE_URL` / `E2E_PB_URL` from Tasks 1 and 6.
 
 - [ ] **Step 1: Split build from push**
@@ -1086,17 +1155,17 @@ Restructure `docker-publish.yml` so images are built, tested, then pushed only o
 In `.github/workflows/docker-publish.yml`, change the `build-push` job's `build-push-action` step to build and export to the local daemon instead of pushing:
 
 ```yaml
-      - uses: docker/build-push-action@v6
-        with:
-          context: .
-          file: ${{ matrix.dockerfile }}
-          platforms: linux/amd64
-          push: false
-          load: true
-          tags: ${{ steps.meta.outputs.tags }}
-          labels: ${{ steps.meta.outputs.labels }}
-          cache-from: type=gha
-          cache-to: type=gha,mode=max
+- uses: docker/build-push-action@v6
+  with:
+    context: .
+    file: ${{ matrix.dockerfile }}
+    platforms: linux/amd64
+    push: false
+    load: true
+    tags: ${{ steps.meta.outputs.tags }}
+    labels: ${{ steps.meta.outputs.labels }}
+    cache-from: type=gha
+    cache-to: type=gha,mode=max
 ```
 
 Rename the job from `build-push` to `build`.
@@ -1106,60 +1175,60 @@ Rename the job from `build-push` to `build`.
 Add after the `build` job:
 
 ```yaml
-  e2e:
-    needs: build
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v4
-      - uses: pnpm/action-setup@v4
-      - uses: actions/setup-node@v4
-        with:
-          node-version: 22
-          cache: pnpm
-      - run: pnpm install --frozen-lockfile
-      - run: pnpm exec playwright install --with-deps chromium
+e2e:
+  needs: build
+  runs-on: ubuntu-latest
+  steps:
+    - uses: actions/checkout@v4
+    - uses: pnpm/action-setup@v4
+    - uses: actions/setup-node@v4
+      with:
+        node-version: 22
+        cache: pnpm
+    - run: pnpm install --frozen-lockfile
+    - run: pnpm exec playwright install --with-deps chromium
 
-      # Rebuild into the local daemon. cache-from: type=gha makes this a cache
-      # hit against the build job, not a second full build.
-      - uses: docker/setup-buildx-action@v3
-      - name: Build images into the local daemon
-        run: |
-          for svc in pocketbase web worker; do
-            case "$svc" in
-              pocketbase) df=pocketbase/Dockerfile ;;
-              web) df=apps/web/Dockerfile ;;
-              worker) df=apps/worker/Dockerfile ;;
-            esac
-            docker buildx build --load \
-              --cache-from type=gha \
-              -f "$df" -t "readmepls-$svc:ci" .
-          done
+    # Rebuild into the local daemon. cache-from: type=gha makes this a cache
+    # hit against the build job, not a second full build.
+    - uses: docker/setup-buildx-action@v3
+    - name: Build images into the local daemon
+      run: |
+        for svc in pocketbase web worker; do
+          case "$svc" in
+            pocketbase) df=pocketbase/Dockerfile ;;
+            web) df=apps/web/Dockerfile ;;
+            worker) df=apps/worker/Dockerfile ;;
+          esac
+          docker buildx build --load \
+            --cache-from type=gha \
+            -f "$df" -t "readmepls-$svc:ci" .
+        done
 
-      - name: Boot the stack
-        run: |
-          cp .env.example .env
-          docker compose -f compose.yml -f compose.ci.yml up -d
-          for i in $(seq 1 60); do
-            curl -fsS http://localhost:8090/api/health >/dev/null 2>&1 && break
-            sleep 2
-          done
+    - name: Boot the stack
+      run: |
+        cp .env.example .env
+        docker compose -f compose.yml -f compose.ci.yml up -d
+        for i in $(seq 1 60); do
+          curl -fsS http://localhost:8090/api/health >/dev/null 2>&1 && break
+          sleep 2
+        done
 
-      - name: Run e2e
-        env:
-          E2E_BASE_URL: http://localhost:3000
-          E2E_PB_URL: http://localhost:8090
-        run: pnpm e2e
+    - name: Run e2e
+      env:
+        E2E_BASE_URL: http://localhost:3000
+        E2E_PB_URL: http://localhost:8090
+      run: pnpm e2e
 
-      - name: Dump logs on failure
-        if: failure()
-        run: docker compose -f compose.yml -f compose.ci.yml logs
+    - name: Dump logs on failure
+      if: failure()
+      run: docker compose -f compose.yml -f compose.ci.yml logs
 
-      - uses: actions/upload-artifact@v4
-        if: failure()
-        with:
-          name: playwright-report
-          path: playwright-report/
-          retention-days: 7
+    - uses: actions/upload-artifact@v4
+      if: failure()
+      with:
+        name: playwright-report
+        path: playwright-report/
+        retention-days: 7
 ```
 
 - [ ] **Step 3: Add the CI compose overlay**
@@ -1193,47 +1262,47 @@ services:
 Add after `e2e`:
 
 ```yaml
-  push:
-    needs: e2e
-    runs-on: ubuntu-latest
-    strategy:
-      matrix:
-        include:
-          - name: pocketbase
-            dockerfile: pocketbase/Dockerfile
-          - name: web
-            dockerfile: apps/web/Dockerfile
-          - name: worker
-            dockerfile: apps/worker/Dockerfile
-          - name: site
-            dockerfile: apps/site/Dockerfile
-    steps:
-      - uses: actions/checkout@v4
-      - uses: docker/setup-qemu-action@v3
-      - uses: docker/setup-buildx-action@v3
-      - uses: docker/login-action@v3
-        with:
-          registry: ghcr.io
-          username: ${{ github.actor }}
-          password: ${{ secrets.GITHUB_TOKEN }}
-      - id: meta
-        uses: docker/metadata-action@v5
-        with:
-          images: ghcr.io/${{ github.repository_owner }}/readmepls-${{ matrix.name }}
-          tags: |
-            type=ref,event=tag
-            type=raw,value=latest,enable=${{ github.ref == 'refs/heads/main' || startsWith(github.ref, 'refs/tags/v') }}
-            type=raw,value=develop,enable=${{ github.ref == 'refs/heads/develop' }}
-      - uses: docker/build-push-action@v6
-        with:
-          context: .
-          file: ${{ matrix.dockerfile }}
-          platforms: linux/amd64
-          push: true
-          tags: ${{ steps.meta.outputs.tags }}
-          labels: ${{ steps.meta.outputs.labels }}
-          cache-from: type=gha
-          cache-to: type=gha,mode=max
+push:
+  needs: e2e
+  runs-on: ubuntu-latest
+  strategy:
+    matrix:
+      include:
+        - name: pocketbase
+          dockerfile: pocketbase/Dockerfile
+        - name: web
+          dockerfile: apps/web/Dockerfile
+        - name: worker
+          dockerfile: apps/worker/Dockerfile
+        - name: site
+          dockerfile: apps/site/Dockerfile
+  steps:
+    - uses: actions/checkout@v4
+    - uses: docker/setup-qemu-action@v3
+    - uses: docker/setup-buildx-action@v3
+    - uses: docker/login-action@v3
+      with:
+        registry: ghcr.io
+        username: ${{ github.actor }}
+        password: ${{ secrets.GITHUB_TOKEN }}
+    - id: meta
+      uses: docker/metadata-action@v5
+      with:
+        images: ghcr.io/${{ github.repository_owner }}/readmepls-${{ matrix.name }}
+        tags: |
+          type=ref,event=tag
+          type=raw,value=latest,enable=${{ github.ref == 'refs/heads/main' || startsWith(github.ref, 'refs/tags/v') }}
+          type=raw,value=develop,enable=${{ github.ref == 'refs/heads/develop' }}
+    - uses: docker/build-push-action@v6
+      with:
+        context: .
+        file: ${{ matrix.dockerfile }}
+        platforms: linux/amd64
+        push: true
+        tags: ${{ steps.meta.outputs.tags }}
+        labels: ${{ steps.meta.outputs.labels }}
+        cache-from: type=gha
+        cache-to: type=gha,mode=max
 ```
 
 `site` is not exercised by the e2e suite (it is the marketing site, not the app), but it is gated alongside the others so a release publishes a consistent set.
@@ -1243,13 +1312,13 @@ Add after `e2e`:
 Change both deploy jobs' `needs:` from `build-push` to `push`:
 
 ```yaml
-  deploy:
-    needs: push
+deploy:
+  needs: push
 ```
 
 ```yaml
-  deploy-staging:
-    needs: push
+deploy-staging:
+  needs: push
 ```
 
 - [ ] **Step 6: Validate the workflow syntax**
@@ -1277,6 +1346,7 @@ Note: this workflow cannot be verified without pushing, which this plan does not
 Records the e2e rule in CLAUDE.md and corrects the stale comment in the smoke test.
 
 **Files:**
+
 - Modify: `CLAUDE.md` (Testing section, Commands section)
 - Modify: `scripts/smoke-test.sh` (header comment)
 

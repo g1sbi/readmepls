@@ -10,7 +10,9 @@
 </script>
 
 <div class="code-block">
-  <button class="copy" type="button" onclick={copy}>{copied ? "copied!" : "copy"}</button>
+  <button class="copy" type="button" onclick={copy}
+    >{copied ? "copied!" : "copy"}</button
+  >
   <pre><code>{code}</code></pre>
 </div>
 

@@ -22,8 +22,8 @@
           class="link"
           class:active={node.id === activeId}
           aria-current={node.id === activeId ? "true" : undefined}
-          onclick={() => onjump(node.id)}
-        >{node.text}</button>
+          onclick={() => onjump(node.id)}>{node.text}</button
+        >
       {/if}
     </li>
   {/each}

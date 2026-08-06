@@ -41,16 +41,14 @@ async function article(
   contentId: string,
   extra: Record<string, unknown> = {},
 ) {
-  return pb
-    .collection("articles")
-    .create({
-      user: uid,
-      content: contentId,
-      url: "https://x",
-      status: "unread",
-      progress: 0,
-      ...extra,
-    });
+  return pb.collection("articles").create({
+    user: uid,
+    content: contentId,
+    url: "https://x",
+    status: "unread",
+    progress: 0,
+    ...extra,
+  });
 }
 const P = (o: Partial<Record<string, unknown>>) => LibraryParams.parse(o);
 

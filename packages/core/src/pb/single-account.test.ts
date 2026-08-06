@@ -20,7 +20,9 @@ function signup(url: string, email: string) {
 describe("single-account mode enabled", () => {
   let h: PbHandle;
   beforeAll(async () => {
-    h = await startEphemeralPb({ env: { SELF_HOSTED: "true", SINGLE_ACCOUNT: "true" } });
+    h = await startEphemeralPb({
+      env: { SELF_HOSTED: "true", SINGLE_ACCOUNT: "true" },
+    });
   }, 30000);
   afterAll(() => h?.stop());
 
@@ -31,32 +33,42 @@ describe("single-account mode enabled", () => {
 
     expect(await statusOf(h.url)).toEqual({ locked: true });
 
-    await expect(signup(h.url, `second-${Date.now()}@test.local`)).rejects.toThrow();
+    await expect(
+      signup(h.url, `second-${Date.now()}@test.local`),
+    ).rejects.toThrow();
   });
 });
 
 describe("single-account mode disabled (control)", () => {
   let h: PbHandle;
   beforeAll(async () => {
-    h = await startEphemeralPb({ env: { SELF_HOSTED: "true", SINGLE_ACCOUNT: "false" } });
+    h = await startEphemeralPb({
+      env: { SELF_HOSTED: "true", SINGLE_ACCOUNT: "false" },
+    });
   }, 30000);
   afterAll(() => h?.stop());
 
   it("allows a second signup when SINGLE_ACCOUNT is false", async () => {
     await signup(h.url, `a-${Date.now()}@test.local`);
-    await expect(signup(h.url, `b-${Date.now()}@test.local`)).resolves.toBeDefined();
+    await expect(
+      signup(h.url, `b-${Date.now()}@test.local`),
+    ).resolves.toBeDefined();
   });
 });
 
 describe("single-account mode requires SELF_HOSTED (reverse gate)", () => {
   let h: PbHandle;
   beforeAll(async () => {
-    h = await startEphemeralPb({ env: { SELF_HOSTED: "false", SINGLE_ACCOUNT: "true" } });
+    h = await startEphemeralPb({
+      env: { SELF_HOSTED: "false", SINGLE_ACCOUNT: "true" },
+    });
   }, 30000);
   afterAll(() => h?.stop());
 
   it("allows a second signup when SELF_HOSTED is false, even with SINGLE_ACCOUNT true", async () => {
     await signup(h.url, `a-${Date.now()}@test.local`);
-    await expect(signup(h.url, `b-${Date.now()}@test.local`)).resolves.toBeDefined();
+    await expect(
+      signup(h.url, `b-${Date.now()}@test.local`),
+    ).resolves.toBeDefined();
   });
 });

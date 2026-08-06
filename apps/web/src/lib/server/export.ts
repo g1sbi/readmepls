@@ -25,13 +25,15 @@ export async function resolveArticleIds(
     case "single":
       return [scope.id];
     case "collection": {
-      const items = await pb
-        .collection("collection_items")
-        .getFullList({ filter: pb.filter("collection = {:id}", { id: scope.id }) });
+      const items = await pb.collection("collection_items").getFullList({
+        filter: pb.filter("collection = {:id}", { id: scope.id }),
+      });
       return items.map((i) => i.article as string);
     }
     case "library": {
-      const arts = await pb.collection("articles").getFullList({ fields: "id" });
+      const arts = await pb
+        .collection("articles")
+        .getFullList({ fields: "id" });
       return arts.map((a) => a.id);
     }
     case "filter": {
@@ -43,9 +45,12 @@ export async function resolveArticleIds(
         ids = links.map((l) => l.article as string);
       }
       if (scope.q) {
-        const res = await fetchFn(`${pbUrl}/api/search?q=${encodeURIComponent(scope.q)}`, {
-          headers: { Authorization: token },
-        });
+        const res = await fetchFn(
+          `${pbUrl}/api/search?q=${encodeURIComponent(scope.q)}`,
+          {
+            headers: { Authorization: token },
+          },
+        );
         const body = (await res.json()) as { results: { articleId: string }[] };
         const qIds = body.results.map((r) => r.articleId);
         ids = ids === null ? qIds : ids.filter((id) => qIds.includes(id));
@@ -85,13 +90,17 @@ export async function loadArticleExports(
   const readable: Readable[] = [];
 
   for (const id of ids) {
-    const raw = await pb.collection("articles").getOne(id, { expand: "content" }).catch(() => null);
+    const raw = await pb
+      .collection("articles")
+      .getOne(id, { expand: "content" })
+      .catch(() => null);
     if (!raw) continue;
 
     const articleResult = ArticleRecord.safeParse(raw);
     if (!articleResult.success) continue;
 
-    const rawContent = (raw.expand as { content?: unknown } | undefined)?.content;
+    const rawContent = (raw.expand as { content?: unknown } | undefined)
+      ?.content;
     const contentResult = ContentPartial.safeParse(rawContent);
     const content = contentResult.success ? contentResult.data : undefined;
 
@@ -114,7 +123,10 @@ export async function loadArticleExports(
   // Step 3: batch-fetch manual tags for all readable articles (1 query total).
   const tagFilter = pb.filter(
     `(${readableIds.map((_, i) => `article = {:a${i}}`).join(" || ")}) && source = {:src}`,
-    { ...Object.fromEntries(readableIds.map((artId, i) => [`a${i}`, artId])), src: "manual" },
+    {
+      ...Object.fromEntries(readableIds.map((artId, i) => [`a${i}`, artId])),
+      src: "manual",
+    },
   );
   const allTagLinks = await pb
     .collection("article_tags")
@@ -141,16 +153,25 @@ export async function loadArticleExports(
     const hls = hlsByArticle.get(a.id) ?? [];
     const highlights = hls.map((r) =>
       Highlight.parse({
-        id: r.id, user: r.user, article: r.article, text: r.text,
-        prefix: r.prefix ?? "", suffix: r.suffix ?? "",
-        startOffset: r.start_offset ?? 0, endOffset: r.end_offset ?? 0,
-        color: r.color, note: r.note ?? "", created: r.created,
+        id: r.id,
+        user: r.user,
+        article: r.article,
+        text: r.text,
+        prefix: r.prefix ?? "",
+        suffix: r.suffix ?? "",
+        startOffset: r.start_offset ?? 0,
+        endOffset: r.end_offset ?? 0,
+        color: r.color,
+        note: r.note ?? "",
+        created: r.created,
       }),
     );
 
     const tagLinks = tagsByArticle.get(a.id) ?? [];
     const tags = tagLinks
-      .map((l) => (l.expand as { tag?: { name?: string } } | undefined)?.tag?.name)
+      .map(
+        (l) => (l.expand as { tag?: { name?: string } } | undefined)?.tag?.name,
+      )
       .filter((n): n is string => !!n);
 
     out.push({
@@ -165,7 +186,10 @@ export async function loadArticleExports(
       capturedAt: a.created,
       status: a.status,
       tags,
-      aiTags: tier === "pro" && Array.isArray(c?.ai_tags_json) ? (c!.ai_tags_json as string[]) : [],
+      aiTags:
+        tier === "pro" && Array.isArray(c?.ai_tags_json)
+          ? (c!.ai_tags_json as string[])
+          : [],
       summary: tier === "pro" ? ((c?.excerpt as string) ?? "") : "",
       contentHtml: (c?.content_html as string) ?? "",
       highlights,

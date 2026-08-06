@@ -9,7 +9,12 @@
   import { shouldAnimateNavigation } from "$lib/view-transition.js";
   import { page } from "$app/stores";
   import { browserPb } from "$lib/pb.js";
-  import { resolveTheme, applyTheme, readStoredTheme, type Theme } from "$lib/theme/theme.js";
+  import {
+    resolveTheme,
+    applyTheme,
+    readStoredTheme,
+    type Theme,
+  } from "$lib/theme/theme.js";
   import { releaseTransformContainingBlock } from "$lib/actions/release-transform-containing-block.js";
   import TopBar from "$lib/components/TopBar.svelte";
   import BottomNav from "$lib/components/BottomNav.svelte";
@@ -26,7 +31,9 @@
   // Expose the global theme model to descendants so the reader page can keep
   // its article in sync with the chrome rather than maintaining a parallel state.
   setContext("theme", {
-    get current() { return theme; },
+    get current() {
+      return theme;
+    },
     set: (t: Theme) => setTheme(t),
   });
 
@@ -38,7 +45,9 @@
   // Sheet) lets it sit in the same stacking context as TopBar and actually
   // overlay it.
   setContext("readProgress", {
-    set: (p: number) => { readProgress = p; },
+    set: (p: number) => {
+      readProgress = p;
+    },
   });
 
   // Cross-route view transition (global cross-fade). Feature-detected and
@@ -75,7 +84,9 @@
     const uid = pb.authStore.model?.id;
     if (uid) {
       const prev = pb.authStore.model?.reader_prefs ?? {};
-      pb.collection("users").update(uid, { reader_prefs: { ...prev, theme: t } });
+      pb.collection("users").update(uid, {
+        reader_prefs: { ...prev, theme: t },
+      });
     }
   }
 
@@ -94,7 +105,13 @@
   {#if $page.url.pathname.startsWith("/read/")}
     <div class="progress" style="--p: {readProgress}" aria-hidden="true"></div>
   {/if}
-  <div class="page" class:page--wide={isReader} use:releaseTransformContainingBlock>{@render children()}</div>
+  <div
+    class="page"
+    class:page--wide={isReader}
+    use:releaseTransformContainingBlock
+  >
+    {@render children()}
+  </div>
   {#if chrome}
     {#if showsGlobalNav($page.url.pathname)}
       <BottomNav pathname={$page.url.pathname} />
@@ -104,21 +121,68 @@
 </div>
 
 <style>
-  .app { min-height: 100dvh; background: var(--color-bg-gradient); position: relative; }
-  .app::before {
-    content: ""; position: fixed; inset: 0; pointer-events: none; z-index: 0;
-    background-image: var(--texture-grain); opacity: var(--grain-opacity); mix-blend-mode: multiply;
+  .app {
+    min-height: 100dvh;
+    background: var(--color-bg-gradient);
+    position: relative;
   }
-  .page { position: relative; z-index: 1; max-width: var(--width-page); margin: 0 auto; padding: 1.5rem 1.25rem; animation: reveal var(--dur-slow) var(--ease-paper) both; }
-  .page--wide { max-width: var(--width-reader); }
-  @keyframes reveal { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: none; } }
+  .app::before {
+    content: "";
+    position: fixed;
+    inset: 0;
+    pointer-events: none;
+    z-index: 0;
+    background-image: var(--texture-grain);
+    opacity: var(--grain-opacity);
+    mix-blend-mode: multiply;
+  }
+  .page {
+    position: relative;
+    z-index: 1;
+    max-width: var(--width-page);
+    margin: 0 auto;
+    padding: 1.5rem 1.25rem;
+    animation: reveal var(--dur-slow) var(--ease-paper) both;
+  }
+  .page--wide {
+    max-width: var(--width-reader);
+  }
+  @keyframes reveal {
+    from {
+      opacity: 0;
+      transform: translateY(8px);
+    }
+    to {
+      opacity: 1;
+      transform: none;
+    }
+  }
   /* z-index above TopBar's sticky header (20) -- both sit at top:0, and the
      reading-progress strip is meant to overlay the chrome, not hide behind it. */
-  .progress { position: fixed; top: 0; left: 0; height: 3px; width: calc(var(--p) * 100%); background: var(--color-accent); z-index: 21; transition: width var(--dur-fast) var(--ease-out); }
-  @media (prefers-reduced-motion: reduce) { .progress { transition: none; } }
-  @media (prefers-reduced-motion: reduce) { .page { animation: none; } }
+  .progress {
+    position: fixed;
+    top: 0;
+    left: 0;
+    height: 3px;
+    width: calc(var(--p) * 100%);
+    background: var(--color-accent);
+    z-index: 21;
+    transition: width var(--dur-fast) var(--ease-out);
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .progress {
+      transition: none;
+    }
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .page {
+      animation: none;
+    }
+  }
   @media (max-width: 640px) {
-    .page { padding-bottom: calc(56px + env(safe-area-inset-bottom) + 1rem); }
+    .page {
+      padding-bottom: calc(56px + env(safe-area-inset-bottom) + 1rem);
+    }
   }
   /* The reader owns its own chrome below 1024px (floating back-link + bottom
      control bar), so the global TopBar is suppressed there — otherwise its
@@ -126,6 +190,8 @@
      .page's stacking context and can't outrank it. Desktop reader keeps the
      TopBar and its in-flow back link. */
   @media (max-width: 1023.98px) {
-    .app.reader :global(.topbar) { display: none; }
+    .app.reader :global(.topbar) {
+      display: none;
+    }
   }
 </style>

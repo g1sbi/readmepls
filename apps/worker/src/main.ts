@@ -56,10 +56,13 @@ async function main(): Promise<void> {
   // The superuser token issued above expires (24h by default, server-side
   // setting) and the SDK never renews it — without this, a long-lived worker
   // silently loses the ability to claim jobs once the token lapses.
-  const authRefreshMs = Number(process.env.WORKER_AUTH_REFRESH_MS ?? String(60 * 60 * 1000));
+  const authRefreshMs = Number(
+    process.env.WORKER_AUTH_REFRESH_MS ?? String(60 * 60 * 1000),
+  );
   keepAuthenticated(authRefreshMs, {
     refresh: () => pb.collection("_superusers").authRefresh(),
-    onError: (err) => console.error(`[worker ${workerId}] auth refresh failed:`, err),
+    onError: (err) =>
+      console.error(`[worker ${workerId}] auth refresh failed:`, err),
   });
 
   const fetchHtml = createSafeFetchHtml({

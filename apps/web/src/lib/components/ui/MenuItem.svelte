@@ -13,6 +13,10 @@
   } = $props();
 </script>
 
-<DropdownMenu.Item class="menu-item" data-variant={variant} onSelect={() => onSelect()}>
+<DropdownMenu.Item
+  class="menu-item"
+  data-variant={variant}
+  onSelect={() => onSelect()}
+>
   {@render children()}
 </DropdownMenu.Item>

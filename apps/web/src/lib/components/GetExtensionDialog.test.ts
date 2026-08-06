@@ -6,7 +6,9 @@ describe("GetExtensionDialog", () => {
   it("shows the pitch and a store CTA when open", () => {
     render(GetExtensionDialog, { open: true });
 
-    expect(screen.getByText(/save any page to your library/i)).toBeInTheDocument();
+    expect(
+      screen.getByText(/save any page to your library/i),
+    ).toBeInTheDocument();
 
     const cta = screen.getByRole("link", { name: /chrome extension/i });
     expect(cta).toHaveAttribute(

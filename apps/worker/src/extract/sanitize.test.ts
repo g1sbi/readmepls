@@ -14,18 +14,32 @@ describe("sanitizeContentHtml", () => {
   });
 
   it("drops javascript: hrefs but keeps http links", () => {
-    expect(sanitizeContentHtml('<a href="javascript:alert(1)">a</a>')).not.toContain("javascript:");
-    expect(sanitizeContentHtml('<a href="https://ok.com">a</a>')).toContain("https://ok.com");
+    expect(
+      sanitizeContentHtml('<a href="javascript:alert(1)">a</a>'),
+    ).not.toContain("javascript:");
+    expect(sanitizeContentHtml('<a href="https://ok.com">a</a>')).toContain(
+      "https://ok.com",
+    );
   });
 
   it("removes iframes", () => {
-    expect(sanitizeContentHtml('<iframe src="https://evil.com"></iframe>')).not.toContain("iframe");
+    expect(
+      sanitizeContentHtml('<iframe src="https://evil.com"></iframe>'),
+    ).not.toContain("iframe");
   });
 
   it("keeps safe article tags", () => {
-    const html = '<h2>T</h2><p>p</p><img src="https://x/i.png" alt="i"><blockquote>q</blockquote><pre><code>c</code></pre>';
+    const html =
+      '<h2>T</h2><p>p</p><img src="https://x/i.png" alt="i"><blockquote>q</blockquote><pre><code>c</code></pre>';
     const out = sanitizeContentHtml(html);
-    for (const tag of ["<h2>", "<p>", "<img", "<blockquote>", "<pre>", "<code>"]) {
+    for (const tag of [
+      "<h2>",
+      "<p>",
+      "<img",
+      "<blockquote>",
+      "<pre>",
+      "<code>",
+    ]) {
       expect(out).toContain(tag);
     }
   });

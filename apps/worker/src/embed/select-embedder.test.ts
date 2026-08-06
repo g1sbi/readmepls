@@ -3,7 +3,11 @@ import { selectEmbedder } from "./select-embedder.js";
 import { FakeEmbedder } from "./fake-embedder.js";
 import type { EmbeddingProvider } from "./provider.js";
 
-const sentinel: EmbeddingProvider = { model: "local", dim: 384, embed: async () => [] };
+const sentinel: EmbeddingProvider = {
+  model: "local",
+  dim: 384,
+  embed: async () => [],
+};
 
 describe("selectEmbedder", () => {
   it("returns FakeEmbedder when EMBED_PROVIDER=fake", () => {
@@ -12,7 +16,10 @@ describe("selectEmbedder", () => {
   });
   it("otherwise builds the local embedder lazily via the factory", () => {
     let built = 0;
-    const e = selectEmbedder({}, () => { built++; return sentinel; });
+    const e = selectEmbedder({}, () => {
+      built++;
+      return sentinel;
+    });
     expect(built).toBe(1);
     expect(e).toBe(sentinel);
   });

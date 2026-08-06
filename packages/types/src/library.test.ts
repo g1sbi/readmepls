@@ -5,17 +5,36 @@ describe("LibraryParams", () => {
   it("applies defaults for an empty object", () => {
     const p = LibraryParams.parse({});
     expect(p).toMatchObject({
-      read: [], time: [], tag: [], collection: [], source: [],
-      favsrc: false, saved: null, published: null, lang: [], author: [],
-      has: [], attention: [], q: "", sort: "-created", page: 1,
+      read: [],
+      time: [],
+      tag: [],
+      collection: [],
+      source: [],
+      favsrc: false,
+      saved: null,
+      published: null,
+      lang: [],
+      author: [],
+      has: [],
+      attention: [],
+      q: "",
+      sort: "-created",
+      page: 1,
     });
   });
 
   it("accepts a fully populated object", () => {
     const p = LibraryParams.parse({
-      read: ["unread"], time: ["long"], tag: ["t1"], favsrc: true,
-      saved: "week", has: ["highlights"], attention: ["failed"],
-      q: "neural", sort: "relevance", page: 3,
+      read: ["unread"],
+      time: ["long"],
+      tag: ["t1"],
+      favsrc: true,
+      saved: "week",
+      has: ["highlights"],
+      attention: ["failed"],
+      q: "neural",
+      sort: "relevance",
+      page: 3,
     });
     expect(p.read).toEqual(["unread"]);
     expect(p.sort).toBe("relevance");

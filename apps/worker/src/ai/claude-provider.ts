@@ -8,7 +8,7 @@ const PROMPT =
 export class ClaudeProvider implements AIProvider {
   constructor(
     private client: Pick<Anthropic, "messages">,
-    private model: string
+    private model: string,
   ) {}
 
   async tagAndSummarize(text: string): Promise<AITagResult> {

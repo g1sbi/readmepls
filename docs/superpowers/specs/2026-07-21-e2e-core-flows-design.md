@@ -11,7 +11,7 @@ ephemeral PocketBase — but nothing drives a browser through a real user journe
 
 `scripts/smoke-test.sh` is often mistaken for this coverage. It is not:
 
-- No browser, no UI. It checks that web returns *any* HTTP status, then greps
+- No browser, no UI. It checks that web returns _any_ HTTP status, then greps
   `/_app/env.js` for the runtime `PUBLIC_PB_URL` sentinel.
 - No auth. It seeds a job by POSTing to PocketBase as superuser, bypassing
   `/api/capture`. Its header comment still claims the app "has no auth yet" —
@@ -60,7 +60,7 @@ which is what makes both extremes bad:
 
 ### Tier 1 — `e2e/auth.setup.ts`
 
-Playwright *setup project*. Signs up and logs in once, saves `storageState`;
+Playwright _setup project_. Signs up and logs in once, saves `storageState`;
 downstream specs reuse the session. The only place the signup flow is asserted.
 
 Runs with `SELF_HOSTED=true` so the `/verify` email gate is skipped — otherwise

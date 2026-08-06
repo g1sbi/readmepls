@@ -17,5 +17,9 @@
     "sanitize-html": "^2.13.0",
     "zod": "^3.23.0"
   },
-  "devDependencies": { "@types/jsdom": "^21.1.0", "@types/sanitize-html": "^2.13.0", "esbuild": "^0.24.0" }
+  "devDependencies": {
+    "@types/jsdom": "^21.1.0",
+    "@types/sanitize-html": "^2.13.0",
+    "esbuild": "^0.24.0"
+  }
 }

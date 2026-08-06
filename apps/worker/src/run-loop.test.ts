@@ -1,7 +1,11 @@
 import { describe, it, expect, beforeAll, afterAll } from "vitest";
 import { readFileSync } from "node:fs";
 import { fileURLToPath } from "node:url";
-import { startEphemeralPb, makeTestUser, type PbHandle } from "@readmepls/core/src/pb/test-harness.js";
+import {
+  startEphemeralPb,
+  makeTestUser,
+  type PbHandle,
+} from "@readmepls/core/src/pb/test-harness.js";
 import { handleCapture, classifySource } from "@readmepls/core";
 import { ArticleExtractor } from "./extract/article-extractor.js";
 import { MockAIProvider } from "./ai/mock-provider.js";
@@ -13,8 +17,10 @@ import { ResolverRegistry } from "./resolve/registry.js";
 import { FakeEmbedder } from "./embed/fake-embedder.js";
 
 const html = readFileSync(
-  fileURLToPath(new URL("./extract/fixtures/simple-article.html", import.meta.url)),
-  "utf8"
+  fileURLToPath(
+    new URL("./extract/fixtures/simple-article.html", import.meta.url),
+  ),
+  "utf8",
 );
 
 let h: PbHandle;
@@ -27,9 +33,13 @@ afterAll(() => h?.stop());
 
 const io: ExtractIO & ResolveIO = {
   fetchHtml: async () => html,
-  fetchJson: async () => { throw new Error("unused"); },
+  fetchJson: async () => {
+    throw new Error("unused");
+  },
   fetchRedirectTarget: async () => null,
-  runYtDlp: async () => { throw new Error("unused"); },
+  runYtDlp: async () => {
+    throw new Error("unused");
+  },
 };
 const deps = {
   io,
@@ -51,9 +61,9 @@ describe("runLoopOnce", () => {
     await handleCapture(h.pb, userId, "https://example.com/loop-once");
     const worked = await runLoopOnce(h.pb, "worker-A", deps);
     expect(worked).toBe(true);
-    const job = await h.pb.collection("jobs").getFirstListItem(
-      'canonical_url = "https://example.com/loop-once"'
-    );
+    const job = await h.pb
+      .collection("jobs")
+      .getFirstListItem('canonical_url = "https://example.com/loop-once"');
     expect(job.status).toBe("done");
   });
 });

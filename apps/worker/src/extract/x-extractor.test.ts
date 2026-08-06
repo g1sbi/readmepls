@@ -7,17 +7,24 @@ import type { ExtractIO } from "./extractor.js";
 const single = JSON.parse(
   readFileSync(
     fileURLToPath(
-      new URL("../../../../packages/core/src/source/x/fixtures/single-tweet.json", import.meta.url)
+      new URL(
+        "../../../../packages/core/src/source/x/fixtures/single-tweet.json",
+        import.meta.url,
+      ),
     ),
-    "utf8"
-  )
+    "utf8",
+  ),
 );
 
 function io(over: Partial<ExtractIO> = {}): ExtractIO {
   return {
-    fetchHtml: async () => { throw new Error("unused"); },
+    fetchHtml: async () => {
+      throw new Error("unused");
+    },
     fetchJson: async () => single,
-    runYtDlp: async () => { throw new Error("unused"); },
+    runYtDlp: async () => {
+      throw new Error("unused");
+    },
     ...over,
   };
 }
@@ -31,7 +38,12 @@ describe("XExtractor", () => {
     let requested = "";
     const res = await new XExtractor().extract(
       "https://x.com/jack/status/20",
-      io({ fetchJson: async (url) => { requested = url; return single; } })
+      io({
+        fetchJson: async (url) => {
+          requested = url;
+          return single;
+        },
+      }),
     );
     expect(requested).toContain("cdn.syndication.twimg.com");
     expect(requested).toContain("id=20");
@@ -52,7 +64,7 @@ describe("XExtractor", () => {
     };
     const res = await new XExtractor().extract(
       "https://x.com/jack/status/20",
-      io({ fetchJson: async () => malicious })
+      io({ fetchJson: async () => malicious }),
     );
     expect(res.status).toBe("ok");
     expect(res.contentHtml).not.toContain("<script");

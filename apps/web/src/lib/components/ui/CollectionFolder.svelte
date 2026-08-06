@@ -3,7 +3,8 @@
   import { Badge } from "./badge/index.js";
   import { FolderOpen } from "@lucide/svelte";
 
-  let { name, slug, count }: { name: string; slug: string; count: number } = $props();
+  let { name, slug, count }: { name: string; slug: string; count: number } =
+    $props();
 </script>
 
 <Button

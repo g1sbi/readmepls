@@ -13,20 +13,26 @@ export async function indexContent(
   pb: PocketBase,
   contentId: string,
   text: string,
-  embedder: EmbeddingProvider
+  embedder: EmbeddingProvider,
 ): Promise<number> {
   const chunks = chunkText(text);
   if (chunks.length === 0) return 0;
 
   const existing = await pb.collection("embeddings").getFullList({
-    filter: pb.filter("content = {:c} && embed_model = {:m}", { c: contentId, m: embedder.model }),
+    filter: pb.filter("content = {:c} && embed_model = {:m}", {
+      c: contentId,
+      m: embedder.model,
+    }),
     requestKey: null,
   });
   for (const row of existing) {
     await pb.collection("embeddings").delete(row.id);
   }
 
-  const vectors = await embedder.embed(chunks.map((c) => c.text), "passage");
+  const vectors = await embedder.embed(
+    chunks.map((c) => c.text),
+    "passage",
+  );
   let written = 0;
   for (let i = 0; i < chunks.length; i++) {
     const c = chunks[i]!;

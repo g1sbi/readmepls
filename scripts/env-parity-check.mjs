@@ -3,7 +3,7 @@ import { readFileSync, readdirSync, statSync } from "node:fs";
 function referencedVars(relativePath) {
   const text = readFileSync(new URL(relativePath, import.meta.url), "utf8");
   return new Set(
-    [...text.matchAll(/\$\{([A-Z0-9_]+)(?::-[^}]*)?\}/g)].map((m) => m[1])
+    [...text.matchAll(/\$\{([A-Z0-9_]+)(?::-[^}]*)?\}/g)].map((m) => m[1]),
   );
 }
 
@@ -14,7 +14,7 @@ function declaredVars(relativePath) {
       .split("\n")
       .map((l) => l.trim())
       .filter((l) => l && !l.startsWith("#"))
-      .map((l) => l.split("=")[0])
+      .map((l) => l.split("=")[0]),
   );
 }
 
@@ -37,7 +37,7 @@ for (const { compose, env } of pairs) {
     process.exit(1);
   }
   console.log(
-    `env-parity OK: ${compose} — ${referenced.size} referenced vars all declared in ${env}`
+    `env-parity OK: ${compose} — ${referenced.size} referenced vars all declared in ${env}`,
   );
 }
 
@@ -50,7 +50,8 @@ function walk(dir) {
   const out = [];
   for (const name of readdirSync(dir)) {
     const full = new URL(name, dir);
-    if (statSync(full).isDirectory()) out.push(...walk(new URL(name + "/", dir)));
+    if (statSync(full).isDirectory())
+      out.push(...walk(new URL(name + "/", dir)));
     else if (/\.(ts|js|svelte)$/.test(name)) out.push(full);
   }
   return out;
@@ -66,8 +67,10 @@ const undeclaredPublic = [...usedPublic].filter((v) => !declaredMain.has(v));
 if (undeclaredPublic.length) {
   console.error(
     "web source uses PUBLIC_* vars absent from .env.example:",
-    undeclaredPublic
+    undeclaredPublic,
   );
   process.exit(1);
 }
-console.log(`env-parity OK: ${usedPublic.size} PUBLIC_* code vars all declared`);
+console.log(
+  `env-parity OK: ${usedPublic.size} PUBLIC_* code vars all declared`,
+);

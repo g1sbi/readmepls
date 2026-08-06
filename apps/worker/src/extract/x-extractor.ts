@@ -21,7 +21,10 @@ export class XExtractor implements Extractor {
       const raw = await io.fetchJson(endpoint);
       const result = parseSyndicationThread(raw);
       if (result.status === "failed") return result;
-      return { ...result, contentHtml: sanitizeContentHtml(result.contentHtml) };
+      return {
+        ...result,
+        contentHtml: sanitizeContentHtml(result.contentHtml),
+      };
     } catch {
       return failedResult("x", "tweet unavailable");
     }

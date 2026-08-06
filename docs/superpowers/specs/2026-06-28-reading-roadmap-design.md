@@ -34,6 +34,7 @@ existing tokens and components and add behavior.
 ## 2. Goals / Non-Goals
 
 ### Goals
+
 - Make reading a managed workflow with closure, not an accumulating pile.
 - Route extracted reading and notes to the destinations users already trust.
 - Serve people who read to produce output (writers, researchers, students).
@@ -41,6 +42,7 @@ existing tokens and components and add behavior.
 - Make the user's library portable files they own, with no lock-in.
 
 ### Non-Goals
+
 - No visual redesign (Phase 3 owns the design language).
 - No new AI provider beyond the existing pluggable seam.
 - No native mobile apps or browser extensions in these phases (web first).
@@ -74,6 +76,7 @@ Turn the flat library into a managed reading workflow with a sense of progress a
 closure.
 
 ### Features
+
 - **Rich reading states.** Expand `articles.status` from
   `unread | reading | archived` to
   `unread | reading | read | skimmed | abandoned | revisit | archived`.
@@ -98,6 +101,7 @@ closure.
   Behavioral only — reuses existing reader components and tokens.
 
 ### Data model deltas
+
 ```
 articles      + status (expanded union)
               + snooze_until (datetime, nullable)
@@ -108,6 +112,7 @@ reading_events  id, user, article, from_status, to_status, at   (per-user)
 ```
 
 ### Testing
+
 - Status migration: existing rows map correctly; new states round-trip.
 - Triage reducer and ranking function: pure unit tests over fixtures.
 - Snooze due-predicate: boundary tests (before/at/after).
@@ -115,6 +120,7 @@ reading_events  id, user, article, from_status, to_status, at   (per-user)
 - Tenant isolation on `reading_events`.
 
 ### Risks
+
 - State-set churn touches many UI surfaces; keep the union the single source and
   drive filters from it.
 - Goal math must be derived (events), not stored, to avoid drift.
@@ -127,6 +133,7 @@ Implement two working destinations on the existing `ConnectorPlugin` seam (curre
 only Markdown export is live; Notion/Obsidian are stubs), plus rule-based routing.
 
 ### Features
+
 - **NotionConnector.** OAuth connect; map an article to a database row
   (title, author, url, summary, tags, reading status, capture date). Idempotent
   upsert keyed by canonical URL so re-runs update rather than duplicate.
@@ -139,6 +146,7 @@ only Markdown export is live; Notion/Obsidian are stubs), plus rule-based routin
   idempotent and re-runnable, mirroring the worker-job idempotency model.
 
 ### Data model deltas
+
 ```
 connectors        (exists) — Notion/Obsidian configs become active
 connector_rules   id, user, match_json, connector (ref), order, enabled
@@ -146,6 +154,7 @@ connector_items   connector, article, remote_id, synced_at, sync_status   (per-u
 ```
 
 ### Testing
+
 - Notion API + OAuth: network mocked; mapping verified against fixtures.
 - Obsidian output: byte-stable Markdown + frontmatter against golden files.
 - Routing matcher: pure unit tests across match permutations.
@@ -153,6 +162,7 @@ connector_items   connector, article, remote_id, synced_at, sync_status   (per-u
 - Tenant isolation on `connector_rules` and `connector_items`.
 
 ### Risks
+
 - Notion API shape drift — isolate behind the connector interface and Zod-parse all
   responses.
 - Secrets (OAuth tokens) stored encrypted, used server-side only, never shipped to
@@ -165,6 +175,7 @@ connector_items   connector, article, remote_id, synced_at, sync_status   (per-u
 Serve people who read in order to produce something: essays, papers, reports, notes.
 
 ### Features
+
 - **Projects.** `projects` collection — goal-scoped reading lists, distinct from
   `collections` (collections organize; projects target an output). `project_items`
   links articles into a project with order.
@@ -176,6 +187,7 @@ Serve people who read in order to produce something: essays, papers, reports, no
   highlights via the existing `AIProvider` seam (network mocked in tests).
 
 ### Data model deltas
+
 ```
 projects        id, user, name, slug, goal, created          (per-user)
 project_items   project, article, order                       (per-user)
@@ -184,6 +196,7 @@ evidence        id, user, project, highlight (ref), article (ref),
 ```
 
 ### Testing
+
 - BibTeX / CSL JSON formatters: golden-file unit tests, including edge cases
   (missing author, no date).
 - Evidence backlink integrity: highlight → article → project resolves.
@@ -191,6 +204,7 @@ evidence        id, user, project, highlight (ref), article (ref),
 - Tenant isolation on `projects`, `project_items`, `evidence`.
 
 ### Risks
+
 - Citation correctness matters to this audience; treat formatters as a well-tested
   pure unit with broad fixture coverage.
 
@@ -201,6 +215,7 @@ evidence        id, user, project, highlight (ref), article (ref),
 Make extraction visible, inspectable, and repairable instead of a black box.
 
 ### Features
+
 - **Confidence + candidates.** The worker records an extraction confidence score and
   any alternate extraction candidates on the content row.
 - **Preview before save.** Opt-in capture mode that surfaces extracted
@@ -212,6 +227,7 @@ Make extraction visible, inspectable, and repairable instead of a black box.
   so a re-parse is non-destructive and prior versions remain inspectable.
 
 ### Data model deltas
+
 ```
 content         + confidence (number, nullable)
                 + candidates_json (nullable)
@@ -221,12 +237,14 @@ extractions     id, content (ref), version, html, text, meta_json,
 ```
 
 ### Testing
+
 - Confidence + candidates: extractor unit tests assert recorded values on fixtures.
 - Re-parse: integration test shows a new `extractions` version, original retained.
 - Preview flow: capture without commit leaves no `articles` row until confirmed.
 - Respect the global-cache guardrails: gated/private extractions stay per-user.
 
 ### Risks
+
 - Confidence is heuristic; surface it as guidance, not a hard gate.
 - History growth — version rows are content-scoped and pruneable later.
 
@@ -238,6 +256,7 @@ Make the user's library files they own, synced through their own storage, readab
 offline.
 
 ### Features
+
 - **Folder-as-storage sync.** Deterministic slugs + stable filenames + frontmatter
   (builds directly on Phase 9's Obsidian/Markdown output) so the same article always
   maps to the same file. App state ↔ folder kept in sync.
@@ -250,13 +269,16 @@ offline.
   portable copy of the library.
 
 ### Data model deltas
+
 ```
 sync_targets    id, user, type (dropbox|icloud|git|nextcloud|folder),
                 config_json, enabled, last_sync, sync_status    (per-user)
 ```
+
 (File contents live in the user's folder, not new PB tables.)
 
 ### Testing
+
 - Slug/filename determinism: same article → same path, stable across re-export.
 - Sync diffing: pure function over (local set, remote set) → actions; unit-tested.
 - `SyncTarget` implementations: mocked I/O; no live cloud calls in tests.
@@ -264,6 +286,7 @@ sync_targets    id, user, type (dropbox|icloud|git|nextcloud|folder),
 - Tenant isolation on `sync_targets`; encrypted credentials, server-side only.
 
 ### Risks
+
 - Two-way sync conflict handling — start with app-authoritative writes; define a
   clear conflict rule before enabling bidirectional edits.
 - Credential security for cloud targets — encrypted at rest, used server-side only.

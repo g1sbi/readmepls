@@ -9,6 +9,8 @@ describe("client/server export boundary", () => {
     // `import { JSDOM } from "jsdom"`, a Node-only library that crashes at
     // runtime in the browser. It must stay behind a server-only subpath.
     const core = await import("./index.js");
-    expect((core as Record<string, unknown>).pickFaviconCandidates).toBeUndefined();
+    expect(
+      (core as Record<string, unknown>).pickFaviconCandidates,
+    ).toBeUndefined();
   });
 });

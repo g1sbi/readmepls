@@ -171,7 +171,11 @@ describe("library page", () => {
     // No collection tile links...
     expect(screen.queryByRole("link", { name: /reading list/i })).toBeNull();
     // ...but the always-present section header and create affordance remain.
-    expect(screen.getByRole("heading", { name: /collections/i })).toBeInTheDocument();
-    expect(screen.getByRole("button", { name: /new collection/i })).toBeInTheDocument();
+    expect(
+      screen.getByRole("heading", { name: /collections/i }),
+    ).toBeInTheDocument();
+    expect(
+      screen.getByRole("button", { name: /new collection/i }),
+    ).toBeInTheDocument();
   });
 });

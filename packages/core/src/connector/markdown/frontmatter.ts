@@ -13,7 +13,11 @@ export interface Frontmatter {
 }
 
 function yamlString(s: string): string {
-  return '"' + s.replace(/\\/g, "\\\\").replace(/"/g, '\\"').replace(/\n/g, "\\n") + '"';
+  return (
+    '"' +
+    s.replace(/\\/g, "\\\\").replace(/"/g, '\\"').replace(/\n/g, "\\n") +
+    '"'
+  );
 }
 
 function yamlList(items: string[]): string {

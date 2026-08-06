@@ -13,6 +13,10 @@
     min-width: 0;
   }
   @media (min-width: 1024px) {
-    .rail { position: sticky; top: var(--space-4); align-self: start; }
+    .rail {
+      position: sticky;
+      top: var(--space-4);
+      align-self: start;
+    }
   }
 </style>

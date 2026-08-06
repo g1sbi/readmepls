@@ -60,7 +60,7 @@ design phase does not add features.
 - **shadcn ↔ tokens bridge** (`apps/web/src/lib/styles/shadcn-bridge.css`): maps
   shadcn alias vars (`--primary`, `--secondary`, …) **onto** `tokens.css` `--color-*`
   once in `:root` — never a second palette. Dark is `@custom-variant dark
-  ([data-theme="dark"] &)`, NOT shadcn's `.dark`. **Preflight is deliberately
+([data-theme="dark"] &)`, NOT shadcn's `.dark`. **Preflight is deliberately
   excluded** (layered `@import "tailwindcss/theme.css"` + `utilities.css`, no
   `preflight.css`) — `app.css` owns the reset, and preflight would strip the
   reader's un-scoped `{@html}` article prose. Do not switch to a bare
@@ -141,7 +141,7 @@ design phase does not add features.
   data read back from PocketBase are all parsed/validated before use. Do not trust
   external shapes.
 - **Model states as unions, not booleans.** e.g. `extract_status:
-  'pending'|'ok'|'partial'|'failed'`. Graceful-degrade paths must be type-checked.
+'pending'|'ok'|'partial'|'failed'`. Graceful-degrade paths must be type-checked.
 - **Pure core, thin IO shell.** Extraction, highlight anchoring, and URL
   canonicalization are pure functions, tested in isolation. Side effects (HTTP,
   PocketBase, AI calls) live at the edges behind interfaces.

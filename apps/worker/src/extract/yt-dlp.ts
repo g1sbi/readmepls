@@ -67,19 +67,26 @@ function pickEnJson3Url(map: CaptionMap | undefined): string | null {
 }
 
 function pickJson3Url(meta: YtDlpJson): string | null {
-  return pickEnJson3Url(meta.subtitles) ?? pickEnJson3Url(meta.automatic_captions) ?? null;
+  return (
+    pickEnJson3Url(meta.subtitles) ??
+    pickEnJson3Url(meta.automatic_captions) ??
+    null
+  );
 }
 
 /** Build a runYtDlp seam from injected exec + fetch. */
 export function createRunYtDlp(
-  deps: RunYtDlpDeps
+  deps: RunYtDlpDeps,
 ): (videoId: string) => Promise<YtDlpOutput> {
   return async function runYtDlp(videoId: string): Promise<YtDlpOutput> {
     const url = `https://www.youtube.com/watch?v=${videoId}`;
     const args = ["-j", "--skip-download"];
     if (deps.cookiesFile) args.push("--cookies", deps.cookiesFile);
     if (deps.potProviderUrl) {
-      args.push("--extractor-args", `youtubepot-bgutilhttp:base_url=${deps.potProviderUrl}`);
+      args.push(
+        "--extractor-args",
+        `youtubepot-bgutilhttp:base_url=${deps.potProviderUrl}`,
+      );
     }
     args.push(url);
     const raw = await deps.exec(args);
@@ -96,14 +103,16 @@ export function createRunYtDlp(
     };
 
     const trackUrl = pickJson3Url(json);
-    const captions = trackUrl ? parseJson3Captions(await deps.fetchText(trackUrl)) : null;
+    const captions = trackUrl
+      ? parseJson3Captions(await deps.fetchText(trackUrl))
+      : null;
     return { meta, captions };
   };
 }
 
 /** Production wiring: real yt-dlp binary. Thin IO adapter (untested seam). */
 export function defaultRunYtDlp(
-  fetchText: (url: string) => Promise<string>
+  fetchText: (url: string) => Promise<string>,
 ): (videoId: string) => Promise<YtDlpOutput> {
   return createRunYtDlp({
     // Optional cookies file to defeat YouTube's datacenter-IP bot-block. Empty
@@ -113,7 +122,9 @@ export function defaultRunYtDlp(
     potProviderUrl: process.env.YOUTUBE_POT_PROVIDER_URL || null,
     exec: async (args) => {
       try {
-        const { stdout } = await execFileAsync("yt-dlp", args, { maxBuffer: 32 * 1024 * 1024 });
+        const { stdout } = await execFileAsync("yt-dlp", args, {
+          maxBuffer: 32 * 1024 * 1024,
+        });
         return stdout;
       } catch (err) {
         // execFile rejects on non-zero exit with the real reason on `.stderr`
@@ -121,8 +132,13 @@ export function defaultRunYtDlp(
         // "Command failed: …". Surface the ERROR line so it reaches failure_reason.
         const e = err as { stderr?: string; message?: string };
         const stderr = (e.stderr ?? "").trim();
-        const lines = stderr.split("\n").map((l) => l.trim()).filter(Boolean);
-        const reason = [...lines].reverse().find((l) => l.startsWith("ERROR")) ?? lines.at(-1);
+        const lines = stderr
+          .split("\n")
+          .map((l) => l.trim())
+          .filter(Boolean);
+        const reason =
+          [...lines].reverse().find((l) => l.startsWith("ERROR")) ??
+          lines.at(-1);
         throw new Error(reason || e.message || "yt-dlp exec failed");
       }
     },

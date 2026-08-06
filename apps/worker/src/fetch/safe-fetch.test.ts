@@ -2,14 +2,14 @@ import { describe, it, expect } from "vitest";
 import { createSafeFetchHtml } from "./safe-fetch.js";
 
 /** Minimal Response-like for the injected fetch. */
-function res(
-  body: string,
-  opts: { status?: number; location?: string } = {}
-) {
+function res(body: string, opts: { status?: number; location?: string } = {}) {
   const { status = 200, location } = opts;
   return {
     status,
-    headers: { get: (n: string) => (n.toLowerCase() === "location" ? location ?? null : null) },
+    headers: {
+      get: (n: string) =>
+        n.toLowerCase() === "location" ? (location ?? null) : null,
+    },
     text: async () => body,
   };
 }
@@ -31,7 +31,7 @@ describe("createSafeFetchHtml", () => {
       fetchFn: async () => res("secret"),
     });
     await expect(fetchHtml("https://metadata.evil.com/")).rejects.toThrow(
-      /blocked address/i
+      /blocked address/i,
     );
   });
 
@@ -41,7 +41,7 @@ describe("createSafeFetchHtml", () => {
       fetchFn: async () => res("ok"),
     });
     await expect(fetchHtml("https://example.com/")).rejects.toThrow(
-      /blocked address/i
+      /blocked address/i,
     );
   });
 
@@ -52,7 +52,10 @@ describe("createSafeFetchHtml", () => {
       fetchFn: async () => {
         hop++;
         return hop === 1
-          ? res("", { status: 302, location: "https://other.example.com/final" })
+          ? res("", {
+              status: 302,
+              location: "https://other.example.com/final",
+            })
           : res("<html>final</html>");
       },
     });
@@ -67,7 +70,7 @@ describe("createSafeFetchHtml", () => {
         res("", { status: 302, location: "http://localhost/admin" }),
     });
     await expect(fetchHtml("https://example.com/")).rejects.toThrow(
-      /blocked address/i
+      /blocked address/i,
     );
   });
 
@@ -88,7 +91,7 @@ describe("createSafeFetchHtml", () => {
       maxRedirects: 3,
     });
     await expect(fetchHtml("https://example.com/")).rejects.toThrow(
-      /too many redirects/i
+      /too many redirects/i,
     );
   });
 });

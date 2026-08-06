@@ -2,9 +2,23 @@ import { describe, it, expect } from "vitest";
 import { rankSemanticHits, type ArticleRef } from "./search.js";
 import type { EmbeddingRow } from "@readmepls/types";
 
-function row(content: string, chunk: number, vector: number[], text = "t"): EmbeddingRow {
-  return { id: `${content}-${chunk}`, content, chunk_index: chunk, char_start: 0,
-    char_end: text.length, text, vector, embed_model: "fake", dim: vector.length };
+function row(
+  content: string,
+  chunk: number,
+  vector: number[],
+  text = "t",
+): EmbeddingRow {
+  return {
+    id: `${content}-${chunk}`,
+    content,
+    chunk_index: chunk,
+    char_start: 0,
+    char_end: text.length,
+    text,
+    vector,
+    embed_model: "fake",
+    dim: vector.length,
+  };
 }
 
 describe("rankSemanticHits", () => {
@@ -38,7 +52,10 @@ describe("rankSemanticHits", () => {
 
   it("truncates the snippet and respects k", () => {
     const q = [1, 0];
-    const rows = [row("cA", 0, [1, 0], "x".repeat(500)), row("cB", 0, [0.9, 0.1], "y")];
+    const rows = [
+      row("cA", 0, [1, 0], "x".repeat(500)),
+      row("cB", 0, [0.9, 0.1], "y"),
+    ];
     const hits = rankSemanticHits(q, articles, rows, 1, 100);
     expect(hits).toHaveLength(1);
     expect(hits[0]!.snippet.length).toBe(100);

@@ -3,7 +3,9 @@ import { httpUrlOrNull } from "./http-url.js";
 
 describe("httpUrlOrNull", () => {
   it("returns http and https URLs unchanged", () => {
-    expect(httpUrlOrNull("https://example.com/p")).toBe("https://example.com/p");
+    expect(httpUrlOrNull("https://example.com/p")).toBe(
+      "https://example.com/p",
+    );
     expect(httpUrlOrNull("http://example.com/x")).toBe("http://example.com/x");
   });
   it("rejects javascript: and data: schemes", () => {

@@ -11,7 +11,13 @@ function ev(verified: boolean) {
     locals: {
       userId: "u1",
       verified,
-      pb: { collection: () => ({ getOne: async () => { throw new Error("nf"); } }) },
+      pb: {
+        collection: () => ({
+          getOne: async () => {
+            throw new Error("nf");
+          },
+        }),
+      },
     },
   } as never;
 }

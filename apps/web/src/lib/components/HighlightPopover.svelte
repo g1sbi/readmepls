@@ -3,8 +3,14 @@
   import { X } from "@lucide/svelte";
   import type { HighlightColor } from "@readmepls/types";
 
-  let { x, y, onpick, oncancel }: {
-    x: number; y: number;
+  let {
+    x,
+    y,
+    onpick,
+    oncancel,
+  }: {
+    x: number;
+    y: number;
     onpick: (color: HighlightColor, note: string) => void;
     oncancel: () => void;
   } = $props();
@@ -26,8 +32,14 @@
 
 <div bind:this={anchor} class="anchor" style="left:{x}px; top:{y}px;"></div>
 
-<Popover.Root open onOpenChange={onOpenChange}>
-  <Popover.Content customAnchor={anchor} class="hl-popover" role="dialog" aria-label="add highlight" sideOffset={4}>
+<Popover.Root open {onOpenChange}>
+  <Popover.Content
+    customAnchor={anchor}
+    class="hl-popover"
+    role="dialog"
+    aria-label="add highlight"
+    sideOffset={4}
+  >
     <div class="swatches">
       {#each colors as c (c)}
         <button
@@ -38,8 +50,15 @@
         ></button>
       {/each}
     </div>
-    <input class="note" placeholder="note…" bind:value={note} aria-label="note" />
-    <button class="cancel" onclick={oncancel} aria-label="cancel"><X class="icon-sm" aria-hidden="true" /></button>
+    <input
+      class="note"
+      placeholder="note…"
+      bind:value={note}
+      aria-label="note"
+    />
+    <button class="cancel" onclick={oncancel} aria-label="cancel"
+      ><X class="icon-sm" aria-hidden="true" /></button
+    >
   </Popover.Content>
 </Popover.Root>
 
@@ -66,13 +85,23 @@
     z-index: var(--z-sticky);
   }
   :global(.hl-popover)::before {
-    content: ""; position: absolute; inset: 0; pointer-events: none; z-index: 0;
-    background-image: var(--texture-grain); opacity: var(--grain-opacity); mix-blend-mode: multiply;
+    content: "";
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+    z-index: 0;
+    background-image: var(--texture-grain);
+    opacity: var(--grain-opacity);
+    mix-blend-mode: multiply;
     border-radius: inherit;
   }
-  :global(.hl-popover) .swatches { display: flex; gap: var(--space-1); }
+  :global(.hl-popover) .swatches {
+    display: flex;
+    gap: var(--space-1);
+  }
   :global(.hl-popover) .swatch {
-    width: 1.25rem; height: 1.25rem;
+    width: 1.25rem;
+    height: 1.25rem;
     border: 1px solid var(--color-border);
     border-radius: var(--radius-sm);
     cursor: pointer;
@@ -85,7 +114,11 @@
     color: var(--color-text);
   }
   :global(.hl-popover) .cancel {
-    display: inline-flex; align-items: center;
-    background: none; border: none; cursor: pointer; color: var(--color-text-muted);
+    display: inline-flex;
+    align-items: center;
+    background: none;
+    border: none;
+    cursor: pointer;
+    color: var(--color-text-muted);
   }
 </style>

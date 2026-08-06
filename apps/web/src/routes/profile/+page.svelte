@@ -30,7 +30,9 @@
   </div>
 
   {#if selfHosted}
-    <p class="note">this instance's plan is set by this instance's operator, not by you.</p>
+    <p class="note">
+      this instance's plan is set by this instance's operator, not by you.
+    </p>
   {:else if tier === "standard"}
     <Button variant="accent" onclick={() => setTier("pro")}>go pro</Button>
   {:else}

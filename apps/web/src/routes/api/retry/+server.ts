@@ -10,7 +10,10 @@ export const POST: RequestHandler = async ({ request, locals }) => {
   if (!articleId) throw error(400, "missing articleId");
 
   // Authorize: the article must belong to the requesting user (API rule enforces).
-  const article = await locals.pb.collection("articles").getOne(articleId).catch(() => null);
+  const article = await locals.pb
+    .collection("articles")
+    .getOne(articleId)
+    .catch(() => null);
   if (!article) throw error(404, "not found");
 
   // Reset the (worker-owned) job with a superuser client. Parameterize the
@@ -18,7 +21,9 @@ export const POST: RequestHandler = async ({ request, locals }) => {
   const svc = await servicePb();
   const job = await svc
     .collection("jobs")
-    .getFirstListItem(svc.filter("canonical_url = {:url}", { url: article.canonical_url }))
+    .getFirstListItem(
+      svc.filter("canonical_url = {:url}", { url: article.canonical_url }),
+    )
     .catch(() => null);
   if (job) {
     await svc.collection("jobs").update(job.id, {

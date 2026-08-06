@@ -24,8 +24,8 @@
     <h2>who this covers</h2>
     <p>
       This policy applies to the hosted readmepls service and to the readmepls
-      browser extension. If you use a <strong>self-hosted</strong> instance, your
-      data is handled by whoever operates that instance, not by us — see
+      browser extension. If you use a <strong>self-hosted</strong> instance,
+      your data is handled by whoever operates that instance, not by us — see
       <a href="#self-hosting">self-hosting</a> below.
     </p>
   </section>
@@ -34,25 +34,24 @@
     <h2>what we collect</h2>
     <ul>
       <li>
-        <strong>Account details</strong> — the email address and password you
-        use to create an account and sign in.
+        <strong>Account details</strong> — the email address and password you use
+        to create an account and sign in.
       </li>
       <li>
-        <strong>Pages you save</strong> — the URL of any page you choose to add
-        to your library, plus the readable content extracted from it and any
-        highlights, notes, tags, and collections you create.
+        <strong>Pages you save</strong> — the URL of any page you choose to add to
+        your library, plus the readable content extracted from it and any highlights,
+        notes, tags, and collections you create.
       </li>
       <li>
-        <strong>Basic technical data</strong> — standard request information
-        (such as IP address and timestamps) that any web server receives, used
-        to operate and secure the service.
+        <strong>Basic technical data</strong> — standard request information (such
+        as IP address and timestamps) that any web server receives, used to operate
+        and secure the service.
       </li>
     </ul>
     <p>
       We do <strong>not</strong> collect health, financial, or payment-card data,
-      your personal communications, your location, or your general browsing
-      history. We only ever receive the URL of a page when you explicitly save
-      it.
+      your personal communications, your location, or your general browsing history.
+      We only ever receive the URL of a page when you explicitly save it.
     </p>
   </section>
 
@@ -82,18 +81,18 @@
       <li>
         <strong>The current tab's URL</strong> is read only when you open the
         popup and click <em>Save</em> (the <code>activeTab</code> permission). It
-        reads the page URL only — never the page's contents, your other tabs, or
-        your browsing history.
+        reads the page URL only — never the page's contents, your other tabs, or your
+        browsing history.
       </li>
       <li>
         <strong>Your login session and settings</strong> (an authentication
         token and, for self-hosters, your instance URL) are stored locally in
-        the browser via <code>chrome.storage</code> so you don't have to sign in
-        on every save. This stays on your device.
+        the browser via <code>chrome.storage</code> so you don't have to sign in on
+        every save. This stays on your device.
       </li>
       <li>
-        <strong>Your email and password</strong> are sent, over HTTPS, only to
-        your readmepls instance to sign you in.
+        <strong>Your email and password</strong> are sent, over HTTPS, only to your
+        readmepls instance to sign you in.
       </li>
     </ul>
     <p>

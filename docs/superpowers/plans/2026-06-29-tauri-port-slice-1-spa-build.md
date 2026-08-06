@@ -26,10 +26,12 @@
 Introduces a single source for the BFF origin. Web (same-origin) gets `""` so `fetch` stays relative and unchanged; the SPA build sets `VITE_API_BASE` to the remote SaaS origin.
 
 **Files:**
+
 - Create: `apps/web/src/lib/api-base.ts`
 - Test: `apps/web/src/lib/api-base.test.ts`
 
 **Interfaces:**
+
 - Consumes: nothing.
 - Produces: `apiBase(): string` — returns the BFF origin with no trailing slash, or `""` when unset (callers build `` `${apiBase()}/api/…` ``).
 
@@ -121,10 +123,12 @@ git commit -m "feat(web): add apiBase() helper for configurable BFF origin"
 `publicPbUrl()` currently reads only `$env/dynamic/public`, which is empty under `adapter-static`. Add the same Vite-baked fallback used by `apiBase()` so the SPA resolves the remote PB origin, while keeping the existing dynamic behavior (and its three tests) intact for web.
 
 **Files:**
+
 - Modify: `apps/web/src/lib/public-pb-url.ts`
 - Test: `apps/web/src/lib/public-pb-url.test.ts` (add one case)
 
 **Interfaces:**
+
 - Consumes: nothing.
 - Produces: `publicPbUrl(): string` — unchanged signature; resolution order is now dynamic env → `VITE_PB_URL` → `http://127.0.0.1:8090`.
 
@@ -133,11 +137,11 @@ git commit -m "feat(web): add apiBase() helper for configurable BFF origin"
 Append this case inside the existing `describe("publicPbUrl", …)` block in `public-pb-url.test.ts`, and add `afterEach(() => vi.unstubAllEnvs());` next to the existing `beforeEach`:
 
 ```ts
-  it("falls back to VITE_PB_URL when dynamic env is unset (static SPA build)", async () => {
-    vi.stubEnv("VITE_PB_URL", "https://pb.baked.example.com");
-    const { publicPbUrl } = await import("./public-pb-url.js");
-    expect(publicPbUrl()).toBe("https://pb.baked.example.com");
-  });
+it("falls back to VITE_PB_URL when dynamic env is unset (static SPA build)", async () => {
+  vi.stubEnv("VITE_PB_URL", "https://pb.baked.example.com");
+  const { publicPbUrl } = await import("./public-pb-url.js");
+  expect(publicPbUrl()).toBe("https://pb.baked.example.com");
+});
 ```
 
 Also add `afterEach` to the imports line: `import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";`
@@ -161,7 +165,9 @@ import { env } from "$env/dynamic/public";
  * VITE_PB_URL at build time. The localhost fallback covers `vite dev`.
  */
 export function publicPbUrl(): string {
-  return env.PUBLIC_PB_URL || import.meta.env.VITE_PB_URL || "http://127.0.0.1:8090";
+  return (
+    env.PUBLIC_PB_URL || import.meta.env.VITE_PB_URL || "http://127.0.0.1:8090"
+  );
 }
 ```
 
@@ -184,12 +190,14 @@ git commit -m "feat(web): resolve PB origin from baked env for static builds"
 The three relative `fetch`/link references to `/api/*` resolve to nothing inside a Tauri webview. Prefix them with `apiBase()`. With `apiBase() === ""` on web, the resulting strings are identical to today.
 
 **Files:**
+
 - Modify: `apps/web/src/lib/components/CaptureBar.svelte` (the `fetch("/api/capture")` call)
 - Modify: `apps/web/src/routes/+page.svelte` (the `fetch("/api/retry")` call)
 - Modify: `apps/web/src/routes/settings/connectors/+page.svelte` (the `/api/export?scope=library` link)
 - Test: `apps/web/src/routes/settings/connectors/page.test.ts` (existing assertion still must hold on web)
 
 **Interfaces:**
+
 - Consumes: `apiBase()` from `$lib/api-base.js` (Task 1).
 - Produces: no new exports.
 
@@ -198,7 +206,7 @@ The three relative `fetch`/link references to `/api/*` resolve to nothing inside
 In `apps/web/src/lib/components/CaptureBar.svelte`, add the import at the top of `<script>`:
 
 ```ts
-  import { apiBase } from "$lib/api-base.js";
+import { apiBase } from "$lib/api-base.js";
 ```
 
 Change the fetch line from:
@@ -218,7 +226,7 @@ to:
 In `apps/web/src/routes/+page.svelte`, add to the `<script>` imports:
 
 ```ts
-  import { apiBase } from "$lib/api-base.js";
+import { apiBase } from "$lib/api-base.js";
 ```
 
 Change:
@@ -238,19 +246,21 @@ to:
 In `apps/web/src/routes/settings/connectors/+page.svelte`, add to the `<script>` block:
 
 ```ts
-  import { apiBase } from "$lib/api-base.js";
+import { apiBase } from "$lib/api-base.js";
 ```
 
 Change the anchor:
 
 ```svelte
-          <a class="action" href={`/api/export?scope=library`}>export library</a>
+<a class="action" href={`/api/export?scope=library`}>export library</a>
 ```
 
 to:
 
 ```svelte
-          <a class="action" href={`${apiBase()}/api/export?scope=library`}>export library</a>
+<a class="action" href={`${apiBase()}/api/export?scope=library`}
+  >export library</a
+>
 ```
 
 - [ ] **Step 4: Run the existing connectors test to verify web behavior is unchanged**
@@ -274,11 +284,13 @@ git commit -m "refactor(web): route BFF calls through apiBase() for off-origin c
 The server hook (`hooks.server.ts`) redirects unauthenticated users; it does not run in a server-less SPA. Re-home the guard logic as a pure function outside `$lib/server` (SvelteKit forbids importing `$lib/server/*` into client code) and apply it reactively in the root layout. Running it on web too is harmless defense-in-depth.
 
 **Files:**
+
 - Create: `apps/web/src/lib/auth/route-guard.ts`
 - Test: `apps/web/src/lib/auth/route-guard.test.ts`
 - Modify: `apps/web/src/routes/+layout.svelte`
 
 **Interfaces:**
+
 - Consumes: nothing.
 - Produces: `clientRouteGuard(pathname: string, isAuthed: boolean): string | null` — returns a redirect target (`"/login"`) when an unauthenticated user is on a protected route, else `null`. `/login` and `/api/*` are always allowed (mirrors the server `routeGuard`).
 
@@ -329,7 +341,10 @@ Expected: FAIL — cannot resolve `./route-guard.js`.
  * gates protected routes. On adapter-node it runs after the server hook as
  * redundant defense-in-depth.
  */
-export function clientRouteGuard(pathname: string, isAuthed: boolean): string | null {
+export function clientRouteGuard(
+  pathname: string,
+  isAuthed: boolean,
+): string | null {
   if (pathname === "/login" || pathname.startsWith("/api/")) return null;
   return isAuthed ? null : "/login";
 }
@@ -345,18 +360,18 @@ Expected: PASS (4 tests).
 In `apps/web/src/routes/+layout.svelte`, add the import alongside the others in `<script>`:
 
 ```ts
-  import { clientRouteGuard } from "$lib/auth/route-guard.js";
+import { clientRouteGuard } from "$lib/auth/route-guard.js";
 ```
 
 Add this reactive guard immediately after the existing `const chrome = $derived(...)` line:
 
 ```ts
-  // SPA builds have no server hook; gate protected routes client-side.
-  // Re-checks on every navigation and whenever auth validity changes.
-  $effect(() => {
-    const target = clientRouteGuard($page.url.pathname, pb.authStore.isValid);
-    if (target) goto(target);
-  });
+// SPA builds have no server hook; gate protected routes client-side.
+// Re-checks on every navigation and whenever auth validity changes.
+$effect(() => {
+  const target = clientRouteGuard($page.url.pathname, pb.authStore.isValid);
+  if (target) goto(target);
+});
 ```
 
 (`goto` and `$page` are already imported in this file.)
@@ -380,11 +395,13 @@ git commit -m "feat(web): client-side route guard for server-less SPA builds"
 Wire the second adapter, gate SSR off for the SPA target only, add a build script, and prove both builds produce their expected output. This task is verified by running the builds, not by unit tests (build config is not unit-testable).
 
 **Files:**
+
 - Modify: `apps/web/package.json` (add dev dependency + `build:spa` script)
 - Modify: `apps/web/svelte.config.js`
 - Create: `apps/web/src/routes/+layout.ts`
 
 **Interfaces:**
+
 - Consumes: nothing.
 - Produces: a `pnpm --filter @readmepls/web build:spa` command that emits a static SPA into `apps/web/build/` with an `index.html` SPA fallback.
 
@@ -417,9 +434,7 @@ const spa = process.env.BUILD_TARGET === "spa";
 
 export default {
   kit: {
-    adapter: spa
-      ? adapterStatic({ fallback: "index.html" })
-      : adapterNode(),
+    adapter: spa ? adapterStatic({ fallback: "index.html" }) : adapterNode(),
   },
 };
 ```

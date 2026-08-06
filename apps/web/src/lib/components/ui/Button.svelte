@@ -33,20 +33,37 @@
     border-radius: var(--radius-pill);
     padding: var(--space-2) 1.1rem; /* 1.1rem: no clean --space-* equivalent (between space-4/1rem and space-5/1.5rem); rounding either way visibly changes the pill */
     cursor: pointer;
-    transition: background var(--dur-fast) var(--ease-out),
-      box-shadow var(--dur-fast) var(--ease-out), transform var(--dur-fast) var(--ease-out);
+    transition:
+      background var(--dur-fast) var(--ease-out),
+      box-shadow var(--dur-fast) var(--ease-out),
+      transform var(--dur-fast) var(--ease-out);
   }
-  button:hover:not(:disabled) { box-shadow: var(--shadow-sm); transform: translateY(-1px); }
-  button:focus-visible { outline: 2px solid var(--color-ring); outline-offset: 2px; }
-  button:disabled { opacity: 0.55; cursor: not-allowed; }
+  button:hover:not(:disabled) {
+    box-shadow: var(--shadow-sm);
+    transform: translateY(-1px);
+  }
+  button:focus-visible {
+    outline: 2px solid var(--color-ring);
+    outline-offset: 2px;
+  }
+  button:disabled {
+    opacity: 0.55;
+    cursor: not-allowed;
+  }
   button[data-variant="accent"] {
     background: var(--color-accent);
     border-color: var(--color-accent);
     color: var(--color-text-on-accent);
   }
-  button[data-variant="accent"]:hover:not(:disabled) { background: var(--color-accent-hover); }
+  button[data-variant="accent"]:hover:not(:disabled) {
+    background: var(--color-accent-hover);
+  }
   @media (prefers-reduced-motion: reduce) {
-    button { transition: none; }
-    button:hover:not(:disabled) { transform: none; }
+    button {
+      transition: none;
+    }
+    button:hover:not(:disabled) {
+      transform: none;
+    }
   }
 </style>

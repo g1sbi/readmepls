@@ -14,7 +14,7 @@ import { NullAIProvider } from "./null-provider.js";
  */
 export function selectAiProvider(
   env: { AI_PROVIDER?: string; ANTHROPIC_API_KEY?: string },
-  makeClaude: () => AIProvider
+  makeClaude: () => AIProvider,
 ): AIProvider {
   if (env.AI_PROVIDER === "mock") {
     return new MockAIProvider({ tags: ["smoke"], summary: "ok" });

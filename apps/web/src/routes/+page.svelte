@@ -24,7 +24,9 @@
   const feed = $derived(splitHomeFeed(articles));
 
   async function load() {
-    const list = await pb.collection("articles").getList(1, 50, { sort: "-created", expand: "content" });
+    const list = await pb
+      .collection("articles")
+      .getList(1, 50, { sort: "-created", expand: "content" });
     articles = list.items as ArticleRecord[];
   }
   async function retry(id: string) {
@@ -37,7 +39,9 @@
 
   onMount(async () => {
     await load();
-    unsub = await pb.collection("articles").subscribe("*", () => load(), { expand: "content" });
+    unsub = await pb
+      .collection("articles")
+      .subscribe("*", () => load(), { expand: "content" });
   });
   onDestroy(() => unsub?.());
 </script>
@@ -90,7 +94,10 @@
 {/if}
 
 <style>
-  .hero { text-align: center; padding: var(--space-7) 0 var(--space-6); }
+  .hero {
+    text-align: center;
+    padding: var(--space-7) 0 var(--space-6);
+  }
   .quick {
     display: flex;
     flex-wrap: wrap;
@@ -98,8 +105,24 @@
     gap: var(--space-2);
     margin-top: var(--space-4);
   }
-  .block { margin-top: var(--space-6); }
-  .block h2 { font-family: var(--font-ui); font-size: var(--text-lg); font-weight: var(--weight-medium); color: var(--color-text-muted); margin: 0 0 var(--space-4); }
-  .more { display: inline-block; margin-top: var(--space-4); font-family: var(--font-ui); color: var(--color-accent); text-decoration: none; }
-  .more:hover { color: var(--color-accent-hover); }
+  .block {
+    margin-top: var(--space-6);
+  }
+  .block h2 {
+    font-family: var(--font-ui);
+    font-size: var(--text-lg);
+    font-weight: var(--weight-medium);
+    color: var(--color-text-muted);
+    margin: 0 0 var(--space-4);
+  }
+  .more {
+    display: inline-block;
+    margin-top: var(--space-4);
+    font-family: var(--font-ui);
+    color: var(--color-accent);
+    text-decoration: none;
+  }
+  .more:hover {
+    color: var(--color-accent-hover);
+  }
 </style>

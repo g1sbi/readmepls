@@ -5,6 +5,7 @@ Introducing: `readmepls`, your one-stop app to store, read, highlight, annotate 
 Paste any link to extract the readable content into your library. Also works with Youtube videos!
 
 ## No AI? No Problem!
+
 The app has been developed with a simple idea: the free, core version is fully functional and feature complete. No features hidden behind a paywall.
 However, subscribing to the Pro version enables a suite of AI features that will make your experience even more enjoyable!
 

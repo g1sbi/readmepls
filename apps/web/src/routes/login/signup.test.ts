@@ -23,9 +23,15 @@ import Page from "./+page.svelte";
 
 async function signUp(selfHosted: boolean) {
   render(Page, { props: { data: { locked: false, selfHosted } } });
-  await fireEvent.click(screen.getByRole("button", { name: /need an account\? sign up/i }));
-  await fireEvent.input(screen.getByPlaceholderText("email"), { target: { value: "new@user.co" } });
-  await fireEvent.input(screen.getByPlaceholderText("password"), { target: { value: "password1" } });
+  await fireEvent.click(
+    screen.getByRole("button", { name: /need an account\? sign up/i }),
+  );
+  await fireEvent.input(screen.getByPlaceholderText("email"), {
+    target: { value: "new@user.co" },
+  });
+  await fireEvent.input(screen.getByPlaceholderText("password"), {
+    target: { value: "password1" },
+  });
   await fireEvent.click(screen.getByRole("button", { name: /sign up/i }));
   await Promise.resolve();
   await Promise.resolve();
@@ -58,6 +64,8 @@ describe("signup verification email failure", () => {
     h.requestVerification.mockRejectedValueOnce(new Error("smtp down"));
     await signUp(false);
     expect(h.goto).toHaveBeenCalledWith("/verify");
-    expect(screen.queryByText("Could not create account.")).not.toBeInTheDocument();
+    expect(
+      screen.queryByText("Could not create account."),
+    ).not.toBeInTheDocument();
   });
 });

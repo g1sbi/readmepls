@@ -9,9 +9,26 @@
 
   // profile tab hidden + route disabled temporarily; revisit later.
   const TABS = [
-    { kind: "link", route: "/library", label: "library", icon: Library, match: (p: string) => p === "/library" || p.startsWith("/read") },
-    { kind: "action", label: "search", icon: Search, action: () => searchPalette.open() },
-    { kind: "link", route: "/collections", label: "collections", icon: FolderOpen, match: (p: string) => p.startsWith("/collections") },
+    {
+      kind: "link",
+      route: "/library",
+      label: "library",
+      icon: Library,
+      match: (p: string) => p === "/library" || p.startsWith("/read"),
+    },
+    {
+      kind: "action",
+      label: "search",
+      icon: Search,
+      action: () => searchPalette.open(),
+    },
+    {
+      kind: "link",
+      route: "/collections",
+      label: "collections",
+      icon: FolderOpen,
+      match: (p: string) => p.startsWith("/collections"),
+    },
   ] as const;
 
   let visible = $state(true);
@@ -38,7 +55,10 @@
   {#each TABS as tab (tab.label)}
     {@const Icon = tab.icon}
     {#if tab.kind === "link"}
-      <a href={resolve(tab.route)} aria-current={tab.match(pathname) ? "page" : undefined}>
+      <a
+        href={resolve(tab.route)}
+        aria-current={tab.match(pathname) ? "page" : undefined}
+      >
         <Icon class="icon-sm" aria-hidden="true" />
         <span>{tab.label}</span>
       </a>
@@ -53,23 +73,51 @@
 
 <style>
   .bottom-nav {
-    position: fixed; left: 0; right: 0; bottom: 0; z-index: 30;
+    position: fixed;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    z-index: 30;
     display: none; /* desktop: hidden */
-    justify-content: space-around; align-items: stretch;
+    justify-content: space-around;
+    align-items: stretch;
     background: var(--color-surface);
     border-top: 1px solid var(--color-border);
     padding-bottom: env(safe-area-inset-bottom);
     transition: transform var(--dur-base) var(--ease-paper);
   }
-  .bottom-nav[data-visible="false"] { transform: translateY(100%); }
-  .bottom-nav a, .bottom-nav .tab-btn {
-    flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center;
-    gap: 2px; min-height: 56px; padding: 0.4rem 0;
-    font-family: var(--font-ui); font-size: 0.7rem;
-    color: var(--color-text-muted); text-decoration: none;
-    background: none; border: none; cursor: pointer;
+  .bottom-nav[data-visible="false"] {
+    transform: translateY(100%);
   }
-  .bottom-nav a[aria-current="page"] { color: var(--color-accent); }
-  @media (max-width: 640px) { .bottom-nav { display: flex; } }
-  @media (prefers-reduced-motion: reduce) { .bottom-nav { transition: none; } }
+  .bottom-nav a,
+  .bottom-nav .tab-btn {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 2px;
+    min-height: 56px;
+    padding: 0.4rem 0;
+    font-family: var(--font-ui);
+    font-size: 0.7rem;
+    color: var(--color-text-muted);
+    text-decoration: none;
+    background: none;
+    border: none;
+    cursor: pointer;
+  }
+  .bottom-nav a[aria-current="page"] {
+    color: var(--color-accent);
+  }
+  @media (max-width: 640px) {
+    .bottom-nav {
+      display: flex;
+    }
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .bottom-nav {
+      transition: none;
+    }
+  }
 </style>

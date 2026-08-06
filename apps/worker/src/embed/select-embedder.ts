@@ -9,7 +9,7 @@ import { FakeEmbedder } from "./fake-embedder.js";
  */
 export function selectEmbedder(
   env: { EMBED_PROVIDER?: string },
-  makeLocal: () => EmbeddingProvider
+  makeLocal: () => EmbeddingProvider,
 ): EmbeddingProvider {
   if (env.EMBED_PROVIDER === "fake") return new FakeEmbedder();
   return makeLocal();

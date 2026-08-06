@@ -26,7 +26,7 @@ The hero tagline's first line becomes an animated reel; the second line stays.
 
 - Line 1: **save any `[reel]`** where `[reel]` cycles, looping:
   `link · article · video · thread · newsletter`
-- Line 2 (unchanged): *actually read it. pls.*
+- Line 2 (unchanged): _actually read it. pls._
 
 ### Mechanic
 

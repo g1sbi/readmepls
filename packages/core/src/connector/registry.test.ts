@@ -4,10 +4,22 @@ import { NotImplementedError, type ArticleExport } from "./plugin.js";
 
 function article(p: Partial<ArticleExport> = {}): ArticleExport {
   return {
-    id: "id1", title: "T", url: "https://x.test/p", author: null, siteName: null,
-    lang: null, publishedAt: null, fetchedAt: "2026", capturedAt: "2026",
-    status: "unread", tags: [], aiTags: [], summary: "", contentHtml: "<p>hi</p>",
-    highlights: [], ...p,
+    id: "id1",
+    title: "T",
+    url: "https://x.test/p",
+    author: null,
+    siteName: null,
+    lang: null,
+    publishedAt: null,
+    fetchedAt: "2026",
+    capturedAt: "2026",
+    status: "unread",
+    tags: [],
+    aiTags: [],
+    summary: "",
+    contentHtml: "<p>hi</p>",
+    highlights: [],
+    ...p,
   };
 }
 
@@ -20,7 +32,10 @@ describe("connector registry", () => {
   });
 
   it("markdown exports one file per article", async () => {
-    const r = await getConnector("markdown")!.export([article(), article({ id: "id2", title: "Two" })]);
+    const r = await getConnector("markdown")!.export([
+      article(),
+      article({ id: "id2", title: "Two" }),
+    ]);
     expect(r.files).toHaveLength(2);
     expect(r.failures).toHaveLength(0);
   });
@@ -35,7 +50,11 @@ describe("connector registry", () => {
   });
 
   it("stub connectors throw NotImplementedError", async () => {
-    await expect(getConnector("notion")!.export([])).rejects.toBeInstanceOf(NotImplementedError);
-    await expect(getConnector("obsidian")!.export([])).rejects.toBeInstanceOf(NotImplementedError);
+    await expect(getConnector("notion")!.export([])).rejects.toBeInstanceOf(
+      NotImplementedError,
+    );
+    await expect(getConnector("obsidian")!.export([])).rejects.toBeInstanceOf(
+      NotImplementedError,
+    );
   });
 });

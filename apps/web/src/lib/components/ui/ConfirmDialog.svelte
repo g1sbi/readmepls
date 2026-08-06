@@ -31,7 +31,9 @@
     <Dialog.Overlay class="confirm-dialog__overlay" />
     <Dialog.Content class="confirm-dialog__panel">
       <Dialog.Title class="confirm-dialog__title">{title}</Dialog.Title>
-      <Dialog.Description class="confirm-dialog__message">{message}</Dialog.Description>
+      <Dialog.Description class="confirm-dialog__message"
+        >{message}</Dialog.Description
+      >
       <div class="confirm-dialog__actions">
         <Button onclick={onCancel}>cancel</Button>
         <Button variant="accent" onclick={onConfirm}>{confirmLabel}</Button>
@@ -66,8 +68,14 @@
     overflow: hidden;
   }
   :global(.confirm-dialog__panel)::before {
-    content: ""; position: absolute; inset: 0; pointer-events: none; z-index: 0;
-    background-image: var(--texture-grain); opacity: var(--grain-opacity); mix-blend-mode: multiply;
+    content: "";
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+    z-index: 0;
+    background-image: var(--texture-grain);
+    opacity: var(--grain-opacity);
+    mix-blend-mode: multiply;
     border-radius: inherit;
   }
   :global(.confirm-dialog__title) {

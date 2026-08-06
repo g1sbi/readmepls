@@ -13,7 +13,9 @@ describe("selectAiProvider", () => {
   });
 
   it("builds the real provider lazily when a key is present", () => {
-    const fake: AIProvider = { tagAndSummarize: async () => ({ tags: [], summary: "" }) };
+    const fake: AIProvider = {
+      tagAndSummarize: async () => ({ tags: [], summary: "" }),
+    };
     const makeClaude = vi.fn(() => fake);
     const ai = selectAiProvider({ ANTHROPIC_API_KEY: "sk-test" }, makeClaude);
     expect(makeClaude).toHaveBeenCalledOnce();

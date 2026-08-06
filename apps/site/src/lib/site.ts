@@ -56,7 +56,10 @@ export const FEATURES: readonly Feature[] = [
     title: "Highlights & notes",
     body: "Everything important at a glance",
   },
-  { title: "Search & collections", body: "Find, group and organize your collections." },
+  {
+    title: "Search & collections",
+    body: "Find, group and organize your collections.",
+  },
   {
     title: "Yours to host",
     body: "For the privacy nerds out there.",

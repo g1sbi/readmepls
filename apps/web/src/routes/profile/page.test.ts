@@ -27,14 +27,20 @@ beforeEach(() => update.mockClear());
 
 describe("/profile", () => {
   it("hosted SaaS, standard tier: shows a Go Pro toggle", () => {
-    page.set({ ...basePageValue, data: { tier: "standard", selfHosted: false } });
+    page.set({
+      ...basePageValue,
+      data: { tier: "standard", selfHosted: false },
+    });
     render(ProfilePage);
     expect(screen.getByText(/standard/i)).toBeInTheDocument();
     expect(screen.getByRole("button", { name: /go pro/i })).toBeInTheDocument();
   });
 
   it("hosted SaaS: clicking the toggle flips tier and refreshes layout data", async () => {
-    page.set({ ...basePageValue, data: { tier: "standard", selfHosted: false } });
+    page.set({
+      ...basePageValue,
+      data: { tier: "standard", selfHosted: false },
+    });
     render(ProfilePage);
     await fireEvent.click(screen.getByRole("button", { name: /go pro/i }));
     expect(update).toHaveBeenCalledWith("u1", { tier: "pro" });
@@ -44,15 +50,23 @@ describe("/profile", () => {
     page.set({ ...basePageValue, data: { tier: "pro", selfHosted: false } });
     render(ProfilePage);
     expect(screen.getByText(/^pro$/i)).toBeInTheDocument();
-    expect(screen.getByRole("button", { name: /back to standard/i })).toBeInTheDocument();
+    expect(
+      screen.getByRole("button", { name: /back to standard/i }),
+    ).toBeInTheDocument();
   });
 
   it("self-hosted: shows the operator-set tier with no toggle", () => {
     page.set({ ...basePageValue, data: { tier: "pro", selfHosted: true } });
     render(ProfilePage);
     expect(screen.getByText(/^pro$/i)).toBeInTheDocument();
-    expect(screen.queryByRole("button", { name: /go pro/i })).not.toBeInTheDocument();
-    expect(screen.queryByRole("button", { name: /back to standard/i })).not.toBeInTheDocument();
-    expect(screen.getByText(/set by this instance's operator/i)).toBeInTheDocument();
+    expect(
+      screen.queryByRole("button", { name: /go pro/i }),
+    ).not.toBeInTheDocument();
+    expect(
+      screen.queryByRole("button", { name: /back to standard/i }),
+    ).not.toBeInTheDocument();
+    expect(
+      screen.getByText(/set by this instance's operator/i),
+    ).toBeInTheDocument();
   });
 });

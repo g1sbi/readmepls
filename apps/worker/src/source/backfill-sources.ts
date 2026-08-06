@@ -9,7 +9,10 @@ export type { SourceIO };
  * rows with an empty source relation are touched, and ensureSource dedupes by
  * host. Safe to run at worker startup behind an env flag.
  */
-export async function backfillSources(pb: PocketBase, io: SourceIO): Promise<{ linked: number }> {
+export async function backfillSources(
+  pb: PocketBase,
+  io: SourceIO,
+): Promise<{ linked: number }> {
   const rows = await pb.collection("content").getFullList({
     filter: pb.filter("source = ''"),
   });
@@ -18,7 +21,12 @@ export async function backfillSources(pb: PocketBase, io: SourceIO): Promise<{ l
     const host = deriveSourceHost(row.canonical_url as string);
     if (!host) continue;
     try {
-      const sourceId = await ensureSource(pb, host, (row.site_name as string) || null, io);
+      const sourceId = await ensureSource(
+        pb,
+        host,
+        (row.site_name as string) || null,
+        io,
+      );
       await pb.collection("content").update(row.id, { source: sourceId });
       linked++;
     } catch (err) {

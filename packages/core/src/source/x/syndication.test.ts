@@ -6,7 +6,10 @@ import { ExtractResult } from "@readmepls/types";
 
 const load = (name: string) =>
   JSON.parse(
-    readFileSync(fileURLToPath(new URL(`./fixtures/${name}`, import.meta.url)), "utf8")
+    readFileSync(
+      fileURLToPath(new URL(`./fixtures/${name}`, import.meta.url)),
+      "utf8",
+    ),
   );
 
 describe("parseSyndicationThread", () => {

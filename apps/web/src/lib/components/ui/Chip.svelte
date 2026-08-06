@@ -1,6 +1,10 @@
 <script lang="ts">
   import type { Snippet } from "svelte";
-  let { children, selected = false, trailing }: {
+  let {
+    children,
+    selected = false,
+    trailing,
+  }: {
     children: Snippet;
     selected?: boolean;
     trailing?: Snippet;
@@ -26,7 +30,9 @@
     padding: 0.1rem 0.6rem;
   }
   /* hover tint for non-selected chips; placed before [data-selected] so the accent bg wins on hover */
-  .chip:hover { background: var(--color-surface-sunken); }
+  .chip:hover {
+    background: var(--color-surface-sunken);
+  }
   .chip[data-selected="true"] {
     background: var(--color-accent);
     border-color: var(--color-accent);

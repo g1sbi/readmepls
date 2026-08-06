@@ -13,7 +13,10 @@ export function rangeOver(root: Node): Range {
 }
 
 /** Build a portable selector (quote + prefix/suffix + char offsets) for `target`. */
-export async function describe(scope: Range, target: Range): Promise<HighlightSelector> {
+export async function describe(
+  scope: Range,
+  target: Range,
+): Promise<HighlightSelector> {
   // apache-annotator: describeTextQuote(range, scope?)
   const quote = await describeTextQuote(target, scope);
   const pos = await describeTextPosition(target, scope);
@@ -27,7 +30,10 @@ export async function describe(scope: Range, target: Range): Promise<HighlightSe
 }
 
 /** Re-locate a selector in `scope`. Returns the first matching Range, or null. */
-export async function anchor(scope: Range, sel: HighlightSelector): Promise<Range | null> {
+export async function anchor(
+  scope: Range,
+  sel: HighlightSelector,
+): Promise<Range | null> {
   // apache-annotator: createTextQuoteSelectorMatcher(selector) returns a Matcher
   // Matcher<Node | Range, Range> — call it with scope, returns async iterable
   const matcher = createTextQuoteSelectorMatcher({

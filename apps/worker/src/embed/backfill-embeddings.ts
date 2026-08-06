@@ -9,13 +9,18 @@ import { indexContent } from "./index-content.js";
  */
 export async function backfillEmbeddings(
   pb: PocketBase,
-  embedder: EmbeddingProvider
+  embedder: EmbeddingProvider,
 ): Promise<{ indexed: number }> {
-  const contents = await pb.collection("content").getFullList({ requestKey: null });
+  const contents = await pb
+    .collection("content")
+    .getFullList({ requestKey: null });
   let indexed = 0;
   for (const c of contents) {
     const already = await pb.collection("embeddings").getList(1, 1, {
-      filter: pb.filter("content = {:c} && embed_model = {:m}", { c: c.id, m: embedder.model }),
+      filter: pb.filter("content = {:c} && embed_model = {:m}", {
+        c: c.id,
+        m: embedder.model,
+      }),
       requestKey: null,
     });
     if (already.totalItems > 0) continue;
@@ -25,7 +30,10 @@ export async function backfillEmbeddings(
       await indexContent(pb, c.id, text, embedder);
       indexed++;
     } catch (err) {
-      console.error(`[worker] backfill embedding failed for content ${c.id}:`, err);
+      console.error(
+        `[worker] backfill embedding failed for content ${c.id}:`,
+        err,
+      );
     }
   }
   return { indexed };

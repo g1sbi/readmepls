@@ -1,8 +1,13 @@
 import { expect, test, vi } from "vitest";
 import { releaseTransformContainingBlock } from "./release-transform-containing-block";
 
-function withAnimations(node: HTMLElement, animations: { playState: string; cancel: () => void }[]) {
-  (node as unknown as { getAnimations: () => typeof animations }).getAnimations = () => animations;
+function withAnimations(
+  node: HTMLElement,
+  animations: { playState: string; cancel: () => void }[],
+) {
+  (
+    node as unknown as { getAnimations: () => typeof animations }
+  ).getAnimations = () => animations;
 }
 
 test("cancels finished animations once the CSS animation ends", () => {

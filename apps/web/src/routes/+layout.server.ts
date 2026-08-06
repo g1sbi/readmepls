@@ -6,7 +6,9 @@ export const load: LayoutServerLoad = async ({ locals }) => {
   const selfHosted = process.env.SELF_HOSTED === "true";
   const config: TierConfig = {
     selfHosted,
-    aiProviderConfigured: Boolean(process.env.ANTHROPIC_API_KEY) || process.env.AI_PROVIDER === "mock",
+    aiProviderConfigured:
+      Boolean(process.env.ANTHROPIC_API_KEY) ||
+      process.env.AI_PROVIDER === "mock",
   };
 
   const userRecord = locals.pb.authStore.model as { tier?: Tier } | null;

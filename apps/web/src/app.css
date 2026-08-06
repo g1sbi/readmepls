@@ -33,9 +33,18 @@ body {
   stroke-width: var(--icon-stroke);
   flex: none; /* don't let an icon stretch inside a flex control */
 }
-.icon-sm { width: var(--icon-sm); height: var(--icon-sm); }
-.icon-md { width: var(--icon-md); height: var(--icon-md); }
-.icon-lg { width: var(--icon-lg); height: var(--icon-lg); }
+.icon-sm {
+  width: var(--icon-sm);
+  height: var(--icon-sm);
+}
+.icon-md {
+  width: var(--icon-md);
+  height: var(--icon-md);
+}
+.icon-lg {
+  width: var(--icon-lg);
+  height: var(--icon-lg);
+}
 
 /* Visually hidden but available to assistive tech and to getByRole({name}).
    Used to keep an icon-only control's accessible name without changing copy. */
@@ -53,19 +62,40 @@ body {
 
 /* Staggered entrance (lib/actions/reveal.ts). `.reveal` is the hidden start
    state applied only when motion is allowed; `.is-visible` settles it. */
-.reveal { opacity: 0; transform: translateY(8px); }
+.reveal {
+  opacity: 0;
+  transform: translateY(8px);
+}
 .reveal.is-visible {
-  opacity: 1; transform: none;
-  transition: opacity var(--dur-base) var(--ease-out) var(--reveal-delay, 0ms),
-              transform var(--dur-base) var(--ease-out) var(--reveal-delay, 0ms);
+  opacity: 1;
+  transform: none;
+  transition:
+    opacity var(--dur-base) var(--ease-out) var(--reveal-delay, 0ms),
+    transform var(--dur-base) var(--ease-out) var(--reveal-delay, 0ms);
 }
 @media (prefers-reduced-motion: reduce) {
-  .reveal, .reveal.is-visible { opacity: 1; transform: none; transition: none; }
+  .reveal,
+  .reveal.is-visible {
+    opacity: 1;
+    transform: none;
+    transition: none;
+  }
 }
 
 /* Cross-route view transitions (lib/view-transition.ts gates them on support +
    motion preference, so no reduced-motion guard is needed here — the hook simply
    isn't invoked when motion is off). */
-::view-transition-old(root) { animation: vt-fade var(--dur-view) var(--ease-out) reverse; }
-::view-transition-new(root) { animation: vt-fade var(--dur-view) var(--ease-out); }
-@keyframes vt-fade { from { opacity: 0; } to { opacity: 1; } }
+::view-transition-old(root) {
+  animation: vt-fade var(--dur-view) var(--ease-out) reverse;
+}
+::view-transition-new(root) {
+  animation: vt-fade var(--dur-view) var(--ease-out);
+}
+@keyframes vt-fade {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}

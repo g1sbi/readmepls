@@ -28,9 +28,7 @@ export function isThinExtraction(result: ExtractResult): boolean {
 const WaybackResponse = z.object({
   archived_snapshots: z
     .object({
-      closest: z
-        .object({ available: z.boolean(), url: z.string() })
-        .optional(),
+      closest: z.object({ available: z.boolean(), url: z.string() }).optional(),
     })
     .default({}),
 });
@@ -43,7 +41,7 @@ const WaybackResponse = z.object({
  */
 export async function recoverFromArchive(
   url: string,
-  io: ExtractIO
+  io: ExtractIO,
 ): Promise<ExtractResult | null> {
   const availUrl = `https://archive.org/wayback/available?url=${encodeURIComponent(url)}`;
   let snapshot: { available: boolean; url: string } | undefined;
@@ -60,7 +58,11 @@ export async function recoverFromArchive(
     const html = await io.fetchHtml(snapshot.url);
     const reparsed = parseArticleHtml(url, html);
     if (isThinExtraction(reparsed)) return null;
-    return { ...reparsed, status: "partial", failureReason: "recovered from web archive" };
+    return {
+      ...reparsed,
+      status: "partial",
+      failureReason: "recovered from web archive",
+    };
   } catch {
     return null;
   }

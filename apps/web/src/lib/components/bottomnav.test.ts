@@ -46,11 +46,19 @@ describe("BottomNav", () => {
 
   it("renders the collections tab", () => {
     const { getByRole } = render(BottomNav, { pathname: "/library" });
-    expect(getByRole("link", { name: /collections/i })).toHaveAttribute("href", "/collections");
+    expect(getByRole("link", { name: /collections/i })).toHaveAttribute(
+      "href",
+      "/collections",
+    );
   });
 
   it("marks collections active on a collection route", () => {
-    const { getByRole } = render(BottomNav, { pathname: "/collections/recipes" });
-    expect(getByRole("link", { name: /collections/i })).toHaveAttribute("aria-current", "page");
+    const { getByRole } = render(BottomNav, {
+      pathname: "/collections/recipes",
+    });
+    expect(getByRole("link", { name: /collections/i })).toHaveAttribute(
+      "aria-current",
+      "page",
+    );
   });
 });

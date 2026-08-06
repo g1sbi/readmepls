@@ -5,9 +5,12 @@ import { createRunYtDlp } from "./yt-dlp.js";
 
 const json3 = readFileSync(
   fileURLToPath(
-    new URL("../../../../packages/core/src/source/youtube/fixtures/captions.json3.json", import.meta.url)
+    new URL(
+      "../../../../packages/core/src/source/youtube/fixtures/captions.json3.json",
+      import.meta.url,
+    ),
   ),
-  "utf8"
+  "utf8",
 );
 
 // yt-dlp -j output: metadata with an automatic_captions json3 track url.
@@ -26,7 +29,10 @@ describe("createRunYtDlp", () => {
   it("invokes yt-dlp, fetches the json3 caption track, returns parsed output", async () => {
     let execArgs: string[] = [];
     const run = createRunYtDlp({
-      exec: async (args) => { execArgs = args; return ytDlpJson; },
+      exec: async (args) => {
+        execArgs = args;
+        return ytDlpJson;
+      },
       fetchText: async () => json3,
     });
 
@@ -42,7 +48,10 @@ describe("createRunYtDlp", () => {
   it("passes --cookies to yt-dlp when a cookies file is configured", async () => {
     let execArgs: string[] = [];
     const run = createRunYtDlp({
-      exec: async (args) => { execArgs = args; return ytDlpJson; },
+      exec: async (args) => {
+        execArgs = args;
+        return ytDlpJson;
+      },
       fetchText: async () => json3,
       cookiesFile: "/run/secrets/yt-cookies.txt",
     });
@@ -55,7 +64,10 @@ describe("createRunYtDlp", () => {
   it("omits --cookies when no cookies file is configured", async () => {
     let execArgs: string[] = [];
     const run = createRunYtDlp({
-      exec: async (args) => { execArgs = args; return ytDlpJson; },
+      exec: async (args) => {
+        execArgs = args;
+        return ytDlpJson;
+      },
       fetchText: async () => json3,
     });
     await run("dQw4w9WgXcQ");
@@ -65,20 +77,28 @@ describe("createRunYtDlp", () => {
   it("passes the bgutil PO-token base_url via --extractor-args when configured", async () => {
     let execArgs: string[] = [];
     const run = createRunYtDlp({
-      exec: async (args) => { execArgs = args; return ytDlpJson; },
+      exec: async (args) => {
+        execArgs = args;
+        return ytDlpJson;
+      },
       fetchText: async () => json3,
       potProviderUrl: "http://bgutil:4416",
     });
     await run("dQw4w9WgXcQ");
     const i = execArgs.indexOf("--extractor-args");
     expect(i).toBeGreaterThanOrEqual(0);
-    expect(execArgs[i + 1]).toBe("youtubepot-bgutilhttp:base_url=http://bgutil:4416");
+    expect(execArgs[i + 1]).toBe(
+      "youtubepot-bgutilhttp:base_url=http://bgutil:4416",
+    );
   });
 
   it("omits --extractor-args when no PO-token provider is configured", async () => {
     let execArgs: string[] = [];
     const run = createRunYtDlp({
-      exec: async (args) => { execArgs = args; return ytDlpJson; },
+      exec: async (args) => {
+        execArgs = args;
+        return ytDlpJson;
+      },
       fetchText: async () => json3,
     });
     await run("dQw4w9WgXcQ");
@@ -88,7 +108,9 @@ describe("createRunYtDlp", () => {
   it("returns null captions when no english track is present", async () => {
     const run = createRunYtDlp({
       exec: async () => JSON.stringify({ id: "x", title: "t", channel: null }),
-      fetchText: async () => { throw new Error("should not fetch"); },
+      fetchText: async () => {
+        throw new Error("should not fetch");
+      },
     });
     const out = await run("x");
     expect(out.captions).toBeNull();
@@ -102,9 +124,15 @@ describe("createRunYtDlp", () => {
         JSON.stringify({
           id: "kJQP7kiw5Fk",
           title: "t",
-          subtitles: { "en-US": [{ ext: "json3", url }], ja: [{ ext: "json3", url: "x" }] },
+          subtitles: {
+            "en-US": [{ ext: "json3", url }],
+            ja: [{ ext: "json3", url: "x" }],
+          },
         }),
-      fetchText: async (u) => { fetchedUrl = u; return json3; },
+      fetchText: async (u) => {
+        fetchedUrl = u;
+        return json3;
+      },
     });
     const out = await run("kJQP7kiw5Fk");
     expect(fetchedUrl).toBe(url);
@@ -124,7 +152,10 @@ describe("createRunYtDlp", () => {
             en: [{ ext: "json3", url: exact }],
           },
         }),
-      fetchText: async (u) => { fetchedUrl = u; return json3; },
+      fetchText: async (u) => {
+        fetchedUrl = u;
+        return json3;
+      },
     });
     await run("x");
     expect(fetchedUrl).toBe(exact);
@@ -140,7 +171,10 @@ describe("createRunYtDlp", () => {
           title: "t",
           automatic_captions: { "en-orig": [{ ext: "json3", url }] },
         }),
-      fetchText: async (u) => { fetchedUrl = u; return json3; },
+      fetchText: async (u) => {
+        fetchedUrl = u;
+        return json3;
+      },
     });
     await run("x");
     expect(fetchedUrl).toBe(url);

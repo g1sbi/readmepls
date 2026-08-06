@@ -12,7 +12,10 @@ describe("ClaudeProvider", () => {
         },
       ],
     });
-    const fakeClient = { messages: { create } } as unknown as Pick<Anthropic, "messages">;
+    const fakeClient = { messages: { create } } as unknown as Pick<
+      Anthropic,
+      "messages"
+    >;
     const provider = new ClaudeProvider(fakeClient, "claude-haiku-4-5");
 
     const res = await provider.tagAndSummarize("some long article text");

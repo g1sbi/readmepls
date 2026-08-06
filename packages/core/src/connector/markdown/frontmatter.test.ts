@@ -2,9 +2,17 @@ import { describe, it, expect } from "vitest";
 import { renderFrontmatter } from "./frontmatter.js";
 
 const base = {
-  title: "Hello", url: "https://x.test/p", author: "Jane", site_name: "Site",
-  published: "2026-01-02", fetched: "2026-06-26", captured: "2026-06-26",
-  status: "reading", tags: ["notes"], ai_tags: ["ai"], summary: "A summary",
+  title: "Hello",
+  url: "https://x.test/p",
+  author: "Jane",
+  site_name: "Site",
+  published: "2026-01-02",
+  fetched: "2026-06-26",
+  captured: "2026-06-26",
+  status: "reading",
+  tags: ["notes"],
+  ai_tags: ["ai"],
+  summary: "A summary",
 };
 
 describe("renderFrontmatter", () => {
@@ -20,8 +28,14 @@ describe("renderFrontmatter", () => {
 
   it("escapes quotes/colons/newlines and omits null/empty fields", () => {
     const fm = renderFrontmatter({
-      ...base, author: null, site_name: null, published: null,
-      tags: [], ai_tags: [], summary: "", title: 'A "quoted: thing"\nline',
+      ...base,
+      author: null,
+      site_name: null,
+      published: null,
+      tags: [],
+      ai_tags: [],
+      summary: "",
+      title: 'A "quoted: thing"\nline',
     });
     expect(fm).toContain('title: "A \\"quoted: thing\\"\\nline"');
     expect(fm).not.toContain("author:");

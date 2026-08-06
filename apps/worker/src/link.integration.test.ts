@@ -1,7 +1,11 @@
 import { describe, it, expect, beforeAll, afterAll } from "vitest";
 import { readFileSync } from "node:fs";
 import { fileURLToPath } from "node:url";
-import { startEphemeralPb, makeTestUser, type PbHandle } from "@readmepls/core/src/pb/test-harness.js";
+import {
+  startEphemeralPb,
+  makeTestUser,
+  type PbHandle,
+} from "@readmepls/core/src/pb/test-harness.js";
 import { classifySource } from "@readmepls/core";
 import { processJob } from "./worker.js";
 import { ArticleExtractor } from "./extract/article-extractor.js";
@@ -13,8 +17,10 @@ import { ResolverRegistry } from "./resolve/registry.js";
 import { FakeEmbedder } from "./embed/fake-embedder.js";
 
 const html = readFileSync(
-  fileURLToPath(new URL("./extract/fixtures/simple-article.html", import.meta.url)),
-  "utf8"
+  fileURLToPath(
+    new URL("./extract/fixtures/simple-article.html", import.meta.url),
+  ),
+  "utf8",
 );
 
 let h: PbHandle;
@@ -27,9 +33,13 @@ const registry = new ExtractorRegistry([new ArticleExtractor()]);
 function ioWith(htmlBody: string): ExtractIO & ResolveIO {
   return {
     fetchHtml: async () => htmlBody,
-    fetchJson: async () => { throw new Error("fetchJson not used in this test"); },
+    fetchJson: async () => {
+      throw new Error("fetchJson not used in this test");
+    },
     fetchRedirectTarget: async () => null,
-    runYtDlp: async () => { throw new Error("runYtDlp not used in this test"); },
+    runYtDlp: async () => {
+      throw new Error("runYtDlp not used in this test");
+    },
   };
 }
 
@@ -41,13 +51,22 @@ describe("processJob article linking", () => {
 
     const mk = (user: string) =>
       h.pb.collection("articles").create({
-        user, url, canonical_url: url, status: "unread", progress: 0, is_private: true,
+        user,
+        url,
+        canonical_url: url,
+        status: "unread",
+        progress: 0,
+        is_private: true,
       });
     const a1 = await mk(u1);
     const a2 = await mk(u2);
 
     const job = await h.pb.collection("jobs").create({
-      user: u1, canonical_url: url, type: "extract", status: "running", attempts: 0,
+      user: u1,
+      canonical_url: url,
+      type: "extract",
+      status: "running",
+      attempts: 0,
     });
 
     await processJob(h.pb, job.id, {

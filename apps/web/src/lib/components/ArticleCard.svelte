@@ -7,7 +7,15 @@
   import ConfirmDialog from "./ui/ConfirmDialog.svelte";
   import DropdownMenu from "./ui/DropdownMenu.svelte";
   import MenuItem from "./ui/MenuItem.svelte";
-  import { RotateCw, Trash2, MoreHorizontal, Archive, ArchiveRestore, FolderPlus, ExternalLink } from "@lucide/svelte";
+  import {
+    RotateCw,
+    Trash2,
+    MoreHorizontal,
+    Archive,
+    ArchiveRestore,
+    FolderPlus,
+    ExternalLink,
+  } from "@lucide/svelte";
   import { deriveCardState } from "$lib/article/card-state.js";
   import { sourceView } from "$lib/source/source-view.js";
   import { browserPb } from "$lib/pb.js";
@@ -36,7 +44,13 @@
     onArchive,
     onUnarchive,
   }: {
-    article: { id: string; url: string; status?: string; progress?: number; expand?: { content?: CardContent } };
+    article: {
+      id: string;
+      url: string;
+      status?: string;
+      progress?: number;
+      expand?: { content?: CardContent };
+    };
     onRetry?: (id: string) => void;
     onDelete?: (id: string) => void;
     collections?: { id: string; name: string }[];
@@ -57,15 +71,22 @@
   const isPro = $derived($page.data.tier === "pro");
   const tags = $derived<string[]>(isPro ? (content?.ai_tags_json ?? []) : []);
   const isArchived = $derived(article.status === "archived");
-  const hasMenu = $derived(!!(onAddToCollection || onArchive || onUnarchive || onDelete));
+  const hasMenu = $derived(
+    !!(onAddToCollection || onArchive || onUnarchive || onDelete),
+  );
   const showProgress = $derived(
-    (article.progress ?? 0) > STARTED_THRESHOLD && (article.progress ?? 0) < FINISHED_THRESHOLD,
+    (article.progress ?? 0) > STARTED_THRESHOLD &&
+      (article.progress ?? 0) < FINISHED_THRESHOLD,
   );
 
   // Show a clean hostname while processing; fall back to the raw URL if it
   // can't be parsed (e.g. malformed input mid-capture).
   function hostOf(u: string): string {
-    try { return new URL(u).hostname; } catch { return u; }
+    try {
+      return new URL(u).hostname;
+    } catch {
+      return u;
+    }
   }
 </script>
 
@@ -76,28 +97,52 @@
   {:else if state === "failed" || state === "partial"}
     <h3>{content?.title ?? article.url}</h3>
     <p data-state={state}>{content?.failure_reason ?? "extraction problem"}</p>
-    <Button variant="accent" onclick={() => onRetry?.(article.id)}><RotateCw class="icon-sm" aria-hidden="true" /> retry</Button>
+    <Button variant="accent" onclick={() => onRetry?.(article.id)}
+      ><RotateCw class="icon-sm" aria-hidden="true" /> retry</Button
+    >
   {:else}
     <!-- link-overlay: anchor covers the card; its aria-label is the title so the
          link's accessible name is the article title, not generic "open" -->
-    <a class="card-link" href={resolve("/read/[id]", { id: article.id })} aria-label={content?.title ?? article.url}></a>
+    <a
+      class="card-link"
+      href={resolve("/read/[id]", { id: article.id })}
+      aria-label={content?.title ?? article.url}
+    ></a>
     <h3>{content?.title ?? article.url}</h3>
     {#if source}
-      <div class="card-source"><SourcePill name={source.name} host={source.host} iconUrl={source.iconUrl} /></div>
+      <div class="card-source">
+        <SourcePill
+          name={source.name}
+          host={source.host}
+          iconUrl={source.iconUrl}
+        />
+      </div>
     {/if}
     <div class="tags">
       {#each tags as t (t)}<Tag>{t}</Tag>{/each}
     </div>
     {#if showProgress}
-      <div class="progress-bar" style="--p: {article.progress}" aria-hidden="true"></div>
+      <div
+        class="progress-bar"
+        style="--p: {article.progress}"
+        aria-hidden="true"
+      ></div>
     {/if}
   {/if}
 
   {#if hasMenu}
     <div class="card-menu">
       <DropdownMenu label="article actions">
-        {#snippet trigger()}<MoreHorizontal class="icon-sm" aria-hidden="true" />{/snippet}
-        <MenuItem onSelect={() => { const u = httpUrlOrNull(article.url); if (u) window.open(u, "_blank", "noopener,noreferrer"); }}>
+        {#snippet trigger()}<MoreHorizontal
+            class="icon-sm"
+            aria-hidden="true"
+          />{/snippet}
+        <MenuItem
+          onSelect={() => {
+            const u = httpUrlOrNull(article.url);
+            if (u) window.open(u, "_blank", "noopener,noreferrer");
+          }}
+        >
           <ExternalLink class="icon-sm" aria-hidden="true" /> open original
         </MenuItem>
         <div class="menu-sep"></div>
@@ -106,7 +151,8 @@
           {#if collections && collections.length > 0}
             {#each collections as c (c.id)}
               <MenuItem onSelect={() => onAddToCollection?.(article.id, c.id)}>
-                <FolderPlus class="icon-sm" aria-hidden="true" /> {c.name}
+                <FolderPlus class="icon-sm" aria-hidden="true" />
+                {c.name}
               </MenuItem>
             {/each}
           {:else}
@@ -126,7 +172,9 @@
           {/if}
         {/if}
         {#if onDelete}
-          {#if onAddToCollection || onArchive || onUnarchive}<div class="menu-sep"></div>{/if}
+          {#if onAddToCollection || onArchive || onUnarchive}<div
+              class="menu-sep"
+            ></div>{/if}
           <MenuItem variant="danger" onSelect={() => (confirming = true)}>
             <Trash2 class="icon-sm" aria-hidden="true" /> delete
           </MenuItem>
@@ -138,7 +186,10 @@
         open={confirming}
         title="delete this article?"
         message="this can't be undone."
-        onConfirm={() => { confirming = false; onDelete?.(article.id); }}
+        onConfirm={() => {
+          confirming = false;
+          onDelete?.(article.id);
+        }}
         onCancel={() => (confirming = false)}
       />
     {/if}
@@ -146,28 +197,69 @@
 </Card>
 
 <style>
-  .card-link { position: absolute; inset: 0; z-index: 1; border-radius: inherit; }
-  .card-link:focus-visible { outline: var(--focus-ring-width) solid var(--color-ring); outline-offset: 2px; }
-  h3, .tags { position: relative; z-index: 2; pointer-events: none; } /* text/tags don't block the overlay */
-  .card-source { position: relative; z-index: 2; pointer-events: none; }
+  .card-link {
+    position: absolute;
+    inset: 0;
+    z-index: 1;
+    border-radius: inherit;
+  }
+  .card-link:focus-visible {
+    outline: var(--focus-ring-width) solid var(--color-ring);
+    outline-offset: 2px;
+  }
+  h3,
+  .tags {
+    position: relative;
+    z-index: 2;
+    pointer-events: none;
+  } /* text/tags don't block the overlay */
+  .card-source {
+    position: relative;
+    z-index: 2;
+    pointer-events: none;
+  }
 
-  .card-menu { position: relative; z-index: 3; align-self: flex-end; }
+  .card-menu {
+    position: relative;
+    z-index: 3;
+    align-self: flex-end;
+  }
   .card-menu :global(.dropdown__trigger) {
-    display: inline-flex; align-items: center; justify-content: center;
-    background: none; border: none; cursor: pointer;
-    color: var(--color-text-muted); padding: var(--space-1) var(--space-2);
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    background: none;
+    border: none;
+    cursor: pointer;
+    color: var(--color-text-muted);
+    padding: var(--space-1) var(--space-2);
     border-radius: var(--radius-sm);
-    opacity: 0; transition: opacity var(--dur-fast) var(--ease-out);
+    opacity: 0;
+    transition: opacity var(--dur-fast) var(--ease-out);
   }
   :global(.card):hover .card-menu :global(.dropdown__trigger),
   :global(.card):focus-within .card-menu :global(.dropdown__trigger),
-  .card-menu :global(.dropdown__trigger[data-state="open"]) { opacity: 1; }
-  .card-menu :global(.dropdown__trigger):hover { color: var(--color-accent); }
-  .card-menu :global(.dropdown__trigger):focus-visible {
-    outline: var(--focus-ring-width) solid var(--color-ring); outline-offset: var(--focus-ring-offset); opacity: 1;
+  .card-menu :global(.dropdown__trigger[data-state="open"]) {
+    opacity: 1;
   }
-  @media (hover: none) { .card-menu :global(.dropdown__trigger) { opacity: 1; } }
-  @media (prefers-reduced-motion: reduce) { .card-menu :global(.dropdown__trigger) { transition: none; } }
+  .card-menu :global(.dropdown__trigger):hover {
+    color: var(--color-accent);
+  }
+  .card-menu :global(.dropdown__trigger):focus-visible {
+    outline: var(--focus-ring-width) solid var(--color-ring);
+    outline-offset: var(--focus-ring-offset);
+    opacity: 1;
+  }
+  @media (hover: none) {
+    .card-menu :global(.dropdown__trigger) {
+      opacity: 1;
+    }
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .card-menu :global(.dropdown__trigger) {
+      transition: none;
+    }
+  }
 
   .url {
     overflow-wrap: anywhere;
@@ -176,9 +268,13 @@
   }
 
   .progress-bar {
-    position: absolute; left: 0; bottom: 0;
-    height: 3px; width: calc(var(--p) * 100%);
+    position: absolute;
+    left: 0;
+    bottom: 0;
+    height: 3px;
+    width: calc(var(--p) * 100%);
     background: var(--color-accent);
-    z-index: 2; pointer-events: none; /* don't block clicks to card-link overlay */
+    z-index: 2;
+    pointer-events: none; /* don't block clicks to card-link overlay */
   }
 </style>

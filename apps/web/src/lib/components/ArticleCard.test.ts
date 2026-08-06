@@ -10,7 +10,8 @@ const article = (content: unknown, extra: Record<string, unknown> = {}) => ({
   ...extra,
 });
 
-const ready = () => article({ extract_status: "ok", title: "Hello", ai_tags_json: ["ai"] });
+const ready = () =>
+  article({ extract_status: "ok", title: "Hello", ai_tags_json: ["ai"] });
 
 const basePageValue = {
   params: {} as Record<string, string>,
@@ -32,7 +33,9 @@ describe("ArticleCard", () => {
     const link = screen.getByRole("link", { name: /hello/i });
     expect(link).toHaveAttribute("href", "/read/a1");
     expect(screen.getByText("ai")).toBeInTheDocument();
-    expect(screen.queryByRole("button", { name: /read/i })).not.toBeInTheDocument();
+    expect(
+      screen.queryByRole("button", { name: /read/i }),
+    ).not.toBeInTheDocument();
   });
 
   it("shows a processing indicator when not yet extracted", () => {
@@ -43,7 +46,11 @@ describe("ArticleCard", () => {
   it("shows the reason and a retry button when failed", async () => {
     const onRetry = vi.fn();
     render(ArticleCard, {
-      article: article({ extract_status: "failed", title: "X", failure_reason: "boom" }),
+      article: article({
+        extract_status: "failed",
+        title: "X",
+        failure_reason: "boom",
+      }),
       onRetry,
     });
     expect(screen.getByText(/boom/)).toBeInTheDocument();
@@ -53,7 +60,9 @@ describe("ArticleCard", () => {
 
   it("renders no actions menu when no handlers are provided", () => {
     render(ArticleCard, { article: ready() });
-    expect(screen.queryByRole("button", { name: "article actions" })).not.toBeInTheDocument();
+    expect(
+      screen.queryByRole("button", { name: "article actions" }),
+    ).not.toBeInTheDocument();
   });
 
   it("adds the article to a collection from the menu", async () => {
@@ -63,40 +72,82 @@ describe("ArticleCard", () => {
       collections: [{ id: "c1", name: "read later" }],
       onAddToCollection,
     });
-    await fireEvent.click(screen.getByRole("button", { name: "article actions" }));
-    await waitFor(() => expect(screen.getByRole("menuitem", { name: /read later/i })).toBeInTheDocument());
-    await fireEvent.click(screen.getByRole("menuitem", { name: /read later/i }));
+    await fireEvent.click(
+      screen.getByRole("button", { name: "article actions" }),
+    );
+    await waitFor(() =>
+      expect(
+        screen.getByRole("menuitem", { name: /read later/i }),
+      ).toBeInTheDocument(),
+    );
+    await fireEvent.click(
+      screen.getByRole("menuitem", { name: /read later/i }),
+    );
     expect(onAddToCollection).toHaveBeenCalledWith("a1", "c1");
   });
 
   it("shows an empty hint when there are no collections", async () => {
-    render(ArticleCard, { article: ready(), collections: [], onAddToCollection: vi.fn() });
-    await fireEvent.click(screen.getByRole("button", { name: "article actions" }));
-    await waitFor(() => expect(screen.getByText(/no collections yet/i)).toBeInTheDocument());
+    render(ArticleCard, {
+      article: ready(),
+      collections: [],
+      onAddToCollection: vi.fn(),
+    });
+    await fireEvent.click(
+      screen.getByRole("button", { name: "article actions" }),
+    );
+    await waitFor(() =>
+      expect(screen.getByText(/no collections yet/i)).toBeInTheDocument(),
+    );
   });
 
   it("archives an unarchived article from the menu", async () => {
     const onArchive = vi.fn();
-    render(ArticleCard, { article: article({ extract_status: "ok", title: "Hello", ai_tags_json: [] }, { status: "unread" }), onArchive });
-    await fireEvent.click(screen.getByRole("button", { name: "article actions" }));
-    await fireEvent.click(await screen.findByRole("menuitem", { name: /^archive$/i }));
+    render(ArticleCard, {
+      article: article(
+        { extract_status: "ok", title: "Hello", ai_tags_json: [] },
+        { status: "unread" },
+      ),
+      onArchive,
+    });
+    await fireEvent.click(
+      screen.getByRole("button", { name: "article actions" }),
+    );
+    await fireEvent.click(
+      await screen.findByRole("menuitem", { name: /^archive$/i }),
+    );
     expect(onArchive).toHaveBeenCalledWith("a1");
   });
 
   it("offers unarchive for an archived article", async () => {
     const onUnarchive = vi.fn();
-    render(ArticleCard, { article: article({ extract_status: "ok", title: "Hello", ai_tags_json: [] }, { status: "archived" }), onUnarchive });
-    await fireEvent.click(screen.getByRole("button", { name: "article actions" }));
-    await fireEvent.click(await screen.findByRole("menuitem", { name: /unarchive/i }));
+    render(ArticleCard, {
+      article: article(
+        { extract_status: "ok", title: "Hello", ai_tags_json: [] },
+        { status: "archived" },
+      ),
+      onUnarchive,
+    });
+    await fireEvent.click(
+      screen.getByRole("button", { name: "article actions" }),
+    );
+    await fireEvent.click(
+      await screen.findByRole("menuitem", { name: /unarchive/i }),
+    );
     expect(onUnarchive).toHaveBeenCalledWith("a1");
   });
 
   it("deletes via the menu after confirming", async () => {
     const onDelete = vi.fn();
     render(ArticleCard, { article: ready(), onDelete });
-    await fireEvent.click(screen.getByRole("button", { name: "article actions" }));
-    await fireEvent.click(await screen.findByRole("menuitem", { name: /delete/i }));
-    await waitFor(() => expect(screen.getByText(/can't be undone/i)).toBeInTheDocument());
+    await fireEvent.click(
+      screen.getByRole("button", { name: "article actions" }),
+    );
+    await fireEvent.click(
+      await screen.findByRole("menuitem", { name: /delete/i }),
+    );
+    await waitFor(() =>
+      expect(screen.getByText(/can't be undone/i)).toBeInTheDocument(),
+    );
     await fireEvent.click(screen.getByRole("button", { name: "delete" }));
     expect(onDelete).toHaveBeenCalledWith("a1");
   });
@@ -104,35 +155,62 @@ describe("ArticleCard", () => {
   it("opens the original article in a new tab from the menu", async () => {
     const openSpy = vi.spyOn(window, "open").mockImplementation(() => null);
     render(ArticleCard, { article: ready(), onDelete: vi.fn() });
-    await fireEvent.click(screen.getByRole("button", { name: "article actions" }));
-    await fireEvent.click(await screen.findByRole("menuitem", { name: /open original/i }));
-    expect(openSpy).toHaveBeenCalledWith("https://example.com/p", "_blank", "noopener,noreferrer");
+    await fireEvent.click(
+      screen.getByRole("button", { name: "article actions" }),
+    );
+    await fireEvent.click(
+      await screen.findByRole("menuitem", { name: /open original/i }),
+    );
+    expect(openSpy).toHaveBeenCalledWith(
+      "https://example.com/p",
+      "_blank",
+      "noopener,noreferrer",
+    );
     openSpy.mockRestore();
   });
 
   it("does not open a non-http url from the menu", async () => {
     const openSpy = vi.spyOn(window, "open").mockImplementation(() => null);
     render(ArticleCard, {
-      article: article({ extract_status: "ok", title: "Hello", ai_tags_json: [] }, { url: "javascript:alert(1)" }),
+      article: article(
+        { extract_status: "ok", title: "Hello", ai_tags_json: [] },
+        { url: "javascript:alert(1)" },
+      ),
       onDelete: vi.fn(),
     });
-    await fireEvent.click(screen.getByRole("button", { name: "article actions" }));
-    await fireEvent.click(await screen.findByRole("menuitem", { name: /open original/i }));
+    await fireEvent.click(
+      screen.getByRole("button", { name: "article actions" }),
+    );
+    await fireEvent.click(
+      await screen.findByRole("menuitem", { name: /open original/i }),
+    );
     expect(openSpy).not.toHaveBeenCalled();
     openSpy.mockRestore();
   });
 
   it("shows the hostname (not the full path) while processing", () => {
     render(ArticleCard, {
-      article: { id: "a2", url: "https://example.com/some/very/long/path?x=1", expand: undefined },
+      article: {
+        id: "a2",
+        url: "https://example.com/some/very/long/path?x=1",
+        expand: undefined,
+      },
     });
     expect(screen.getByText("example.com")).toBeInTheDocument();
-    expect(screen.queryByText(/some\/very\/long\/path/)).not.toBeInTheDocument();
+    expect(
+      screen.queryByText(/some\/very\/long\/path/),
+    ).not.toBeInTheDocument();
   });
 
   it("hides AI tags for a standard-tier viewer even when content has them", () => {
     page.set({ ...basePageValue, data: { tier: "standard" } });
-    render(ArticleCard, { article: article({ extract_status: "ok", title: "Hello", ai_tags_json: ["ai", "ml"] }) });
+    render(ArticleCard, {
+      article: article({
+        extract_status: "ok",
+        title: "Hello",
+        ai_tags_json: ["ai", "ml"],
+      }),
+    });
     expect(screen.queryByText("ai")).not.toBeInTheDocument();
     expect(screen.queryByText("ml")).not.toBeInTheDocument();
   });
@@ -145,7 +223,10 @@ describe("ArticleCard", () => {
 
   it("shows a bottom progress bar for an in-progress article", () => {
     const { container } = render(ArticleCard, {
-      article: article({ extract_status: "ok", title: "Hello", ai_tags_json: [] }, { progress: 0.45 }),
+      article: article(
+        { extract_status: "ok", title: "Hello", ai_tags_json: [] },
+        { progress: 0.45 },
+      ),
     });
     const bar = container.querySelector(".progress-bar");
     expect(bar).toBeInTheDocument();
@@ -154,14 +235,20 @@ describe("ArticleCard", () => {
 
   it("hides the progress bar for an unread article", () => {
     const { container } = render(ArticleCard, {
-      article: article({ extract_status: "ok", title: "Hello", ai_tags_json: [] }, { progress: 0 }),
+      article: article(
+        { extract_status: "ok", title: "Hello", ai_tags_json: [] },
+        { progress: 0 },
+      ),
     });
     expect(container.querySelector(".progress-bar")).not.toBeInTheDocument();
   });
 
   it("hides the progress bar for a finished article", () => {
     const { container } = render(ArticleCard, {
-      article: article({ extract_status: "ok", title: "Hello", ai_tags_json: [] }, { progress: 0.99 }),
+      article: article(
+        { extract_status: "ok", title: "Hello", ai_tags_json: [] },
+        { progress: 0.99 },
+      ),
     });
     expect(container.querySelector(".progress-bar")).not.toBeInTheDocument();
   });

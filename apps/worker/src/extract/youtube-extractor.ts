@@ -13,7 +13,10 @@ export class YoutubeExtractor implements Extractor {
       const out = await io.runYtDlp(id);
       const result = parseYtTranscript(out.meta, out.captions);
       if (result.status === "failed") return result;
-      return { ...result, contentHtml: sanitizeContentHtml(result.contentHtml) };
+      return {
+        ...result,
+        contentHtml: sanitizeContentHtml(result.contentHtml),
+      };
     } catch (err) {
       // Preserve the underlying reason (bot-block, network, parse) so prod
       // failures are diagnosable instead of an opaque "yt-dlp failed".

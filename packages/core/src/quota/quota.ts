@@ -10,7 +10,7 @@ export interface QuotaState {
 
 export function checkQuota(
   state: QuotaState,
-  byoKey: boolean
+  byoKey: boolean,
 ): { ok: true } | { ok: false; limit: number } {
   if (byoKey) return { ok: true };
   const limit = LIMITS[state.tier] ?? STANDARD_LIMIT;

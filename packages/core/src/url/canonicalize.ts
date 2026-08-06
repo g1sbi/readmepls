@@ -23,7 +23,8 @@ export function canonicalizeUrl(input: string): string {
     u.port = "";
   }
   const params = [...u.searchParams.entries()].filter(
-    ([k]) => !k.toLowerCase().startsWith("utm_") && !TRACKING.has(k.toLowerCase())
+    ([k]) =>
+      !k.toLowerCase().startsWith("utm_") && !TRACKING.has(k.toLowerCase()),
   );
   params.sort(([a], [b]) => a.localeCompare(b));
   u.search = "";
