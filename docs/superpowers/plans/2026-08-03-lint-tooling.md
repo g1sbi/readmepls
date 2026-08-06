@@ -34,13 +34,13 @@ Registers `prettier-plugin-svelte` so the 107 currently-invisible `.svelte` file
 - Consumes: nothing.
 - Produces: `.prettierignore` path list, reused verbatim as `ignores` in Task 2's `eslint.config.js`.
 
-- [ ] **Step 1: Install the plugin**
+- [x] **Step 1: Install the plugin**
 
 ```bash
 pnpm add -Dw prettier-plugin-svelte
 ```
 
-- [ ] **Step 2: Verify Prettier currently cannot see Svelte files**
+- [x] **Step 2: Verify Prettier currently cannot see Svelte files**
 
 ```bash
 pnpm exec prettier --check apps/web/src/routes/+layout.svelte
@@ -48,7 +48,7 @@ pnpm exec prettier --check apps/web/src/routes/+layout.svelte
 
 Expected: `[error] No parser could be inferred`. This is the baseline bug — record it before fixing.
 
-- [ ] **Step 3: Create `.prettierrc`**
+- [x] **Step 3: Create `.prettierrc`**
 
 ```json
 {
@@ -57,7 +57,7 @@ Expected: `[error] No parser could be inferred`. This is the baseline bug — re
 }
 ```
 
-- [ ] **Step 4: Verify Svelte files are now parsed**
+- [x] **Step 4: Verify Svelte files are now parsed**
 
 ```bash
 pnpm exec prettier --check apps/web/src/routes/+layout.svelte
@@ -65,7 +65,7 @@ pnpm exec prettier --check apps/web/src/routes/+layout.svelte
 
 Expected: no longer a parser error. It will report the file as needing formatting (`[warn]`) — that is success for this step; Task 3 fixes formatting.
 
-- [ ] **Step 5: Create `.prettierignore`**
+- [x] **Step 5: Create `.prettierignore`**
 
 ```
 node_modules/
@@ -87,7 +87,7 @@ pocketbase/pb_hooks/
 assets/_banner.html
 ```
 
-- [ ] **Step 6: Confirm the ignore list took effect**
+- [x] **Step 6: Confirm the ignore list took effect**
 
 ```bash
 pnpm exec prettier --check . 2>&1 | grep -E 'pnpm-lock|CHANGELOG|pb_migrations|_banner' | head
@@ -95,7 +95,7 @@ pnpm exec prettier --check . 2>&1 | grep -E 'pnpm-lock|CHANGELOG|pb_migrations|_
 
 Expected: no output. Those paths are now out of scope.
 
-- [ ] **Step 7: Commit**
+- [x] **Step 7: Commit**
 
 ```bash
 git add .prettierrc .prettierignore package.json pnpm-lock.yaml
@@ -116,7 +116,7 @@ ESLint 9 currently refuses to run at all — no config file exists. This makes `
 - Consumes: the ignore path list from Task 1's `.prettierignore`.
 - Produces: a working `eslint .`; Task 5's CI job depends on `pnpm lint` exiting 0.
 
-- [ ] **Step 1: Verify the baseline failure**
+- [x] **Step 1: Verify the baseline failure**
 
 ```bash
 pnpm exec eslint . 2>&1 | head -5
@@ -124,7 +124,7 @@ pnpm exec eslint . 2>&1 | head -5
 
 Expected: `ESLint couldn't find an eslint.config.(js|mjs|cjs) file.` Record this before fixing.
 
-- [ ] **Step 2: Install ESLint plugins**
+- [x] **Step 2: Install ESLint plugins**
 
 ```bash
 pnpm add -Dw typescript-eslint eslint-plugin-svelte@3 eslint-config-prettier globals @eslint/js
@@ -132,7 +132,7 @@ pnpm add -Dw typescript-eslint eslint-plugin-svelte@3 eslint-config-prettier glo
 
 `svelte-eslint-parser` arrives as a dependency of `eslint-plugin-svelte`; it does not need to be listed directly.
 
-- [ ] **Step 3: Create `eslint.config.js`**
+- [x] **Step 3: Create `eslint.config.js`**
 
 Three details that are easy to get wrong, all verified against the eslint-plugin-svelte v3 docs:
 
@@ -185,7 +185,7 @@ export default defineConfig(
 );
 ```
 
-- [ ] **Step 4: Run ESLint and triage**
+- [x] **Step 4: Run ESLint and triage**
 
 ```bash
 pnpm exec eslint . 2>&1 | tail -30
@@ -197,7 +197,7 @@ Expected: it runs to completion. Some violations are likely.
 If violations are auto-fixable style leftovers, run `pnpm exec eslint . --fix`.
 If they are *genuine* findings (unused vars, unsafe patterns, real bugs) across many files, **halt and report the list to the user**. Do not add `eslint-disable` comments and do not weaken rules to force a green run. The spec names this explicitly as a non-goal.
 
-- [ ] **Step 5: Confirm ESLint is clean**
+- [x] **Step 5: Confirm ESLint is clean**
 
 ```bash
 pnpm exec eslint . && echo "ESLINT CLEAN"
@@ -205,7 +205,7 @@ pnpm exec eslint . && echo "ESLINT CLEAN"
 
 Expected: `ESLINT CLEAN`.
 
-- [ ] **Step 6: Commit**
+- [x] **Step 6: Commit**
 
 ```bash
 git add eslint.config.js package.json pnpm-lock.yaml
