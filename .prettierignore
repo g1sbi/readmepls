@@ -15,3 +15,8 @@ pocketbase/pb_hooks/
 
 # design source of truth; reformatting churns the palette reference
 assets/_banner.html
+
+# Captured real-world payloads, not our source. Extraction is whitespace-
+# sensitive (HTML text nodes, heading detection), so reformatting these would
+# both invalidate them as faithful captures and mask whitespace regressions.
+**/fixtures/
