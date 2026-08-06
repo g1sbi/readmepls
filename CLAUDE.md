@@ -123,6 +123,9 @@ design phase does not add features.
   clean, logical Conventional Commit per change (no `wip`, `fix typo`, or
   review-fixup noise in history). Granular commits during development are fine;
   collapse them before merging to `main`.
+- **Blame ignores the reformat.** A one-time repo-wide prettier reformat would
+  otherwise own every line. Run this once per clone so `git blame` shows real
+  authors: `git config blame.ignoreRevsFile .git-blame-ignore-revs`.
 - **Never push or open a PR unless asked.** Commit locally is fine; pushing is not.
 - **Never commit secrets.** Keys live in env only; keep `.env.example` current.
 
