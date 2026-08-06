@@ -5,6 +5,7 @@
   import "$lib/styles/shadcn-bridge.css";
   import { onMount, setContext } from "svelte";
   import { goto, onNavigate } from "$app/navigation";
+  import { resolve } from "$app/paths";
   import { shouldAnimateNavigation } from "$lib/view-transition.js";
   import { page } from "$app/stores";
   import { browserPb } from "$lib/pb.js";
@@ -80,7 +81,7 @@
 
   async function signOut() {
     pb.authStore.clear();
-    await goto("/login");
+    await goto(resolve("/login"));
   }
 </script>
 

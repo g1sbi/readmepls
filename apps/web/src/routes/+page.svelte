@@ -1,5 +1,6 @@
 <script lang="ts">
   import { onMount, onDestroy } from "svelte";
+  import { resolve } from "$app/paths";
   import { browserPb } from "$lib/pb.js";
   import { splitHomeFeed } from "$lib/article/home-feed.js";
   import type { ArticleRecord } from "$lib/article/record.js";
@@ -84,7 +85,7 @@
         <ArticleCard article={a} />
       {/each}
     </CardGrid>
-    <a class="more" href="/library">see all in your library →</a>
+    <a class="more" href={resolve("/library")}>see all in your library →</a>
   </section>
 {/if}
 

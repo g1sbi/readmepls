@@ -16,6 +16,9 @@ export default defineConfig({
       "$app/stores": fileURLToPath(
         new URL("./src/__mocks__/app-stores.ts", import.meta.url),
       ),
+      "$app/paths": fileURLToPath(
+        new URL("./src/__mocks__/app-paths.ts", import.meta.url),
+      ),
       "$env/dynamic/public": fileURLToPath(
         new URL("./src/__mocks__/env-dynamic-public.ts", import.meta.url),
       ),

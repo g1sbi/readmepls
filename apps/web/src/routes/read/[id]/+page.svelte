@@ -10,6 +10,7 @@
   import type { RecordModel } from "pocketbase";
   import { ClientResponseError } from "pocketbase";
   import { goto } from "$app/navigation";
+  import { resolve } from "$app/paths";
   import { readerCssVars } from "$lib/reader/css-vars.js";
   import { markRange, unmarkAll } from "$lib/highlight/render";
   import { deleteArticle } from "$lib/article/delete.js";
@@ -55,7 +56,7 @@
   let pendingProgress = 0;
 
   // Highlight state
-  // eslint-disable-next-line prefer-const — reassigned by bind:this, not Svelte reactivity
+  // `let`, not `const`: reassigned by bind:this, not by Svelte reactivity.
   let bodyEl = $state<HTMLElement>(null!);
   let highlights = $state<Highlight[]>([]);
   let orphans = $state<string[]>([]);
@@ -342,7 +343,7 @@
     actionError = "";
     try {
       await pb.collection("articles").update(article.id, { status: "archived" });
-      await goto("/library");
+      await goto(resolve("/library"));
     } catch {
       actionError = "couldn't archive that. try again.";
     }
@@ -369,7 +370,7 @@
       // Clear the reference so onDestroy's flushSave (which fires on teardown
       // after this navigation) doesn't write progress to a now-deleted record.
       article = null;
-      await goto("/library");
+      await goto(resolve("/library"));
     } catch {
       actionError = "couldn't delete that. try again.";
     }
@@ -380,7 +381,7 @@
 <div class="reader-shell" style={readerCssVars(prefs)}>
   {#if isDesktop}
     <div class="bar">
-      <a class="back" href="/library"><ArrowLeft class="icon-sm" aria-hidden="true" /> library</a>
+      <a class="back" href={resolve("/library")}><ArrowLeft class="icon-sm" aria-hidden="true" /> library</a>
     </div>
   {/if}
 
@@ -430,6 +431,7 @@
           <!-- content_html is sanitized in the worker (Task 2) before storage -->
           <!-- bind:this anchors the highlight anchoring scope to the article body -->
           <div bind:this={bodyEl}>
+            <!-- eslint-disable-next-line svelte/no-at-html-tags -- worker-sanitized above; rendering article HTML is the reader's whole purpose -->
             {@html content.content_html}
           </div>
         </article>
@@ -455,7 +457,7 @@
 />
 
 {#if !isDesktop}
-  <a class="back-floating" href="/library" data-hidden={!controlsVisible}>
+  <a class="back-floating" href={resolve("/library")} data-hidden={!controlsVisible}>
     <ArrowLeft class="icon-sm" aria-hidden="true" /> library
   </a>
 {/if}

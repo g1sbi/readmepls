@@ -1,4 +1,5 @@
 <script lang="ts">
+  import { resolve } from "$app/paths";
   import { THEMES, type Theme } from "$lib/theme/theme.js";
   import Sheet from "$lib/components/ui/Sheet.svelte";
   import GetExtensionButton from "./GetExtensionButton.svelte";
@@ -14,7 +15,7 @@
 
 {#snippet themeControls()}
   <div class="themes" role="group" aria-label="theme">
-    {#each THEMES as t}
+    {#each THEMES as t (t)}
       {@const Icon = themeIcon[t]}
       <button
         type="button"
@@ -30,9 +31,9 @@
 {/snippet}
 
 <header class="topbar">
-  <a class="brand" href="/">readme<span>pls</span></a>
+  <a class="brand" href={resolve("/")}>readme<span>pls</span></a>
   <nav>
-    <a href="/library"><Library class="icon-sm" aria-hidden="true" />library</a>
+    <a href={resolve("/library")}><Library class="icon-sm" aria-hidden="true" />library</a>
   </nav>
   <button type="button" class="search-trigger" onclick={() => searchPalette.open()}>
     <Search class="icon-sm" aria-hidden="true" />

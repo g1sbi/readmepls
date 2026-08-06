@@ -1,5 +1,6 @@
 <script lang="ts">
   import type { PageData } from "./$types";
+  import { resolve } from "$app/paths";
   import CollectionFolder from "$lib/components/ui/CollectionFolder.svelte";
 
   let { data }: { data: PageData } = $props();
@@ -10,7 +11,7 @@
 <h1>collections</h1>
 
 {#if data.collections.length === 0}
-  <p class="empty-note">no collections yet. create one from the filters on your <a href="/library">library</a>.</p>
+  <p class="empty-note">no collections yet. create one from the filters on your <a href={resolve("/library")}>library</a>.</p>
 {:else}
   <div class="folder-grid">
     {#each data.collections as c (c.id)}

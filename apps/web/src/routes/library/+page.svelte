@@ -2,6 +2,7 @@
 <script lang="ts">
   import { onMount, onDestroy } from "svelte";
   import { goto, invalidateAll } from "$app/navigation";
+  import { resolve } from "$app/paths";
   import type { PageData } from "./$types";
   import type { LibraryParams, Sort } from "@readmepls/types";
   import { serializeLibraryParams, slugify, type SourceFacet } from "@readmepls/core";
@@ -89,7 +90,7 @@
 
   function navigate(next: LibraryParams) {
     const qs = serializeLibraryParams(next).toString();
-    goto(qs ? `/library?${qs}` : "/library", { keepFocus: true, noScroll: true });
+    goto(qs ? resolve(`/library?${qs}`) : resolve("/library"), { keepFocus: true, noScroll: true });
   }
   const patch = (p: Partial<LibraryParams>) => navigate(applyPatch(data.params, p));
   const clearAll = () => navigate({ ...data.params, read: [], time: [], tag: [], collection: [], source: [], favsrc: false, saved: null, published: null, lang: [], author: [], has: [], attention: [], q: "", page: 1 });
@@ -137,7 +138,7 @@
 {#if data.page.items.length === 0}
   <div class="empty">
     <PaperCorner />
-    <p>nothing matches those filters. <button class="link" onclick={clearAll}>clear filters</button> or save a link on your <a href="/">home page</a>.</p>
+    <p>nothing matches those filters. <button class="link" onclick={clearAll}>clear filters</button> or save a link on your <a href={resolve("/")}>home page</a>.</p>
   </div>
 {:else}
   <CardGrid>

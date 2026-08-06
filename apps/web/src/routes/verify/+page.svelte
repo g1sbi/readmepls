@@ -1,6 +1,7 @@
 <script lang="ts">
   import { onMount } from "svelte";
   import { goto } from "$app/navigation";
+  import { resolve } from "$app/paths";
   import { browserPb } from "$lib/pb.js";
   import Button from "$lib/components/ui/Button.svelte";
   import type { PageData } from "./$types";
@@ -24,7 +25,7 @@
         } catch {
           // stale session is harmless; fall through to home, guard re-checks.
         }
-        await goto("/");
+        await goto(resolve("/"));
       }
     } catch {
       status = "error";
@@ -37,7 +38,7 @@
     // a known field on the users auth record, so the cast is safe here.
     const email = pb.authStore.model?.email as string | undefined;
     if (!email) {
-      await goto("/login");
+      await goto(resolve("/login"));
       return;
     }
     try {
@@ -52,7 +53,7 @@
 
   function logout() {
     pb.authStore.clear();
-    goto("/login");
+    goto(resolve("/login"));
   }
 </script>
 
@@ -64,7 +65,7 @@
       <p class="tag">verifying your email…</p>
     {:else if status === "verified"}
       <p class="tag">email verified.</p>
-      <a class="link" href="/login">sign in to continue</a>
+      <a class="link" href={resolve("/login")}>sign in to continue</a>
     {:else}
       <p class="tag">check your email</p>
       <p class="body">

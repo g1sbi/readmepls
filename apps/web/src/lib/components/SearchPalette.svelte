@@ -7,6 +7,7 @@
   import * as Dialog from "$lib/components/ui/dialog/index.js";
   import * as Command from "$lib/components/ui/command/index.js";
   import { goto } from "$app/navigation";
+  import { resolve } from "$app/paths";
   import type { LiveSearchResult } from "@readmepls/types";
   import { searchPalette } from "$lib/stores/search-palette.svelte.js";
   import { fetchLive } from "$lib/search/live-client.js";
@@ -113,21 +114,21 @@
   function pickArticle(id: string) {
     pushRecentSearch(query);
     close();
-    goto(`/read/${id}`);
+    goto(resolve("/read/[id]", { id }));
   }
   function pickTag(id: string) {
     close();
-    goto(`/library?tag=${id}`);
+    goto(resolve(`/library?tag=${id}`));
   }
   function pickCollection(id: string) {
     close();
-    goto(`/library?collection=${id}`);
+    goto(resolve(`/library?collection=${id}`));
   }
   function seeAll() {
     const q = query.trim();
     pushRecentSearch(q);
     close();
-    goto(`/library?q=${encodeURIComponent(q)}`);
+    goto(resolve(`/library?q=${encodeURIComponent(q)}`));
   }
   function reRun(q: string) {
     query = q;

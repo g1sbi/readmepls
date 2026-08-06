@@ -1,4 +1,5 @@
 <script lang="ts">
+  import { resolve } from "$app/paths";
   import Input from "./ui/Input.svelte";
   import Button from "./ui/Button.svelte";
   import { Folder, Pencil, Trash2, Check, X, Plus } from "@lucide/svelte";
@@ -50,7 +51,7 @@
             <button type="button" class="icon-btn" aria-label="cancel" onclick={() => (renameTarget = null)}><X class="icon-sm" aria-hidden="true" /></button>
           </form>
         {:else}
-          <a class="row-link" href={`/collections/${col.slug}`}>
+          <a class="row-link" href={resolve("/collections/[slug]", { slug: col.slug })}>
             <Folder class="icon-sm folder" aria-hidden="true" />
             <span class="name">{col.name}</span>
           </a>

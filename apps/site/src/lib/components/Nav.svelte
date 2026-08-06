@@ -1,12 +1,13 @@
 <script lang="ts">
+  import { resolve } from "$app/paths";
   import { GITHUB_URL } from "$lib/site";
 </script>
 
 <header class="nav">
-  <a class="wordmark" href="/">readme<span class="pls">pls</span></a>
+  <a class="wordmark" href={resolve("/")}>readme<span class="pls">pls</span></a>
   <nav class="links">
-    <a href={GITHUB_URL}>GitHub</a>
-    <a href="/docs">Docs</a>
+    <a href={GITHUB_URL} rel="external">GitHub</a>
+    <a href={resolve("/docs")}>Docs</a>
   </nav>
 </header>
 

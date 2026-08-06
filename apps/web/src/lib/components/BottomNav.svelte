@@ -1,5 +1,6 @@
 <script lang="ts">
   import { onMount } from "svelte";
+  import { resolve } from "$app/paths";
   import { Library, Search, FolderOpen } from "@lucide/svelte";
   import { nextNavVisible } from "./bottom-nav-scroll.js";
   import { searchPalette } from "$lib/stores/search-palette.svelte.js";
@@ -8,9 +9,9 @@
 
   // profile tab hidden + route disabled temporarily; revisit later.
   const TABS = [
-    { kind: "link", href: "/library", label: "library", icon: Library, match: (p: string) => p === "/library" || p.startsWith("/read") },
+    { kind: "link", route: "/library", label: "library", icon: Library, match: (p: string) => p === "/library" || p.startsWith("/read") },
     { kind: "action", label: "search", icon: Search, action: () => searchPalette.open() },
-    { kind: "link", href: "/collections", label: "collections", icon: FolderOpen, match: (p: string) => p.startsWith("/collections") },
+    { kind: "link", route: "/collections", label: "collections", icon: FolderOpen, match: (p: string) => p.startsWith("/collections") },
   ] as const;
 
   let visible = $state(true);
@@ -37,7 +38,7 @@
   {#each TABS as tab (tab.label)}
     {@const Icon = tab.icon}
     {#if tab.kind === "link"}
-      <a href={tab.href} aria-current={tab.match(pathname) ? "page" : undefined}>
+      <a href={resolve(tab.route)} aria-current={tab.match(pathname) ? "page" : undefined}>
         <Icon class="icon-sm" aria-hidden="true" />
         <span>{tab.label}</span>
       </a>

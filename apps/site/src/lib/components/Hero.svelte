@@ -18,13 +18,13 @@
   </div>
   <h1 class="wordmark">readme<span class="pls">pls</span></h1>
   <p class="tagline reel-line">
-    <span class="reel-lead" aria-hidden="true">save any&nbsp;</span><span class="reel" aria-hidden="true"><span class="reel-col">{#each slots as w}<span class="reel-word">{w}</span>{/each}</span></span>
+    <span class="reel-lead" aria-hidden="true">save any&nbsp;</span><span class="reel" aria-hidden="true"><span class="reel-col">{#each slots as w, i (i)}<span class="reel-word">{w}</span>{/each}</span></span>
     <span class="sr-only">{srPhrase}</span>
   </p>
   <p class="tagline">{TAGLINE}</p>
   <div class="cta">
-    <a class="btn primary" href={APP_URL}>Open app</a>
-    <a class="btn ghost" href={GITHUB_URL}>GitHub</a>
+    <a class="btn primary" href={APP_URL} rel="external">Open app</a>
+    <a class="btn ghost" href={GITHUB_URL} rel="external">GitHub</a>
   </div>
 </section>
 

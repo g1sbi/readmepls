@@ -1,5 +1,6 @@
 <script lang="ts">
   import { listConnectors } from "@readmepls/core";
+  import { resolve } from "$app/paths";
 
   const connectors = listConnectors().map((c) => ({ type: c.type, stub: c.stub }));
 </script>
@@ -17,7 +18,7 @@
         {#if c.stub}
           <span class="badge">coming soon</span>
         {:else}
-          <a class="action" href={`/api/export?scope=library`}>export library</a>
+          <a class="action" href={resolve("/api/export?scope=library")}>export library</a>
         {/if}
       </li>
     {/each}

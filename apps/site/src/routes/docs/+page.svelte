@@ -75,7 +75,9 @@
     <h2>8. browser extension</h2>
     <p>
       Save the page you're on to your library in one click with the readmepls
-      extension — <a href={EXTENSION_URL}>get it on the Chrome Web Store</a>.
+      extension — <a href={EXTENSION_URL} rel="external"
+        >get it on the Chrome Web Store</a
+      >.
       Point it at your instance from its options screen.
     </p>
     <p>
@@ -84,13 +86,13 @@
       then restart:
     </p>
     <CodeBlock
-      code={"EXTENSION_ORIGINS=chrome-extension://cjnlkadkjleamnkjehbnblnblcappaje"}
+      code="EXTENSION_ORIGINS=chrome-extension://cjnlkadkjleamnkjehbnblnblcappaje"
     />
   </section>
 
   <p class="more">
     Questions or something looks off? Open an issue on
-    <a href={GITHUB_URL}>GitHub</a>.
+    <a href={GITHUB_URL} rel="external">GitHub</a>.
   </p>
 </main>
 

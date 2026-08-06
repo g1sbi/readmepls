@@ -1,5 +1,6 @@
 <script lang="ts">
   import { goto } from "$app/navigation";
+  import { resolve } from "$app/paths";
   import { browserPb } from "$lib/pb.js";
   import { validateCredentials } from "$lib/auth/validate.js";
   import Input from "$lib/components/ui/Input.svelte";
@@ -30,14 +31,14 @@
           } catch {
             // account exists + user is authed; the /verify page handles resend if the email didn't send
           }
-          await goto("/verify");
+          await goto(resolve("/verify"));
           return;
         }
-        await goto("/");
+        await goto(resolve("/"));
         return;
       }
       await pb.collection("users").authWithPassword(email, password);
-      await goto("/");
+      await goto(resolve("/"));
     } catch {
       err = mode === "signup" ? "Could not create account." : "Invalid email or password.";
     }

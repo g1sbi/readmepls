@@ -155,7 +155,7 @@
 
   <p class="more">
     Questions about privacy? Open an issue on
-    <a href={GITHUB_URL}>GitHub</a>.
+    <a href={GITHUB_URL} rel="external">GitHub</a>.
   </p>
 </main>
 

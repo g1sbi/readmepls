@@ -1,5 +1,6 @@
 <script lang="ts">
   import { page } from "$app/stores";
+  import { resolve } from "$app/paths";
   import { browserPb } from "$lib/pb.js";
   import type { ArticleRecord } from "$lib/article/record.js";
   import CardGrid from "$lib/components/ui/CardGrid.svelte";
@@ -35,7 +36,7 @@
 
 <svelte:head><title>{name}</title></svelte:head>
 <div class="collection-view">
-  <a class="back" href="/library"><ArrowLeft class="icon-sm" aria-hidden="true" /> library</a>
+  <a class="back" href={resolve("/library")}><ArrowLeft class="icon-sm" aria-hidden="true" /> library</a>
   <h1>{name}</h1>
   {#if articles.length === 0}
     <p class="empty-note">no articles in this collection yet.</p>

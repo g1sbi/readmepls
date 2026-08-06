@@ -1,12 +1,13 @@
 <script lang="ts">
+  import { resolve } from "$app/paths";
   import { GITHUB_URL } from "$lib/site";
 </script>
 
 <footer class="footer">
   <nav class="links">
-    <a href={GITHUB_URL}>GitHub</a>
-    <a href="/docs">Docs</a>
-    <a href="/privacy">Privacy</a>
+    <a href={GITHUB_URL} rel="external">GitHub</a>
+    <a href={resolve("/docs")}>Docs</a>
+    <a href={resolve("/privacy")}>Privacy</a>
   </nav>
   <p class="meta">open source · self-hostable</p>
 </footer>
