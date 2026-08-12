@@ -187,6 +187,12 @@ function mktempPbDir(): string {
 function runOnce(args: string[]): Promise<void> {
   return new Promise((resolve, reject) => {
     const p: ChildProcess = spawn(PB_BIN, args, { stdio: "ignore" });
+    // A binary that cannot be spawned at all (missing, not executable) emits
+    // 'error' and never 'exit' — without this the promise never settles and the
+    // run hangs rather than failing.
+    p.on("error", (err) =>
+      reject(new Error(`could not run ${PB_BIN}: ${err.message}`)),
+    );
     p.on("exit", (code) =>
       code === 0 ? resolve() : reject(new Error(`pb exited ${code}`)),
     );
