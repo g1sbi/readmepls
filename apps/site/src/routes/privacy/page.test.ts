@@ -4,15 +4,15 @@ import Page from "./+page.svelte";
 
 test("renders the privacy policy heading and effective date", () => {
   render(Page);
-  expect(
-    screen.getByRole("heading", { name: /privacy policy/i }),
-  ).toBeTruthy();
+  expect(screen.getByRole("heading", { name: /privacy policy/i })).toBeTruthy();
   expect(screen.getByText(/last updated/i)).toBeTruthy();
 });
 
 test("discloses the extension's data handling", () => {
   render(Page);
-  expect(screen.getByRole("heading", { name: /browser extension/i })).toBeTruthy();
+  expect(
+    screen.getByRole("heading", { name: /browser extension/i }),
+  ).toBeTruthy();
   expect(screen.getByText(/activeTab/)).toBeTruthy();
   expect(screen.getByText(/chrome\.storage/)).toBeTruthy();
 });

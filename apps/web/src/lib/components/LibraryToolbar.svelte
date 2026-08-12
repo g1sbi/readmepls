@@ -2,9 +2,16 @@
   import type { LibraryParams, Sort } from "@readmepls/types";
   import { SlidersHorizontal } from "@lucide/svelte";
 
-  let { params, total, onSort, onOpenFilters }: {
-    params: LibraryParams; total: number;
-    onSort: (s: Sort) => void; onOpenFilters: () => void;
+  let {
+    params,
+    total,
+    onSort,
+    onOpenFilters,
+  }: {
+    params: LibraryParams;
+    total: number;
+    onSort: (s: Sort) => void;
+    onOpenFilters: () => void;
   } = $props();
 
   const SORT_LABELS: { value: Sort; label: string }[] = [
@@ -25,7 +32,11 @@
   </button>
   <label class="sort">
     <span class="sr-only">sort</span>
-    <select aria-label="sort" value={params.sort} onchange={(e) => onSort(e.currentTarget.value as Sort)}>
+    <select
+      aria-label="sort"
+      value={params.sort}
+      onchange={(e) => onSort(e.currentTarget.value as Sort)}
+    >
       {#each SORT_LABELS as s (s.value)}
         {#if s.value !== "relevance" || params.q}
           <option value={s.value}>{s.label}</option>
@@ -37,17 +48,64 @@
 </div>
 
 <style>
-  .toolbar { display: flex; flex-wrap: wrap; gap: var(--space-3); align-items: center; margin: 0 0 var(--space-4); }
-  .filters-btn { display: inline-flex; align-items: center; gap: 0.35rem; padding: 0.5rem 0.75rem; border: 1px solid var(--color-border); border-radius: var(--radius-md); background: var(--color-surface); cursor: pointer; font-family: var(--font-ui); color: var(--color-text); }
-  .filters-btn:hover { border-color: var(--color-accent); color: var(--color-accent); }
-  select { padding: 0.5rem; border: 1px solid var(--color-border); border-radius: var(--radius-md); background: var(--color-surface); font-family: var(--font-ui); color: var(--color-text); }
-  .count { font-family: var(--font-ui); font-size: var(--text-sm); color: var(--color-text-muted); margin-left: auto; }
-  .sr-only { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); }
+  .toolbar {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--space-3);
+    align-items: center;
+    margin: 0 0 var(--space-4);
+  }
+  .filters-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.35rem;
+    padding: 0.5rem 0.75rem;
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-md);
+    background: var(--color-surface);
+    cursor: pointer;
+    font-family: var(--font-ui);
+    color: var(--color-text);
+  }
+  .filters-btn:hover {
+    border-color: var(--color-accent);
+    color: var(--color-accent);
+  }
+  select {
+    padding: 0.5rem;
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-md);
+    background: var(--color-surface);
+    font-family: var(--font-ui);
+    color: var(--color-text);
+  }
+  .count {
+    font-family: var(--font-ui);
+    font-size: var(--text-sm);
+    color: var(--color-text-muted);
+    margin-left: auto;
+  }
+  .sr-only {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+    clip: rect(0 0 0 0);
+  }
 
   @media (max-width: 640px) {
-    .filters-btn { order: 2; min-height: 44px; }
-    .sort { order: 3; }
-    select { min-height: 44px; }
-    .count { order: 4; }
+    .filters-btn {
+      order: 2;
+      min-height: 44px;
+    }
+    .sort {
+      order: 3;
+    }
+    select {
+      min-height: 44px;
+    }
+    .count {
+      order: 4;
+    }
   }
 </style>

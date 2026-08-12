@@ -13,8 +13,8 @@
 <main class="docs">
   <h1>self-hosting</h1>
   <p class="lede">
-    run your own copy on your own box. no clone needed — grab two files, fill
-    in a few secrets, and you're reading.
+    run your own copy on your own box. no clone needed — grab two files, fill in
+    a few secrets, and you're reading.
   </p>
 
   <section>
@@ -31,8 +31,8 @@
   <section>
     <h2>3. copy .env.example → .env</h2>
     <p>
-      Save this as <code>.env</code> next to it, then fill in the PocketBase
-      admin/worker passwords.
+      Save this as <code>.env</code> next to it, then fill in the PocketBase admin/worker
+      passwords.
     </p>
     <CodeBlock code={data.envExample} />
   </section>
@@ -55,8 +55,8 @@
   <section>
     <h2>6. data</h2>
     <p>
-      Everything lives in the <code>pb_data</code> Docker volume. Back that up,
-      back up everything that matters.
+      Everything lives in the <code>pb_data</code> Docker volume. Back that up, back
+      up everything that matters.
     </p>
   </section>
 
@@ -64,10 +64,11 @@
     <h2>7. AI features: on or off</h2>
     <p>
       Self-hosting has no tiers, no plans, no subscriptions — that's a
-      hosted-SaaS thing. The reader is fully functional with nothing set. Add
-      an <code>ANTHROPIC_API_KEY</code> to <code>.env</code> and AI features
-      (auto-tagging and friends) switch on for everyone using your instance.
-      One switch, not a choice between plans.
+      hosted-SaaS thing. The reader is fully functional with nothing set. Add an <code
+        >ANTHROPIC_API_KEY</code
+      >
+      to <code>.env</code> and AI features (auto-tagging and friends) switch on for
+      everyone using your instance. One switch, not a choice between plans.
     </p>
   </section>
 
@@ -75,8 +76,9 @@
     <h2>8. browser extension</h2>
     <p>
       Save the page you're on to your library in one click with the readmepls
-      extension — <a href={EXTENSION_URL}>get it on the Chrome Web Store</a>.
-      Point it at your instance from its options screen.
+      extension — <a href={EXTENSION_URL} rel="external"
+        >get it on the Chrome Web Store</a
+      >. Point it at your instance from its options screen.
     </p>
     <p>
       For it to reach a self-hosted instance, add its origin to
@@ -84,13 +86,13 @@
       then restart:
     </p>
     <CodeBlock
-      code={"EXTENSION_ORIGINS=chrome-extension://cjnlkadkjleamnkjehbnblnblcappaje"}
+      code="EXTENSION_ORIGINS=chrome-extension://cjnlkadkjleamnkjehbnblnblcappaje"
     />
   </section>
 
   <p class="more">
     Questions or something looks off? Open an issue on
-    <a href={GITHUB_URL}>GitHub</a>.
+    <a href={GITHUB_URL} rel="external">GitHub</a>.
   </p>
 </main>
 

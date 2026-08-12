@@ -7,7 +7,7 @@ import { ExtractResult } from "@readmepls/types";
 
 const json3 = readFileSync(
   fileURLToPath(new URL("./fixtures/captions.json3.json", import.meta.url)),
-  "utf8"
+  "utf8",
 );
 
 const meta: YtMeta = {

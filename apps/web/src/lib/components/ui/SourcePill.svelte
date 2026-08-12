@@ -1,6 +1,10 @@
 <script lang="ts">
   import { Globe } from "@lucide/svelte";
-  let { name = null, host, iconUrl = null }: {
+  let {
+    name = null,
+    host,
+    iconUrl = null,
+  }: {
     name?: string | null;
     host: string;
     iconUrl?: string | null;
@@ -10,7 +14,14 @@
 
 <span class="source-pill" title={host}>
   {#if iconUrl}
-    <img class="favicon" src={iconUrl} alt="" width="16" height="16" loading="lazy" />
+    <img
+      class="favicon"
+      src={iconUrl}
+      alt=""
+      width="16"
+      height="16"
+      loading="lazy"
+    />
   {:else}
     <Globe class="icon-sm favicon-fallback" aria-hidden="true" />
   {/if}

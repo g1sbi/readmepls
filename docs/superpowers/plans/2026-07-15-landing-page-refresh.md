@@ -25,10 +25,12 @@
 Section components (`HowItWorks`, `Features`) iterate over `STEPS`/`FEATURES`, so rewriting the data updates them with no component edit. The old `Hero.svelte` keeps rendering `{TAGLINE}` (now line 2 only) and stays green until Task 2 rebuilds it.
 
 **Files:**
+
 - Modify: `apps/site/src/lib/site.ts`
 - Test: `apps/site/src/lib/site.test.ts`
 
 **Interfaces:**
+
 - Consumes: `$env/dynamic/public` (unchanged).
 - Produces:
   - `APP_URL: string` (unchanged), `GITHUB_URL: string`, `TAGLINE: string`
@@ -181,11 +183,13 @@ git commit -m "feat(site): rework landing copy — de-AI core flow, add reel wor
 Rebuild the hero tagline as an accent-colored CSS reel: line 1 is `save any <reel>`; line 2 is `TAGLINE`. Screen readers get one clean sentence via an `.sr-only` span; the animated column is `aria-hidden`. Reduced motion is covered by the existing global rule in `app.css` (which zeroes animation duration and iteration count), so the column settles on the first slot (`link`) with no extra CSS.
 
 **Files:**
+
 - Modify: `apps/site/src/app.css` (add `.sr-only` utility)
 - Modify: `apps/site/src/lib/components/Hero.svelte`
 - Test: `apps/site/src/lib/components/Hero.test.ts`
 
 **Interfaces:**
+
 - Consumes: `APP_URL`, `GITHUB_URL`, `TAGLINE`, `REEL_WORDS` from `$lib/site`.
 - Produces: Hero markup with `.reel` (has `aria-hidden="true"`), `.reel-col`, `.reel-word` spans, `.reel-lead` ("save any"), and an `.sr-only` full-phrase span.
 
@@ -206,7 +210,9 @@ test("hero renders the second tagline line", () => {
 
 test("hero shows the 'save any' lead", () => {
   const { container } = render(Hero);
-  expect(container.querySelector(".reel-lead")?.textContent).toMatch(/save any/i);
+  expect(container.querySelector(".reel-lead")?.textContent).toMatch(
+    /save any/i,
+  );
 });
 
 test("reel column carries every reel word", () => {
@@ -220,7 +226,9 @@ test("reel column carries every reel word", () => {
 
 test("reel is hidden from assistive tech", () => {
   const { container } = render(Hero);
-  expect(container.querySelector(".reel")?.getAttribute("aria-hidden")).toBe("true");
+  expect(container.querySelector(".reel")?.getAttribute("aria-hidden")).toBe(
+    "true",
+  );
 });
 
 test("hero exposes the full phrase to screen readers", () => {
@@ -290,11 +298,23 @@ Replace the entire contents of `apps/site/src/lib/components/Hero.svelte` with:
 <section class="hero">
   <div class="fold" aria-hidden="true"></div>
   <div class="logo-wrap">
-    <img class="logo" src="/hero.png" alt="readmepls" width="160" height="160" />
+    <img
+      class="logo"
+      src="/hero.png"
+      alt="readmepls"
+      width="160"
+      height="160"
+    />
   </div>
   <h1 class="wordmark">readme<span class="pls">pls</span></h1>
   <p class="tagline reel-line">
-    <span class="reel-lead">save any&nbsp;</span><span class="reel" aria-hidden="true"><span class="reel-col">{#each slots as w}<span class="reel-word">{w}</span>{/each}</span></span>
+    <span class="reel-lead">save any&nbsp;</span><span
+      class="reel"
+      aria-hidden="true"
+      ><span class="reel-col"
+        >{#each slots as w}<span class="reel-word">{w}</span>{/each}</span
+      ></span
+    >
     <span class="sr-only">{srPhrase}</span>
   </p>
   <p class="tagline">{TAGLINE}</p>
@@ -323,7 +343,12 @@ Replace the entire contents of `apps/site/src/lib/components/Hero.svelte` with:
     right: -1rem;
     width: 140px;
     height: 140px;
-    background: linear-gradient(135deg, var(--fold) 0%, var(--fold) 50%, transparent 50%);
+    background: linear-gradient(
+      135deg,
+      var(--fold) 0%,
+      var(--fold) 50%,
+      transparent 50%
+    );
     opacity: 0.55;
     border-bottom-left-radius: 28px;
     transform-origin: top right;
@@ -431,12 +456,29 @@ Replace the entire contents of `apps/site/src/lib/components/Hero.svelte` with:
   }
 
   @keyframes reel {
-    0%, 14% { transform: translateY(calc(var(--reel-h) * -5)); }
-    20%, 34% { transform: translateY(calc(var(--reel-h) * -4)); }
-    40%, 54% { transform: translateY(calc(var(--reel-h) * -3)); }
-    60%, 74% { transform: translateY(calc(var(--reel-h) * -2)); }
-    80%, 94% { transform: translateY(calc(var(--reel-h) * -1)); }
-    100% { transform: translateY(0); }
+    0%,
+    14% {
+      transform: translateY(calc(var(--reel-h) * -5));
+    }
+    20%,
+    34% {
+      transform: translateY(calc(var(--reel-h) * -4));
+    }
+    40%,
+    54% {
+      transform: translateY(calc(var(--reel-h) * -3));
+    }
+    60%,
+    74% {
+      transform: translateY(calc(var(--reel-h) * -2));
+    }
+    80%,
+    94% {
+      transform: translateY(calc(var(--reel-h) * -1));
+    }
+    100% {
+      transform: translateY(0);
+    }
   }
   @keyframes drop-in {
     0% {
@@ -509,12 +551,14 @@ git commit -m "feat(site): animate hero tagline as a slot-machine reel"
 Add a visually lighter band between `Features` and `Footer` that introduces AI as a Pro coming-soon extension.
 
 **Files:**
+
 - Create: `apps/site/src/lib/components/ComingSoon.svelte`
 - Create: `apps/site/src/lib/components/ComingSoon.test.ts`
 - Modify: `apps/site/src/routes/+page.svelte`
 - Test: `apps/site/src/routes/page.test.ts`
 
 **Interfaces:**
+
 - Consumes: `PRO_STRIP` from `$lib/site`; `reveal` from `$lib/actions/reveal`.
 - Produces: `ComingSoon.svelte` rendering `PRO_STRIP.badge` and `PRO_STRIP.body`; mounted in `+page.svelte` between `<Features />` and `<Footer />`.
 

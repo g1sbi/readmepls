@@ -8,9 +8,12 @@ import type { YtDlpOutput } from "@readmepls/core";
 
 const json3 = readFileSync(
   fileURLToPath(
-    new URL("../../../../packages/core/src/source/youtube/fixtures/captions.json3.json", import.meta.url)
+    new URL(
+      "../../../../packages/core/src/source/youtube/fixtures/captions.json3.json",
+      import.meta.url,
+    ),
   ),
-  "utf8"
+  "utf8",
 );
 
 const out: YtDlpOutput = {
@@ -26,8 +29,12 @@ const out: YtDlpOutput = {
 
 function io(over: Partial<ExtractIO> = {}): ExtractIO {
   return {
-    fetchHtml: async () => { throw new Error("unused"); },
-    fetchJson: async () => { throw new Error("unused"); },
+    fetchHtml: async () => {
+      throw new Error("unused");
+    },
+    fetchJson: async () => {
+      throw new Error("unused");
+    },
     runYtDlp: async () => out,
     ...over,
   };
@@ -42,7 +49,12 @@ describe("YoutubeExtractor", () => {
     let askedId = "";
     const res = await new YoutubeExtractor().extract(
       "https://www.youtube.com/watch?v=dQw4w9WgXcQ",
-      io({ runYtDlp: async (id) => { askedId = id; return out; } })
+      io({
+        runYtDlp: async (id) => {
+          askedId = id;
+          return out;
+        },
+      }),
     );
     expect(askedId).toBe("dQw4w9WgXcQ");
     expect(res.status).toBe("ok");
@@ -51,7 +63,10 @@ describe("YoutubeExtractor", () => {
   });
 
   it("fails gracefully for non-video urls", async () => {
-    const res = await new YoutubeExtractor().extract("https://www.youtube.com/feed", io());
+    const res = await new YoutubeExtractor().extract(
+      "https://www.youtube.com/feed",
+      io(),
+    );
     expect(res.status).toBe("failed");
     expect(res.failureReason).toBe("not a youtube video url");
   });
@@ -63,7 +78,7 @@ describe("YoutubeExtractor", () => {
         runYtDlp: async () => {
           throw new Error("Sign in to confirm you're not a bot");
         },
-      })
+      }),
     );
     expect(res.status).toBe("failed");
     expect(res.failureReason).toContain("yt-dlp failed");
@@ -79,7 +94,7 @@ describe("YoutubeExtractor", () => {
     };
     const res = await new YoutubeExtractor().extract(
       "https://www.youtube.com/watch?v=dQw4w9WgXcQ",
-      io({ runYtDlp: async () => maliciousOut })
+      io({ runYtDlp: async () => maliciousOut }),
     );
     expect(res.status).toBe("ok");
     expect(res.contentHtml).not.toContain("<script");

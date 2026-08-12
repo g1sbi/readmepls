@@ -15,7 +15,11 @@ export interface PbHandle {
 }
 
 export async function startEphemeralPb(
-  opts: { dir?: string; migrationsDir?: string; env?: Record<string, string> } = {}
+  opts: {
+    dir?: string;
+    migrationsDir?: string;
+    env?: Record<string, string>;
+  } = {},
 ): Promise<PbHandle> {
   const dir = opts.dir ?? mktempPbDir();
   const migrationsDir = opts.migrationsDir ?? "pocketbase/pb_migrations";
@@ -35,8 +39,14 @@ export async function startEphemeralPb(
 
   const proc = spawn(
     PB_BIN,
-    ["serve", `--http=127.0.0.1:${port}`, `--dir=${dir}`, `--migrationsDir=${migrationsDir}`, "--hooksDir=pocketbase/pb_hooks"],
-    { stdio: "ignore", env: { ...process.env, ...opts.env } }
+    [
+      "serve",
+      `--http=127.0.0.1:${port}`,
+      `--dir=${dir}`,
+      `--migrationsDir=${migrationsDir}`,
+      "--hooksDir=pocketbase/pb_hooks",
+    ],
+    { stdio: "ignore", env: { ...process.env, ...opts.env } },
   );
 
   await waitForHealth(url);
@@ -70,7 +80,7 @@ function runOnce(args: string[]): Promise<void> {
   return new Promise((resolve, reject) => {
     const p: ChildProcess = spawn(PB_BIN, args, { stdio: "ignore" });
     p.on("exit", (code) =>
-      code === 0 ? resolve() : reject(new Error(`pb exited ${code}`))
+      code === 0 ? resolve() : reject(new Error(`pb exited ${code}`)),
     );
   });
 }

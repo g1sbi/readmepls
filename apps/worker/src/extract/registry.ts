@@ -14,7 +14,9 @@ export class ExtractorRegistry {
     if (direct) return direct;
     const article = this.map.get("article");
     if (!article) {
-      throw new Error(`no article extractor registered to handle source '${source}'`);
+      throw new Error(
+        `no article extractor registered to handle source '${source}'`,
+      );
     }
     return article;
   }

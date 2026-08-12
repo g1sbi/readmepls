@@ -8,7 +8,10 @@ import { keywordSearchIds, reciprocalRankFusion } from "@readmepls/core";
  * article ids. Server-only (uses the shared secret). Throws on any failure so the
  * caller can fall back to keyword search.
  */
-export async function semanticSearchIds(query: string, userId: string): Promise<string[]> {
+export async function semanticSearchIds(
+  query: string,
+  userId: string,
+): Promise<string[]> {
   const base = env.WORKER_URL;
   if (!base) throw new Error("WORKER_URL not configured");
   const url = new URL("/search", base);
@@ -21,7 +24,9 @@ export async function semanticSearchIds(query: string, userId: string): Promise<
   });
   if (!res.ok) throw new Error(`worker /search returned ${res.status}`);
   const body = z
-    .object({ results: z.array(z.object({ articleId: z.string() })).default([]) })
+    .object({
+      results: z.array(z.object({ articleId: z.string() })).default([]),
+    })
     .parse(await res.json());
   return body.results.map((r) => r.articleId);
 }
@@ -32,7 +37,11 @@ export async function semanticSearchIds(query: string, userId: string): Promise<
  * A semantic-search failure degrades to keyword-only so an outage never breaks the
  * library.
  */
-export async function hybridSearchIds(pb: PocketBase, q: string, userId: string): Promise<string[]> {
+export async function hybridSearchIds(
+  pb: PocketBase,
+  q: string,
+  userId: string,
+): Promise<string[]> {
   const [keywordIds, semanticIds] = await Promise.all([
     keywordSearchIds(pb, q),
     semanticSearchIds(q, userId).catch((err) => {

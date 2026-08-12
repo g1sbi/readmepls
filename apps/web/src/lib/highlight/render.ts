@@ -2,7 +2,11 @@ import type { HighlightColor } from "@readmepls/types";
 
 /** Wrap a Range's contents in a colored <mark>. Safe for single-container ranges
  *  (text-quote anchoring yields a contiguous range within the article body). */
-export function markRange(range: Range, color: HighlightColor, id: string): void {
+export function markRange(
+  range: Range,
+  color: HighlightColor,
+  id: string,
+): void {
   const mark = document.createElement("mark");
   mark.dataset.hlId = id;
   mark.dataset.hlColor = color;

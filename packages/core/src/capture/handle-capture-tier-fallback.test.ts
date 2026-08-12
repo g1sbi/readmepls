@@ -8,7 +8,9 @@ function fakePb(): PocketBase {
   const pb = {
     collection(name: string) {
       if (name === "content") {
-        return { getFirstListItem: async () => Promise.reject(new Error("not found")) };
+        return {
+          getFirstListItem: async () => Promise.reject(new Error("not found")),
+        };
       }
       if (name === "users") {
         // no `tier` field — simulates a pre-migration or malformed row
@@ -22,7 +24,11 @@ function fakePb(): PocketBase {
 
 describe("handleCapture tier fallback", () => {
   it("falls back to the standard quota limit when tier is missing", async () => {
-    const r = await handleCapture(fakePb(), "user1", "https://example.com/no-tier");
+    const r = await handleCapture(
+      fakePb(),
+      "user1",
+      "https://example.com/no-tier",
+    );
     expect(r.status).toBe(402);
     expect(r.body.error).toBe("quota exceeded");
   });

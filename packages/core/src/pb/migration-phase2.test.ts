@@ -1,5 +1,9 @@
 import { describe, it, expect, beforeAll, afterAll } from "vitest";
-import { startEphemeralPb, makeTestUser, type PbHandle } from "./test-harness.js";
+import {
+  startEphemeralPb,
+  makeTestUser,
+  type PbHandle,
+} from "./test-harness.js";
 
 let h: PbHandle;
 let userId: string;
@@ -11,8 +15,16 @@ afterAll(() => h?.stop());
 
 describe("phase-2 migration", () => {
   it("persists reader_prefs json on users", async () => {
-    const prefs = { font: "serif", size: 18, lineHeight: 1.6, width: "normal", theme: "light" };
-    const u = await h.pb.collection("users").update(userId, { reader_prefs: prefs });
+    const prefs = {
+      font: "serif",
+      size: 18,
+      lineHeight: 1.6,
+      width: "normal",
+      theme: "light",
+    };
+    const u = await h.pb
+      .collection("users")
+      .update(userId, { reader_prefs: prefs });
     expect(u.reader_prefs).toEqual(prefs);
   });
 

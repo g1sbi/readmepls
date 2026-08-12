@@ -15,8 +15,14 @@ describe("FakeEmbedder", () => {
 
   it("ranks a shared-vocabulary text above an unrelated one", async () => {
     const [q] = await e.embed(["cortisol and sleep quality"], "query");
-    const [related] = await e.embed(["sleep and cortisol levels at night"], "passage");
-    const [unrelated] = await e.embed(["quarterly tax accounting spreadsheet"], "passage");
+    const [related] = await e.embed(
+      ["sleep and cortisol levels at night"],
+      "passage",
+    );
+    const [unrelated] = await e.embed(
+      ["quarterly tax accounting spreadsheet"],
+      "passage",
+    );
     expect(dot(q!, related!)).toBeGreaterThan(dot(q!, unrelated!));
   });
 });

@@ -27,6 +27,12 @@
     padding: 0.55rem 0.8rem;
     width: 100%;
   }
-  input::placeholder { color: var(--color-text-subtle); }
-  input:focus-visible { outline: 2px solid var(--color-ring); outline-offset: 2px; border-color: var(--color-border-strong); }
+  input::placeholder {
+    color: var(--color-text-subtle);
+  }
+  input:focus-visible {
+    outline: 2px solid var(--color-ring);
+    outline-offset: 2px;
+    border-color: var(--color-border-strong);
+  }
 </style>

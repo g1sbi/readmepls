@@ -17,7 +17,9 @@ describe("deleteArticle", () => {
   });
 
   it("propagates errors from PocketBase", async () => {
-    const { pb } = fakePb(async () => { throw new Error("403"); });
+    const { pb } = fakePb(async () => {
+      throw new Error("403");
+    });
     await expect(deleteArticle(pb, "a1")).rejects.toThrow("403");
   });
 });

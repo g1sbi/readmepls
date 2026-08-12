@@ -20,17 +20,20 @@
 ### Task 1: release-please configuration + workflow
 
 **Files:**
+
 - Create: `release-please-config.json`
 - Create: `.release-please-manifest.json`
 - Create: `.github/workflows/release-please.yml`
 
 **Interfaces:**
+
 - Consumes: `secrets.RELEASE_PLEASE_TOKEN` (fine-grained PAT, Contents + Pull requests read/write) — created manually in repo settings, see Task 2 step 0.
 - Produces: on merge of a Release PR, a `vX.Y.Z` git tag that triggers `docker-publish.yml` (unchanged).
 
 - [ ] **Step 1: Create the manifest** seeded at the current pre-release version
 
 `.release-please-manifest.json`:
+
 ```json
 {
   ".": "0.1.0"
@@ -40,6 +43,7 @@
 - [ ] **Step 2: Create the config**
 
 `release-please-config.json`:
+
 ```json
 {
   "$schema": "https://raw.githubusercontent.com/googleapis/release-please/main/schemas/config.json",
@@ -56,6 +60,7 @@
 - [ ] **Step 3: Create the workflow**
 
 `.github/workflows/release-please.yml`:
+
 ```yaml
 name: release-please
 
@@ -81,17 +86,21 @@ jobs:
 - [ ] **Step 4: Validate the config files parse**
 
 Run:
+
 ```bash
 node -e "JSON.parse(require('fs').readFileSync('release-please-config.json','utf8')); JSON.parse(require('fs').readFileSync('.release-please-manifest.json','utf8')); console.log('json ok')"
 ```
+
 Expected: `json ok`
 
 - [ ] **Step 5: Validate the workflow YAML parses**
 
 Run:
+
 ```bash
 node -e "const fs=require('fs');const s=fs.readFileSync('.github/workflows/release-please.yml','utf8');if(!/googleapis\/release-please-action@v4/.test(s)||!/branches: \[main\]/.test(s))throw new Error('workflow content missing');console.log('yaml ok')"
 ```
+
 Expected: `yaml ok`
 
 (If `js-yaml` or `yq` is available, prefer a real parse; the grep check above is the dependency-free floor.)
@@ -112,6 +121,7 @@ This task is operational, not code. It runs **after Task 1 lands on `main`**. Th
 **Files:** none (repo-settings + git operations).
 
 **Interfaces:**
+
 - Consumes: the merged Task 1 config on `main`.
 - Produces: the `RELEASE_PLEASE_TOKEN` secret and the `v0.1.0` baseline tag.
 
@@ -134,6 +144,7 @@ git pull
 git tag v0.1.0
 git push origin v0.1.0
 ```
+
 Expected: the `docker-publish` workflow starts (Actions tab), building/pushing the four images tagged `v0.1.0` + `latest`. This marks the honest prod baseline.
 
 - [ ] **Step 3: Verify the chain end-to-end on the next real change**

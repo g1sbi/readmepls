@@ -98,6 +98,7 @@ gets its own spec + plan per repo convention.
 Sizes are relative T-shirt estimates (S < M < L), not time commitments.
 
 ### Slice 1 — SPA build target (S–M)
+
 - Add a dual `svelte.config` that selects `adapter-static` vs `adapter-node` by an
   env flag (e.g. `BUILD_TARGET=spa`). SPA build sets `ssr=false` and an SPA
   fallback page.
@@ -110,6 +111,7 @@ Sizes are relative T-shirt estimates (S < M < L), not time commitments.
   `fetch`/link call sites to `${apiBase()}/api/…`.
 
 ### Slice 2 — Token auth seam (M)
+
 - Tauri client authenticates with `pb.collection("users").authWithPassword(...)`
   and persists the token (MVP: the PB SDK's localStorage `authStore`; harden to a
   secure-storage plugin later).
@@ -120,6 +122,7 @@ Sizes are relative T-shirt estimates (S < M < L), not time commitments.
   (custom scheme, e.g. `tauri://localhost`).
 
 ### Slice 3 — Tauri shell, desktop first (M)
+
 - Add the Tauri 2.x Rust project (e.g. `apps/web/src-tauri`), configure
   `frontendDist` to the SPA build output and `beforeBuildCommand` to the SPA build
   script.
@@ -129,6 +132,7 @@ Sizes are relative T-shirt estimates (S < M < L), not time commitments.
   Apple/Android tooling.
 
 ### Slice 4 — Offline read-cache + pull sync (M–L)
+
 - Define the `LocalCache` interface (list cached articles, get article + content,
   upsert, evict). No-op web impl; SQLite impl for Tauri via the Tauri SQL plugin.
 - One-way pull sync: on load / on regaining connectivity, fetch articles + content
@@ -140,12 +144,14 @@ Sizes are relative T-shirt estimates (S < M < L), not time commitments.
 - Pure, TDD-able pieces: the sync-diff logic and the cache layer.
 
 ### Slice 5 — Mobile targets (M, tooling-heavy)
+
 - Add iOS and Android targets. iOS requires macOS + Xcode + an Apple Developer
   account ($99/yr) for device builds and signing; Android requires the Android
   SDK/NDK toolchain.
 - Signing/provisioning; macOS CI runner for iOS builds.
 
 ### Slice 6 — Mobile UX adaptation (S–M)
+
 - Touch highlight selection (long-press vs the current popover interaction),
   safe-area insets, a responsive-layout audit of reader/library/search, app icons
   and splash screens.

@@ -12,7 +12,7 @@ export async function servicePb(): Promise<PocketBase> {
     .collection("_superusers")
     .authWithPassword(
       process.env.PB_ADMIN_EMAIL ?? "worker@local",
-      process.env.PB_ADMIN_PASSWORD ?? ""
+      process.env.PB_ADMIN_PASSWORD ?? "",
     );
   return pb;
 }

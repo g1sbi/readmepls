@@ -19,7 +19,7 @@ export function rankSemanticHits(
   articles: ArticleRef[],
   rows: EmbeddingRow[],
   k: number,
-  snippetLen = 240
+  snippetLen = 240,
 ): SemanticHit[] {
   const contentToArticle = new Map<string, string>();
   for (const a of articles) contentToArticle.set(a.contentId, a.articleId);

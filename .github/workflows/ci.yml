@@ -1,0 +1,46 @@
+name: ci
+
+on:
+  push:
+    branches: [main, develop]
+  pull_request:
+
+permissions:
+  contents: read
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: pnpm/action-setup@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: pnpm
+
+      # Each app's `prepare` script runs svelte-kit sync here, generating the
+      # .svelte-kit/tsconfig.json their tsconfigs extend. Without it every web
+      # test file fails to collect.
+      - run: pnpm install --frozen-lockfile
+
+      # Integration tests spawn a real PocketBase; the binary is gitignored.
+      # Version comes from the Dockerfile so there is one source of truth.
+      - name: Install PocketBase
+        run: |
+          PB_VERSION=$(grep -oP 'ARG PB_VERSION=\K[0-9.]+' pocketbase/Dockerfile)
+          if [ -z "$PB_VERSION" ]; then
+            echo "Could not read PB_VERSION from pocketbase/Dockerfile" >&2
+            exit 1
+          fi
+          echo "Installing PocketBase $PB_VERSION"
+          curl -sSL --fail -o /tmp/pb.zip \
+            "https://github.com/pocketbase/pocketbase/releases/download/v${PB_VERSION}/pocketbase_${PB_VERSION}_linux_amd64.zip"
+          unzip -o -q /tmp/pb.zip -d pocketbase/
+          chmod +x pocketbase/pocketbase
+          pocketbase/pocketbase --version
+
+      - run: pnpm lint
+      - run: pnpm typecheck
+      - run: pnpm test

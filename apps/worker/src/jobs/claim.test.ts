@@ -1,6 +1,9 @@
 import { describe, it, expect, beforeAll, afterAll } from "vitest";
 import PocketBase from "pocketbase";
-import { startEphemeralPb, type PbHandle } from "@readmepls/core/src/pb/test-harness.js";
+import {
+  startEphemeralPb,
+  type PbHandle,
+} from "@readmepls/core/src/pb/test-harness.js";
 import { claimNextJob } from "./claim.js";
 
 let h: PbHandle;

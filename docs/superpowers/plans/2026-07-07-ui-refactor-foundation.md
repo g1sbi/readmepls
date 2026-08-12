@@ -11,7 +11,7 @@
 ## Global Constraints
 
 - **Never hardcode a color, font, radius, or shadow in a component — reference a token** (CLAUDE.md). The whole point of the CSS bridge is that shadcn components resolve to `tokens.css` tokens, not literal values.
-- **`tokens.css` stays the single source of truth.** The bridge maps shadcn vars *onto* it; it must not introduce a second parallel palette. Do not edit the `--color-*` / `--radius-*` / `--shadow-*` values in `tokens.css`.
+- **`tokens.css` stays the single source of truth.** The bridge maps shadcn vars _onto_ it; it must not introduce a second parallel palette. Do not edit the `--color-*` / `--radius-*` / `--shadow-*` values in `tokens.css`.
 - **Themes are driven by `[data-theme="dark"]` / `[data-theme="sepia"]` attributes, NOT a `.dark` class.** shadcn's default `.dark` convention must be replaced with a `@custom-variant dark ([data-theme="dark"] &)`.
 - **No visual regression on existing hand-rolled components.** Tailwind v4 ships a preflight reset; adding it must not change how the ~14 un-migrated primitives or existing pages render in any of the three themes.
 - **Mobile-first, usable at 360px, tap targets ≥44px** (CLAUDE.md).
@@ -47,6 +47,7 @@
 Goal: Tailwind and the shadcn helper files exist and build, and **nothing renders differently**. This task deliberately adds NO theme bridge and NO components yet — it isolates the single riskiest question ("does adding Tailwind's preflight break the existing hand-rolled styles?") behind its own review gate.
 
 **Files:**
+
 - Modify: `apps/web/vite.config.ts`
 - Modify: `apps/web/package.json` (via `pnpm add`)
 - Create: `apps/web/src/lib/utils.ts`
@@ -55,20 +56,24 @@ Goal: Tailwind and the shadcn helper files exist and build, and **nothing render
 - Modify: `apps/web/src/routes/+layout.svelte`
 
 **Interfaces:**
+
 - Produces: `cn(...inputs: ClassValue[]): string` exported from `$lib/utils` — every shadcn component imports this. Exact signature below.
 
 - [ ] **Step 1: Install Tailwind v4 and helpers**
 
 Run from repo root:
+
 ```bash
 pnpm --filter @readmepls/web add -D tailwindcss@^4 @tailwindcss/vite@^4
 pnpm --filter @readmepls/web add clsx tailwind-merge
 ```
+
 Expected: `apps/web/package.json` gains `tailwindcss` and `@tailwindcss/vite` under devDependencies and `clsx`, `tailwind-merge` under dependencies. No install errors.
 
 - [ ] **Step 2: Wire the Tailwind Vite plugin**
 
 Edit `apps/web/vite.config.ts`. Add the import and put the plugin **before** `sveltekit()`, leaving `resolve` and `build` exactly as they are:
+
 ```ts
 import { sveltekit } from "@sveltejs/kit/vite";
 import { defineConfig } from "vite";
@@ -90,6 +95,7 @@ export default defineConfig({
 - [ ] **Step 3: Create the `cn()` helper**
 
 Create `apps/web/src/lib/utils.ts`:
+
 ```ts
 import { type ClassValue, clsx } from "clsx";
 import { twMerge } from "tailwind-merge";
@@ -102,19 +108,22 @@ export function cn(...inputs: ClassValue[]) {
 - [ ] **Step 4: Create a minimal Tailwind entry and import it last**
 
 Create `apps/web/src/app-tailwind.css` with ONLY the Tailwind import (no theme yet — the bridge is Task 2):
+
 ```css
 @import "tailwindcss";
 ```
+
 Edit `apps/web/src/routes/+layout.svelte` so the import order is tokens → app reset → tailwind (tailwind last so its preflight can be audited against the existing reset):
+
 ```svelte
-  import "$lib/styles/tokens.css";
-  import "../app.css";
-  import "../app-tailwind.css";
+import "$lib/styles/tokens.css"; import "../app.css"; import
+"../app-tailwind.css";
 ```
 
 - [ ] **Step 5: Create `components.json`**
 
 Create `apps/web/components.json` (SvelteKit paths; base color slate is only shadcn's default seed — the Task 2 bridge overrides all of it to tokens):
+
 ```json
 {
   "$schema": "https://shadcn-svelte.com/schema.json",
@@ -137,28 +146,34 @@ Create `apps/web/components.json` (SvelteKit paths; base color slate is only sha
 - [ ] **Step 6: Verify the build succeeds and types are clean**
 
 Run:
+
 ```bash
 pnpm --filter @readmepls/web build
 pnpm --filter @readmepls/web run check
 ```
+
 Expected: build completes with no errors; `check` shows the SAME ~15 pre-existing baseline errors and **no new ones** referencing `utils.ts`, `vite.config.ts`, or `+layout.svelte`.
 
 - [ ] **Step 7: Verify the existing test suite still passes**
 
 Run:
+
 ```bash
 pnpm test
 ```
+
 Expected: the full suite is green (same count as before this task). If any previously-passing component test now fails, Tailwind's preflight has altered rendered output — STOP and reconcile (see Step 8) before proceeding.
 
 - [ ] **Step 8: Visually verify no regression across all three themes**
 
 Run `pnpm --filter @readmepls/web dev`, open the library and reader pages, and toggle `default` / `dark` / `sepia` (the theme switcher writes `[data-theme]`). Confirm the existing hand-rolled components (buttons, cards, chips, inputs) look identical to before. If Tailwind's preflight reset visibly changed borders/margins/heading styles, add a scoped exclusion by replacing the plain import in `app-tailwind.css` with the layered form that omits preflight:
+
 ```css
 @layer theme, base, components, utilities;
 @import "tailwindcss/theme.css" layer(theme);
 @import "tailwindcss/utilities.css" layer(utilities);
 ```
+
 (This pulls in Tailwind utilities WITHOUT its preflight reset, since `app.css` already owns the reset.) Re-run Steps 6–8 after any change here.
 
 - [ ] **Step 9: Commit**
@@ -177,6 +192,7 @@ Co-Authored-By: Claude Opus 4.8 <noreply@anthropic.com>"
 Goal: shadcn's utility classes (`bg-primary`, `text-foreground`, `rounded-md`, `border-border`) resolve to `tokens.css` values in every theme, defined once. Ends with an automated probe proving it.
 
 **Files:**
+
 - Create: `apps/web/src/lib/styles/shadcn-bridge.css` (replaces the temporary `app-tailwind.css` from Task 1)
 - Delete: `apps/web/src/app-tailwind.css`
 - Modify: `apps/web/src/routes/+layout.svelte` (import the bridge instead)
@@ -184,12 +200,14 @@ Goal: shadcn's utility classes (`bg-primary`, `text-foreground`, `rounded-md`, `
 - Create: `apps/web/src/lib/components/ui/tailwind-bridge.test.ts`
 
 **Interfaces:**
+
 - Consumes: `tokens.css` semantic vars (`--color-bg`, `--color-surface`, `--color-surface-raised`, `--color-surface-sunken`, `--color-text`, `--color-text-muted`, `--color-text-subtle`, `--color-text-on-accent`, `--color-accent`, `--color-accent-wash`, `--color-border`, `--color-ring`, `--color-danger`), and the radius ramp `--radius-xs/sm/md/lg/xl/2xl/pill`.
 - Produces: shadcn alias vars in `:root` and Tailwind theme tokens, consumed by every future shadcn component. The dark variant is registered as `@custom-variant dark ([data-theme="dark"] &)`.
 
 - [ ] **Step 1: Write the failing bridge probe test**
 
 jsdom does not run the Tailwind pipeline, so the bridge can't be tested by computed style. Instead assert on the bridge file's declared indirection — that each shadcn alias var is wired to a `tokens.css` token (never a literal), and that the dark variant targets `[data-theme]`. This is the property that actually matters: the bridge must not smuggle in a second palette. Create `apps/web/src/lib/components/ui/tailwind-bridge.test.ts`:
+
 ```ts
 import { describe, it, expect } from "vitest";
 import { readFileSync } from "node:fs";
@@ -226,14 +244,17 @@ describe("shadcn ↔ tokens bridge", () => {
 - [ ] **Step 2: Run the probe to verify it fails**
 
 Run:
+
 ```bash
 pnpm exec vitest run tailwind-bridge
 ```
+
 Expected: FAIL with "ENOENT … shadcn-bridge.css" (the file doesn't exist yet).
 
 - [ ] **Step 3: Write the bridge CSS**
 
 Create `apps/web/src/lib/styles/shadcn-bridge.css`:
+
 ```css
 /* shadcn-svelte ↔ tokens.css bridge.
  * shadcn components reference alias vars (--background, --primary, …). We
@@ -302,33 +323,40 @@ Create `apps/web/src/lib/styles/shadcn-bridge.css`:
 - [ ] **Step 4: Swap the layout import and delete the temporary entry**
 
 Edit `apps/web/src/routes/+layout.svelte` — replace the `app-tailwind.css` import:
+
 ```svelte
-  import "$lib/styles/tokens.css";
-  import "../app.css";
-  import "$lib/styles/shadcn-bridge.css";
+import "$lib/styles/tokens.css"; import "../app.css"; import
+"$lib/styles/shadcn-bridge.css";
 ```
+
 Delete the temporary file:
+
 ```bash
 git rm apps/web/src/app-tailwind.css
 ```
+
 Update `apps/web/components.json` `tailwind.css` to `"src/lib/styles/shadcn-bridge.css"`.
 
 - [ ] **Step 5: Run the probe test — verify it passes**
 
 Run:
+
 ```bash
 pnpm exec vitest run tailwind-bridge
 ```
+
 Expected: PASS (both assertions).
 
 - [ ] **Step 6: Verify build, types, and full suite**
 
 Run:
+
 ```bash
 pnpm --filter @readmepls/web build
 pnpm --filter @readmepls/web run check
 pnpm test
 ```
+
 Expected: build clean; no new `check` errors beyond the ~15 baseline; full suite green.
 
 - [ ] **Step 7: Visually confirm a live utility resolves to a token in all three themes**
@@ -352,47 +380,58 @@ Co-Authored-By: Claude Opus 4.8 <noreply@anthropic.com>"
 Goal: replace the first real component. `Tag` currently renders a non-interactive `Chip`; reimplement it on shadcn's `Badge` (default variant), keeping its `children`-only public API and its existing `primitives.test.ts` assertion green. `Tag` has ONE import site (`ArticleCard.svelte`), the smallest blast radius in the inventory.
 
 **Files:**
+
 - Create (by CLI): `apps/web/src/lib/components/ui/badge/` (and `index.ts`)
 - Modify: `apps/web/src/lib/components/ui/Tag.svelte`
 - Modify: `apps/web/src/lib/components/ui/primitives.test.ts` (add a Tag-on-Badge assertion)
 - Reference (unchanged): `apps/web/src/lib/components/ArticleCard.svelte`
 
 **Interfaces:**
+
 - Consumes: `cn()` from `$lib/utils` (Task 1), the bridge from Task 2, `Badge` from `$lib/components/ui/badge`.
 - Produces: `Tag.svelte` with unchanged public API — `{ children?: Snippet }` — so `ArticleCard` needs no change.
 
 - [ ] **Step 1: Add the shadcn Badge component**
 
 Run from repo root:
+
 ```bash
 pnpm --filter @readmepls/web exec shadcn-svelte@latest add badge
 ```
+
 Expected: creates `apps/web/src/lib/components/ui/badge/badge.svelte` and `index.ts`. If the CLI prompts, accept the `components.json` paths. Confirm the generated `badge.svelte` imports `cn` from `$lib/utils`.
 
 - [ ] **Step 2: Update the existing Tag test to assert it renders via Badge**
 
 The current assertion in `apps/web/src/lib/components/ui/primitives.test.ts` checks `screen.getByText("ai")` for Tag. Keep that (it's the API tripwire) and add one asserting Badge's data attribute is present, confirming Tag now routes through Badge. Add inside the existing Tag describe/test block:
+
 ```ts
 it("Tag renders its label through the shadcn Badge", () => {
-  render(Tag, { props: { children: createRawSnippet(() => ({ render: () => "ai" })) } });
+  render(Tag, {
+    props: { children: createRawSnippet(() => ({ render: () => "ai" })) },
+  });
   const el = screen.getByText("ai");
   // shadcn Badge renders a data-slot="badge" attribute on its root element.
   expect(el.closest('[data-slot="badge"]')).not.toBeNull();
 });
 ```
+
 (If `createRawSnippet` isn't already imported in this file, add it to the existing `svelte` import; match how other tests in this file construct `children` snippets.)
 
 - [ ] **Step 3: Run the new test to verify it fails**
 
 Run:
+
 ```bash
 pnpm exec vitest run primitives
 ```
+
 Expected: the new assertion FAILS with `expect(received).not.toBeNull()` (Tag still renders `.chip`, no `data-slot="badge"` yet). The pre-existing `getByText("ai")` assertion still passes.
 
 - [ ] **Step 4: Reimplement Tag on Badge**
 
 Replace `apps/web/src/lib/components/ui/Tag.svelte`:
+
 ```svelte
 <script lang="ts">
   import type { Snippet } from "svelte";
@@ -406,24 +445,29 @@ Replace `apps/web/src/lib/components/ui/Tag.svelte`:
   </Badge>
 {/if}
 ```
+
 (`variant="secondary"` maps — via the bridge — to `--color-surface-sunken` bg / `--color-text-muted` text, matching Tag's read-only look from the effort analysis §2. `Badge`'s default `rounded-full` needs no radius override.)
 
 - [ ] **Step 5: Run the test — verify it passes**
 
 Run:
+
 ```bash
 pnpm exec vitest run primitives
 ```
+
 Expected: PASS — both the `getByText("ai")` tripwire and the new `data-slot="badge"` assertion.
 
 - [ ] **Step 6: Verify build, types, and full suite**
 
 Run:
+
 ```bash
 pnpm --filter @readmepls/web build
 pnpm --filter @readmepls/web run check
 pnpm test
 ```
+
 Expected: build clean; no new `check` errors beyond baseline; full suite green.
 
 - [ ] **Step 7: Visually verify tags in ArticleCard across all three themes**
@@ -448,4 +492,7 @@ Co-Authored-By: Claude Opus 4.8 <noreply@anthropic.com>"
 - **Placeholder scan:** every step has a concrete command, file path, or code block. No "handle appropriately".
 - **Type/name consistency:** `cn(...inputs: ClassValue[])` defined in Task 1, imported by Badge in Task 3. `Tag` public API `{ children?: Snippet }` unchanged across the swap, so `ArticleCard` (its only consumer) needs no edit. Bridge var names in Task 2's test match the CSS written in the same task.
 - **Deliberately deferred to Plan B (the remaining 10 migrations):** Button, Card, Chip, ConfirmDialog, DropdownMenu, Input, MenuItem, Sheet, Skeleton, Spinner — plus the system-level font/shadow-ramp decisions, which only bite once a font/shadow-bearing component migrates.
+
+```
+
 ```

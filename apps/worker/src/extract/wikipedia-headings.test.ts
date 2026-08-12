@@ -14,10 +14,17 @@ const html = readFileSync(
 
 describe("parseArticleHtml — MediaWiki heading wrappers", () => {
   it("emits a toc from headings wrapped in .mw-heading divs", () => {
-    const result = parseArticleHtml("https://en.wikipedia.org/wiki/Battle_of_Example", html);
+    const result = parseArticleHtml(
+      "https://en.wikipedia.org/wiki/Battle_of_Example",
+      html,
+    );
     expect(result.status).toBe("ok");
     // Background / Battle / Aftermath at h2, Opening moves nested under Battle.
-    expect(result.toc.map((n) => n.text)).toEqual(["Background", "Battle", "Aftermath"]);
+    expect(result.toc.map((n) => n.text)).toEqual([
+      "Background",
+      "Battle",
+      "Aftermath",
+    ]);
     const battle = result.toc.find((n) => n.text === "Battle");
     expect(battle?.children.map((n) => n.text)).toEqual(["Opening moves"]);
     // Ids are injected into the stored HTML so click-to-jump has a target.
@@ -25,7 +32,10 @@ describe("parseArticleHtml — MediaWiki heading wrappers", () => {
   });
 
   it("does not leak the [edit] section links into heading text", () => {
-    const result = parseArticleHtml("https://en.wikipedia.org/wiki/Battle_of_Example", html);
+    const result = parseArticleHtml(
+      "https://en.wikipedia.org/wiki/Battle_of_Example",
+      html,
+    );
     expect(result.toc.every((n) => !n.text.includes("edit"))).toBe(true);
   });
 });

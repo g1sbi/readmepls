@@ -16,4 +16,7 @@ export const page = writable({
 });
 
 export const navigating = writable(null);
-export const updated = { subscribe: writable(false).subscribe, check: async () => false };
+export const updated = {
+  subscribe: writable(false).subscribe,
+  check: async () => false,
+};

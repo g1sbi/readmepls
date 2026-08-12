@@ -18,8 +18,20 @@ export interface SourceView {
  * collection, so we pass collectionName explicitly — pb.files.getUrl returns ""
  * unless the record carries id + collectionId/collectionName.
  */
-export function sourceFaviconUrl(pb: PocketBase, id: string, favicon: string): string | null {
-  return favicon ? pb.files.getUrl({ id, collectionName: "sources" } as { id: string; collectionName: string }, favicon) : null;
+export function sourceFaviconUrl(
+  pb: PocketBase,
+  id: string,
+  favicon: string,
+): string | null {
+  return favicon
+    ? pb.files.getUrl(
+        { id, collectionName: "sources" } as {
+          id: string;
+          collectionName: string;
+        },
+        favicon,
+      )
+    : null;
 }
 
 /**
@@ -29,7 +41,10 @@ export function sourceFaviconUrl(pb: PocketBase, id: string, favicon: string): s
  * failed parse) so a not-yet-linked or malformed article still shows a hostname.
  * Returns null only when no host can be derived.
  */
-export function sourceView(pb: PocketBase, content: ContentLike | null | undefined): SourceView | null {
+export function sourceView(
+  pb: PocketBase,
+  content: ContentLike | null | undefined,
+): SourceView | null {
   const raw = content?.expand?.source;
   if (raw) {
     const parsed = Source.safeParse(raw);
@@ -42,6 +57,8 @@ export function sourceView(pb: PocketBase, content: ContentLike | null | undefin
       };
     }
   }
-  const host = content?.canonical_url ? deriveSourceHost(content.canonical_url) : null;
+  const host = content?.canonical_url
+    ? deriveSourceHost(content.canonical_url)
+    : null;
   return host ? { host, name: null, iconUrl: null } : null;
 }

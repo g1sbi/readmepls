@@ -60,7 +60,7 @@ design phase does not add features.
 - **shadcn ↔ tokens bridge** (`apps/web/src/lib/styles/shadcn-bridge.css`): maps
   shadcn alias vars (`--primary`, `--secondary`, …) **onto** `tokens.css` `--color-*`
   once in `:root` — never a second palette. Dark is `@custom-variant dark
-  ([data-theme="dark"] &)`, NOT shadcn's `.dark`. **Preflight is deliberately
+([data-theme="dark"] &)`, NOT shadcn's `.dark`. **Preflight is deliberately
   excluded** (layered `@import "tailwindcss/theme.css"` + `utilities.css`, no
   `preflight.css`) — `app.css` owns the reset, and preflight would strip the
   reader's un-scoped `{@html}` article prose. Do not switch to a bare
@@ -123,6 +123,9 @@ design phase does not add features.
   clean, logical Conventional Commit per change (no `wip`, `fix typo`, or
   review-fixup noise in history). Granular commits during development are fine;
   collapse them before merging to `main`.
+- **Blame ignores the reformat.** A one-time repo-wide prettier reformat would
+  otherwise own every line. Run this once per clone so `git blame` shows real
+  authors: `git config blame.ignoreRevsFile .git-blame-ignore-revs`.
 - **Never push or open a PR unless asked.** Commit locally is fine; pushing is not.
 - **Never commit secrets.** Keys live in env only; keep `.env.example` current.
 
@@ -141,7 +144,7 @@ design phase does not add features.
   data read back from PocketBase are all parsed/validated before use. Do not trust
   external shapes.
 - **Model states as unions, not booleans.** e.g. `extract_status:
-  'pending'|'ok'|'partial'|'failed'`. Graceful-degrade paths must be type-checked.
+'pending'|'ok'|'partial'|'failed'`. Graceful-degrade paths must be type-checked.
 - **Pure core, thin IO shell.** Extraction, highlight anchoring, and URL
   canonicalization are pure functions, tested in isolation. Side effects (HTTP,
   PocketBase, AI calls) live at the edges behind interfaces.

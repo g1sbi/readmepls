@@ -20,11 +20,16 @@ export function pickFaviconCandidates(html: string, baseUrl: string): string[] {
   const doc = new JSDOM(html, { url: baseUrl }).window.document;
 
   const icons = [...doc.querySelectorAll<HTMLLinkElement>('link[rel~="icon"]')]
-    .map((el) => ({ href: el.getAttribute("href"), size: largestSize(el.getAttribute("sizes")) }))
+    .map((el) => ({
+      href: el.getAttribute("href"),
+      size: largestSize(el.getAttribute("sizes")),
+    }))
     .filter((x): x is { href: string; size: number } => !!x.href)
     .sort((a, b) => b.size - a.size);
 
-  const apple = [...doc.querySelectorAll<HTMLLinkElement>('link[rel="apple-touch-icon"]')]
+  const apple = [
+    ...doc.querySelectorAll<HTMLLinkElement>('link[rel="apple-touch-icon"]'),
+  ]
     .map((el) => el.getAttribute("href"))
     .filter((h): h is string => !!h);
 

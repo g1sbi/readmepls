@@ -6,7 +6,9 @@ const sp = (s: string) => new URLSearchParams(s);
 
 describe("parseLibraryParams", () => {
   it("parses csv lists and scalars", () => {
-    const p = parseLibraryParams(sp("read=unread,reading&tag=a,b&favsrc=1&saved=week&sort=longest_bogus"));
+    const p = parseLibraryParams(
+      sp("read=unread,reading&tag=a,b&favsrc=1&saved=week&sort=longest_bogus"),
+    );
     expect(p.read).toEqual(["unread", "reading"]);
     expect(p.tag).toEqual(["a", "b"]);
     expect(p.favsrc).toBe(true);
@@ -32,8 +34,15 @@ describe("parseLibraryParams", () => {
 describe("round-trip", () => {
   it("serialize then parse is identity", () => {
     const p = LibraryParams.parse({
-      read: ["unread"], time: ["long"], tag: ["t1", "t2"], favsrc: true,
-      saved: "month", has: ["notes"], q: "brain", sort: "-read_time", page: 2,
+      read: ["unread"],
+      time: ["long"],
+      tag: ["t1", "t2"],
+      favsrc: true,
+      saved: "month",
+      has: ["notes"],
+      q: "brain",
+      sort: "-read_time",
+      page: 2,
     });
     expect(parseLibraryParams(serializeLibraryParams(p))).toEqual(p);
   });

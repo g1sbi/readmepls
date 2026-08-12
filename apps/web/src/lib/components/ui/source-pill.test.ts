@@ -14,7 +14,10 @@ describe("SourcePill", () => {
   });
 
   it("renders the favicon img when iconUrl is set", () => {
-    const { container } = render(SourcePill, { host: "nytimes.com", iconUrl: "https://x/i.png" });
+    const { container } = render(SourcePill, {
+      host: "nytimes.com",
+      iconUrl: "https://x/i.png",
+    });
     const img = container.querySelector("img");
     expect(img?.getAttribute("src")).toBe("https://x/i.png");
   });

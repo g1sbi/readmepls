@@ -4,7 +4,9 @@ import { pickFaviconCandidates } from "@readmepls/core/server";
 
 export interface SourceIO {
   fetchHtml(url: string): Promise<string>;
-  fetchBytes(url: string): Promise<{ bytes: Uint8Array; contentType: string } | null>;
+  fetchBytes(
+    url: string,
+  ): Promise<{ bytes: Uint8Array; contentType: string } | null>;
 }
 
 /** Download the best favicon for a host. Returns a File to store, or null. */
@@ -29,9 +31,13 @@ async function fetchFavicon(host: string, io: SourceIO): Promise<File | null> {
       // res.bytes genuinely comes from `new Uint8Array(arrayBuffer)` in
       // safe-fetch.ts, so its buffer is a real ArrayBuffer — but TS 5.7 widens
       // Uint8Array's buffer type to ArrayBufferLike, which BlobPart rejects.
-      return new File([res.bytes as Uint8Array<ArrayBuffer>], `favicon.${ext}`, {
-        type: res.contentType,
-      });
+      return new File(
+        [res.bytes as Uint8Array<ArrayBuffer>],
+        `favicon.${ext}`,
+        {
+          type: res.contentType,
+        },
+      );
     }
   }
   return null;
@@ -46,7 +52,7 @@ export async function ensureSource(
   pb: PocketBase,
   host: string,
   name: string | null,
-  io: SourceIO
+  io: SourceIO,
 ): Promise<string> {
   const existing = await findByHost(pb, host);
   if (existing) {
@@ -62,7 +68,9 @@ export async function ensureSource(
   let created;
   try {
     created = await pb.collection("sources").create({
-      host, name, favicon_status: "pending",
+      host,
+      name,
+      favicon_status: "pending",
     });
   } catch (err) {
     // Lost a create race on the unique host index — re-read the winner.
@@ -78,18 +86,28 @@ export async function ensureSource(
 
 async function findByHost(pb: PocketBase, host: string) {
   try {
-    return await pb.collection("sources").getFirstListItem(
-      pb.filter("host = {:h}", { h: host })
-    );
+    return await pb
+      .collection("sources")
+      .getFirstListItem(pb.filter("host = {:h}", { h: host }));
   } catch (err) {
     if (err instanceof ClientResponseError && err.status === 404) return null;
     throw err;
   }
 }
 
-async function attachFavicon(pb: PocketBase, id: string, host: string, io: SourceIO): Promise<void> {
+async function attachFavicon(
+  pb: PocketBase,
+  id: string,
+  host: string,
+  io: SourceIO,
+): Promise<void> {
   const file = await fetchFavicon(host, io);
-  await pb.collection("sources").update(id, file
-    ? { favicon: file, favicon_status: "ok" }
-    : { favicon_status: "none" });
+  await pb
+    .collection("sources")
+    .update(
+      id,
+      file
+        ? { favicon: file, favicon_status: "ok" }
+        : { favicon_status: "none" },
+    );
 }

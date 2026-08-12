@@ -4,7 +4,10 @@ import { resolveArticleIds, loadArticleExports } from "./export.js";
 // Minimal fake PB: each collection returns canned data; pb.filter is identity.
 // getFullList captures the filter option (keyed by collection name) so tests can
 // assert the predicate was passed without emulating PB filter evaluation.
-function fakePb(data: Record<string, unknown[]>, byId: Record<string, unknown> = {}) {
+function fakePb(
+  data: Record<string, unknown[]>,
+  byId: Record<string, unknown> = {},
+) {
   const capturedFilters: Record<string, string | undefined> = {};
   const pb = {
     filter: (s: string) => s,
@@ -26,24 +29,50 @@ function fakePb(data: Record<string, unknown[]>, byId: Record<string, unknown> =
 
 describe("resolveArticleIds", () => {
   it("collection scope maps collection_items to article ids", async () => {
-    const { pb, capturedFilters } = fakePb({ collection_items: [{ article: "a1" }, { article: "a2" }] });
-    const ids = await resolveArticleIds(pb, { kind: "collection", id: "c1" }, "http://pb", "tok");
+    const { pb, capturedFilters } = fakePb({
+      collection_items: [{ article: "a1" }, { article: "a2" }],
+    });
+    const ids = await resolveArticleIds(
+      pb,
+      { kind: "collection", id: "c1" },
+      "http://pb",
+      "tok",
+    );
     expect(ids).toEqual(["a1", "a2"]);
     // Verify the filter predicate was passed (pb.filter is identity, so the raw template is captured)
     expect(capturedFilters["collection_items"]).toContain("collection =");
   });
 
   it("library scope lists all article ids", async () => {
-    const { pb } = fakePb({ articles: [{ id: "a1" }, { id: "a2" }, { id: "a3" }] });
-    const ids = await resolveArticleIds(pb, { kind: "library" }, "http://pb", "tok");
+    const { pb } = fakePb({
+      articles: [{ id: "a1" }, { id: "a2" }, { id: "a3" }],
+    });
+    const ids = await resolveArticleIds(
+      pb,
+      { kind: "library" },
+      "http://pb",
+      "tok",
+    );
     expect(ids).toEqual(["a1", "a2", "a3"]);
   });
 
   it("filter scope intersects tag links with the search endpoint", async () => {
-    const { pb } = fakePb({ article_tags: [{ article: "a1" }, { article: "a2" }] });
+    const { pb } = fakePb({
+      article_tags: [{ article: "a1" }, { article: "a2" }],
+    });
     const fetchFn = async () =>
-      ({ json: async () => ({ results: [{ articleId: "a2" }, { articleId: "a9" }] }) }) as never;
-    const ids = await resolveArticleIds(pb, { kind: "filter", tag: "t1", q: "hello" }, "http://pb", "tok", fetchFn);
+      ({
+        json: async () => ({
+          results: [{ articleId: "a2" }, { articleId: "a9" }],
+        }),
+      }) as never;
+    const ids = await resolveArticleIds(
+      pb,
+      { kind: "filter", tag: "t1", q: "hello" },
+      "http://pb",
+      "tok",
+      fetchFn,
+    );
     expect(ids).toEqual(["a2"]);
   });
 });
@@ -52,7 +81,23 @@ describe("loadArticleExports", () => {
   it("skips ids the user does not own", async () => {
     const { pb } = fakePb(
       { highlights: [], article_tags: [] },
-      { a1: { id: "a1", url: "https://x.test/p", status: "unread", created: "2026", expand: { content: { title: "T", ai_tags_json: [], content_html: "<p>x</p>", excerpt: "", fetched_at: "2026" } } } }
+      {
+        a1: {
+          id: "a1",
+          url: "https://x.test/p",
+          status: "unread",
+          created: "2026",
+          expand: {
+            content: {
+              title: "T",
+              ai_tags_json: [],
+              content_html: "<p>x</p>",
+              excerpt: "",
+              fetched_at: "2026",
+            },
+          },
+        },
+      },
     );
     const out = await loadArticleExports(pb, ["a1", "missing"], "pro");
     expect(out).toHaveLength(1);
@@ -64,7 +109,9 @@ describe("loadArticleExports", () => {
     const { pb } = fakePb(
       {
         highlights: [],
-        article_tags: [{ article: "a1", expand: { tag: { name: "research" } } }],
+        article_tags: [
+          { article: "a1", expand: { tag: { name: "research" } } },
+        ],
       },
       {
         a1: {
@@ -83,7 +130,7 @@ describe("loadArticleExports", () => {
             },
           },
         },
-      }
+      },
     );
     const out = await loadArticleExports(pb, ["a1"], "pro");
     expect(out).toHaveLength(1);
@@ -98,15 +145,21 @@ describe("loadArticleExports", () => {
       { highlights: [], article_tags: [] },
       {
         a1: {
-          id: "a1", url: "https://x.test/p", status: "unread", created: "2026",
+          id: "a1",
+          url: "https://x.test/p",
+          status: "unread",
+          created: "2026",
           expand: {
             content: {
-              title: "T", ai_tags_json: ["ai", "ml"], content_html: "<p>x</p>",
-              excerpt: "an ai summary", fetched_at: "2026",
+              title: "T",
+              ai_tags_json: ["ai", "ml"],
+              content_html: "<p>x</p>",
+              excerpt: "an ai summary",
+              fetched_at: "2026",
             },
           },
         },
-      }
+      },
     );
     const out = await loadArticleExports(pb, ["a1"], "standard");
     expect(out[0]!.aiTags).toEqual([]);
@@ -120,15 +173,21 @@ describe("loadArticleExports", () => {
       { highlights: [], article_tags: [] },
       {
         a1: {
-          id: "a1", url: "https://x.test/p", status: "unread", created: "2026",
+          id: "a1",
+          url: "https://x.test/p",
+          status: "unread",
+          created: "2026",
           expand: {
             content: {
-              title: "T", ai_tags_json: ["ai", "ml"], content_html: "<p>x</p>",
-              excerpt: "an ai summary", fetched_at: "2026",
+              title: "T",
+              ai_tags_json: ["ai", "ml"],
+              content_html: "<p>x</p>",
+              excerpt: "an ai summary",
+              fetched_at: "2026",
             },
           },
         },
-      }
+      },
     );
     const out = await loadArticleExports(pb, ["a1"], "pro");
     expect(out[0]!.aiTags).toEqual(["ai", "ml"]);
@@ -140,15 +199,22 @@ describe("loadArticleExports", () => {
       { highlights: [], article_tags: [] },
       {
         a1: {
-          id: "a1", url: "https://x.test/p", status: "unread", created: "2026",
+          id: "a1",
+          url: "https://x.test/p",
+          status: "unread",
+          created: "2026",
           expand: {
             content: {
-              title: "Legacy Article", ai_tags_json: [], content_html: "<p>full body</p>",
-              excerpt: "", fetched_at: "2026", toc: null,
+              title: "Legacy Article",
+              ai_tags_json: [],
+              content_html: "<p>full body</p>",
+              excerpt: "",
+              fetched_at: "2026",
+              toc: null,
             },
           },
         },
-      }
+      },
     );
     const out = await loadArticleExports(pb, ["a1"], "pro");
     expect(out).toHaveLength(1);

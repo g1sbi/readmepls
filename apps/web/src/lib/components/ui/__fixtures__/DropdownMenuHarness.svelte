@@ -6,8 +6,6 @@
 
 <DropdownMenu label="open menu">
   {#snippet trigger()}<span>⋯</span>{/snippet}
-  {#snippet children()}
-    <div class="menu-label">actions</div>
-    <MenuItem onSelect={onpick}>pick me</MenuItem>
-  {/snippet}
+  <div class="menu-label">actions</div>
+  <MenuItem onSelect={onpick}>pick me</MenuItem>
 </DropdownMenu>

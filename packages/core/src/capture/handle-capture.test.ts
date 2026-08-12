@@ -1,5 +1,9 @@
 import { describe, it, expect, beforeAll, afterAll } from "vitest";
-import { startEphemeralPb, makeTestUser, type PbHandle } from "../pb/test-harness.js";
+import {
+  startEphemeralPb,
+  makeTestUser,
+  type PbHandle,
+} from "../pb/test-harness.js";
 import { handleCapture } from "./handle-capture.js";
 
 let h: PbHandle;
@@ -17,7 +21,11 @@ describe("handleCapture", () => {
   });
 
   it("enqueues a job and creates an article on cache miss", async () => {
-    const r = await handleCapture(h.pb, userId, "https://example.com/fresh?utm_source=z");
+    const r = await handleCapture(
+      h.pb,
+      userId,
+      "https://example.com/fresh?utm_source=z",
+    );
     expect(r.status).toBe(200);
     expect(r.body.cached).toBe(false);
     const job = await h.pb

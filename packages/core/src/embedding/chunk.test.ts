@@ -9,7 +9,12 @@ describe("chunkText", () => {
   it("returns a single chunk for short text", () => {
     const c = chunkText("hello world");
     expect(c).toHaveLength(1);
-    expect(c[0]).toMatchObject({ index: 0, charStart: 0, charEnd: 11, text: "hello world" });
+    expect(c[0]).toMatchObject({
+      index: 0,
+      charStart: 0,
+      charEnd: 11,
+      text: "hello world",
+    });
   });
 
   it("offsets round-trip exactly against the source", () => {
@@ -28,6 +33,7 @@ describe("chunkText", () => {
     // next window starts before the previous end (overlap)
     expect(c[1]!.charStart).toBeLessThan(c[0]!.charEnd);
     // no chunk exceeds the max window
-    for (const ch of c) expect(ch.charEnd - ch.charStart).toBeLessThanOrEqual(40);
+    for (const ch of c)
+      expect(ch.charEnd - ch.charStart).toBeLessThanOrEqual(40);
   });
 });

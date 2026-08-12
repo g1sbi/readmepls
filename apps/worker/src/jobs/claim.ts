@@ -6,7 +6,7 @@ const STALE_MS = 5 * 60 * 1000;
 
 export async function claimNextJob(
   pb: PocketBase,
-  workerId: string
+  workerId: string,
 ): Promise<Job | null> {
   const staleBefore = new Date(Date.now() - STALE_MS).toISOString();
   const filter =

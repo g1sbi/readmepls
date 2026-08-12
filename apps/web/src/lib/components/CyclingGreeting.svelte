@@ -2,8 +2,10 @@
   import { onMount, onDestroy } from "svelte";
   import { prefersReducedMotion } from "$lib/motion";
 
-  let { phrases, intervalMs = 4000 }: { phrases: string[]; intervalMs?: number } =
-    $props();
+  let {
+    phrases,
+    intervalMs = 4000,
+  }: { phrases: string[]; intervalMs?: number } = $props();
 
   let index = $state(0);
   let timer: ReturnType<typeof setInterval> | undefined;

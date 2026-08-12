@@ -1,4 +1,10 @@
-import type { ArticleExport, ConnectorPlugin, ExportResult, ExportFile, ExportFailure } from "../plugin.js";
+import type {
+  ArticleExport,
+  ConnectorPlugin,
+  ExportResult,
+  ExportFile,
+  ExportFailure,
+} from "../plugin.js";
 import { renderArticle } from "./render.js";
 
 export class MarkdownConnector implements ConnectorPlugin {

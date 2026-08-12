@@ -14,17 +14,30 @@
 <section class="hero">
   <div class="fold" aria-hidden="true"></div>
   <div class="logo-wrap">
-    <img class="logo" src="/hero.png" alt="readmepls" width="160" height="160" />
+    <img
+      class="logo"
+      src="/hero.png"
+      alt="readmepls"
+      width="160"
+      height="160"
+    />
   </div>
   <h1 class="wordmark">readme<span class="pls">pls</span></h1>
   <p class="tagline reel-line">
-    <span class="reel-lead" aria-hidden="true">save any&nbsp;</span><span class="reel" aria-hidden="true"><span class="reel-col">{#each slots as w}<span class="reel-word">{w}</span>{/each}</span></span>
+    <span class="reel-lead" aria-hidden="true">save any&nbsp;</span><span
+      class="reel"
+      aria-hidden="true"
+      ><span class="reel-col"
+        >{#each slots as w, i (i)}<span class="reel-word">{w}</span
+          >{/each}</span
+      ></span
+    >
     <span class="sr-only">{srPhrase}</span>
   </p>
   <p class="tagline">{TAGLINE}</p>
   <div class="cta">
-    <a class="btn primary" href={APP_URL}>Open app</a>
-    <a class="btn ghost" href={GITHUB_URL}>GitHub</a>
+    <a class="btn primary" href={APP_URL} rel="external">Open app</a>
+    <a class="btn ghost" href={GITHUB_URL} rel="external">GitHub</a>
   </div>
 </section>
 
@@ -47,7 +60,12 @@
     right: -1rem;
     width: 140px;
     height: 140px;
-    background: linear-gradient(135deg, var(--fold) 0%, var(--fold) 50%, transparent 50%);
+    background: linear-gradient(
+      135deg,
+      var(--fold) 0%,
+      var(--fold) 50%,
+      transparent 50%
+    );
     opacity: 0.55;
     border-bottom-left-radius: 28px;
     transform-origin: top right;
@@ -155,12 +173,29 @@
   }
 
   @keyframes reel {
-    0%, 14% { transform: translateY(calc(var(--reel-h) * -5)); }
-    20%, 34% { transform: translateY(calc(var(--reel-h) * -4)); }
-    40%, 54% { transform: translateY(calc(var(--reel-h) * -3)); }
-    60%, 74% { transform: translateY(calc(var(--reel-h) * -2)); }
-    80%, 94% { transform: translateY(calc(var(--reel-h) * -1)); }
-    100% { transform: translateY(0); }
+    0%,
+    14% {
+      transform: translateY(calc(var(--reel-h) * -5));
+    }
+    20%,
+    34% {
+      transform: translateY(calc(var(--reel-h) * -4));
+    }
+    40%,
+    54% {
+      transform: translateY(calc(var(--reel-h) * -3));
+    }
+    60%,
+    74% {
+      transform: translateY(calc(var(--reel-h) * -2));
+    }
+    80%,
+    94% {
+      transform: translateY(calc(var(--reel-h) * -1));
+    }
+    100% {
+      transform: translateY(0);
+    }
   }
   @keyframes drop-in {
     0% {

@@ -11,7 +11,9 @@ export function splitHomeFeed<T extends WithContent>(
   const active: T[] = [];
   const recent: T[] = [];
   for (const a of articles) {
-    const state = deriveCardState((a.expand?.content ?? null) as Parameters<typeof deriveCardState>[0]);
+    const state = deriveCardState(
+      (a.expand?.content ?? null) as Parameters<typeof deriveCardState>[0],
+    );
     if (state === "ready") {
       if (recent.length < recentLimit) recent.push(a);
     } else {

@@ -31,7 +31,11 @@ describe("nextTypewriterState", () => {
       { phraseIndex: 0, text: "hi", mode: "pausing" },
       PHRASES,
     );
-    expect(step.state).toEqual({ phraseIndex: 0, text: "hi", mode: "deleting" });
+    expect(step.state).toEqual({
+      phraseIndex: 0,
+      text: "hi",
+      mode: "deleting",
+    });
     expect(step.delayMs).toBe(PAUSE_MS);
   });
 

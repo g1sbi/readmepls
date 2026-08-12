@@ -84,7 +84,11 @@ describe("resolvePbAuth", () => {
   });
 
   it("surfaces verified=true from the auth record", async () => {
-    const pb = fakePb({ cookieValid: true, refreshOutcome: "ok", verified: true });
+    const pb = fakePb({
+      cookieValid: true,
+      refreshOutcome: "ok",
+      verified: true,
+    });
     const r = await resolvePbAuth(pb, "pb_auth=x", null);
     expect(r).toEqual({ userId: "u1", viaBearer: false, verified: true });
   });

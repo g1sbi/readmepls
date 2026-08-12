@@ -30,10 +30,17 @@
       class="link"
       class:active={node.id === activeId}
       aria-current={node.id === activeId ? "true" : undefined}
-      onclick={() => onjump(node.id)}
-    >{node.text}</button>
-    <Collapsible.Trigger class="toggle" aria-label={`toggle ${node.text} subchapters`}>
-      <ChevronRight class="icon-sm chevron" data-open={open} aria-hidden="true" />
+      onclick={() => onjump(node.id)}>{node.text}</button
+    >
+    <Collapsible.Trigger
+      class="toggle"
+      aria-label={`toggle ${node.text} subchapters`}
+    >
+      <ChevronRight
+        class="icon-sm chevron"
+        data-open={open}
+        aria-hidden="true"
+      />
     </Collapsible.Trigger>
   </div>
   <Collapsible.Content>

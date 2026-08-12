@@ -3,7 +3,9 @@ import { deriveSourceHost } from "./site-host.js";
 
 describe("deriveSourceHost", () => {
   it("returns the lowercased hostname", () => {
-    expect(deriveSourceHost("https://Example.COM/path?q=1")).toBe("example.com");
+    expect(deriveSourceHost("https://Example.COM/path?q=1")).toBe(
+      "example.com",
+    );
   });
 
   it("strips a single leading www.", () => {

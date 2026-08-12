@@ -1,4 +1,8 @@
-import { pipeline, env as hfEnv, type FeatureExtractionPipeline } from "@huggingface/transformers";
+import {
+  pipeline,
+  env as hfEnv,
+  type FeatureExtractionPipeline,
+} from "@huggingface/transformers";
 import { l2normalize } from "@readmepls/core";
 import { EMBED_MODEL, EMBED_DIM } from "@readmepls/types";
 import type { EmbeddingProvider, EmbedKind } from "./provider.js";
@@ -20,7 +24,11 @@ export class LocalEmbedder implements EmbeddingProvider {
 
   private get extractor(): Promise<FeatureExtractionPipeline> {
     if (!this.pipe) {
-      this.pipe = pipeline<"feature-extraction">("feature-extraction", this.model, { dtype: "q8" });
+      this.pipe = pipeline<"feature-extraction">(
+        "feature-extraction",
+        this.model,
+        { dtype: "q8" },
+      );
     }
     return this.pipe;
   }
@@ -34,7 +42,10 @@ export class LocalEmbedder implements EmbeddingProvider {
     if (texts.length === 0) return [];
     const prefixed = texts.map((t) => `${kind}: ${t}`);
     const extractor = await this.extractor;
-    const output = await extractor(prefixed, { pooling: "mean", normalize: true });
+    const output = await extractor(prefixed, {
+      pooling: "mean",
+      normalize: true,
+    });
     return (output.tolist() as number[][]).map((v) => l2normalize(v));
   }
 }

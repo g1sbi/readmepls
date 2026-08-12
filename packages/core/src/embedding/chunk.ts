@@ -15,7 +15,7 @@ export interface Chunk {
  */
 export function chunkText(
   text: string,
-  opts: { maxChars?: number; overlapChars?: number } = {}
+  opts: { maxChars?: number; overlapChars?: number } = {},
 ): Chunk[] {
   const maxChars = opts.maxChars ?? 2000;
   const overlapChars = opts.overlapChars ?? 200;
@@ -32,7 +32,12 @@ export function chunkText(
       const ws = text.lastIndexOf(" ", end);
       if (ws > start) end = ws;
     }
-    chunks.push({ index: index++, charStart: start, charEnd: end, text: text.slice(start, end) });
+    chunks.push({
+      index: index++,
+      charStart: start,
+      charEnd: end,
+      text: text.slice(start, end),
+    });
     if (end >= text.length) break;
     start = Math.max(end - overlapChars, start + 1);
   }

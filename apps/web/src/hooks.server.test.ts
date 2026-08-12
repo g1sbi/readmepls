@@ -32,7 +32,11 @@ const okResolve = async () => new Response("ok", { status: 200 });
 
 describe("handle", () => {
   it("short-circuits an allow-listed OPTIONS preflight with 204 + ACAO", async () => {
-    mockResolve.mockResolvedValue({ userId: null, viaBearer: false, verified: false });
+    mockResolve.mockResolvedValue({
+      userId: null,
+      viaBearer: false,
+      verified: false,
+    });
     const res = await handle({
       event: event("OPTIONS", "/api/capture", ALLOWED),
       resolve: vi.fn(),
@@ -42,7 +46,11 @@ describe("handle", () => {
   });
 
   it("rejects a non-listed OPTIONS preflight with 403 and no ACAO", async () => {
-    mockResolve.mockResolvedValue({ userId: null, viaBearer: false, verified: false });
+    mockResolve.mockResolvedValue({
+      userId: null,
+      viaBearer: false,
+      verified: false,
+    });
     const res = await handle({
       event: event("OPTIONS", "/api/capture", "https://evil.test"),
       resolve: vi.fn(),
@@ -52,7 +60,11 @@ describe("handle", () => {
   });
 
   it("omits Set-Cookie and adds ACAO when auth came via bearer", async () => {
-    mockResolve.mockResolvedValue({ userId: "u1", viaBearer: true, verified: true });
+    mockResolve.mockResolvedValue({
+      userId: "u1",
+      viaBearer: true,
+      verified: true,
+    });
     const res = await handle({
       event: event("POST", "/api/capture", ALLOWED),
       resolve: okResolve,
@@ -62,7 +74,11 @@ describe("handle", () => {
   });
 
   it("writes Set-Cookie for cookie auth and no ACAO for a non-listed origin", async () => {
-    mockResolve.mockResolvedValue({ userId: "u1", viaBearer: false, verified: true });
+    mockResolve.mockResolvedValue({
+      userId: "u1",
+      viaBearer: false,
+      verified: true,
+    });
     const res = await handle({
       event: event("POST", "/api/capture", "https://evil.test"),
       resolve: okResolve,
@@ -72,7 +88,11 @@ describe("handle", () => {
   });
 
   it("populates locals.verified from resolvePbAuth", async () => {
-    mockResolve.mockResolvedValue({ userId: "u1", viaBearer: false, verified: true });
+    mockResolve.mockResolvedValue({
+      userId: "u1",
+      viaBearer: false,
+      verified: true,
+    });
     const ev = event("POST", "/api/capture", ALLOWED);
     await handle({ event: ev, resolve: okResolve });
     expect((ev.locals as { verified: boolean }).verified).toBe(true);

@@ -14,8 +14,12 @@ const h = vi.hoisted(() => ({
 vi.mock("$lib/pb.js", () => ({
   browserPb: () => ({
     authStore: {
-      get isValid() { return h.isValid; },
-      get model() { return { email: h.email }; },
+      get isValid() {
+        return h.isValid;
+      },
+      get model() {
+        return { email: h.email };
+      },
       clear: h.clear,
     },
     collection: () => ({
@@ -40,7 +44,9 @@ beforeEach(() => {
 describe("/verify page", () => {
   it("confirms a token then refreshes and redirects home", async () => {
     render(Page, { props: { data: { token: "tok123" } } });
-    await waitFor(() => expect(h.confirmVerification).toHaveBeenCalledWith("tok123"));
+    await waitFor(() =>
+      expect(h.confirmVerification).toHaveBeenCalledWith("tok123"),
+    );
     await waitFor(() => expect(h.goto).toHaveBeenCalledWith("/"));
   });
 
@@ -59,8 +65,12 @@ describe("/verify page", () => {
   it("confirms a token but does not redirect home when there is no valid session", async () => {
     h.isValid = false;
     render(Page, { props: { data: { token: "tok123" } } });
-    await waitFor(() => expect(h.confirmVerification).toHaveBeenCalledWith("tok123"));
-    expect(await screen.findByRole("link", { name: /sign in/i })).toBeInTheDocument();
+    await waitFor(() =>
+      expect(h.confirmVerification).toHaveBeenCalledWith("tok123"),
+    );
+    expect(
+      await screen.findByRole("link", { name: /sign in/i }),
+    ).toBeInTheDocument();
     expect(h.goto).not.toHaveBeenCalledWith("/");
   });
 });

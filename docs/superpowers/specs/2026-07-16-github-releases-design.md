@@ -40,6 +40,7 @@ commit (Conventional) → push main
 ## Files added
 
 ### `.github/workflows/release-please.yml`
+
 - Trigger: `on: push: branches: [main]`.
 - Permissions: `contents: write`, `pull-requests: write`.
 - Single step: `googleapis/release-please-action@v4` reading the config +
@@ -54,6 +55,7 @@ with the default `GITHUB_TOKEN`. The tag release-please pushes must trigger
 downstream workflows.
 
 ### `release-please-config.json`
+
 - `release-type: simple`
 - single root component (`"."`)
 - `include-component-in-tag: false` → tag format is `v0.1.0` (matches the
@@ -61,6 +63,7 @@ downstream workflows.
 - `tag-separator` / prefix left at defaults producing `vX.Y.Z`
 
 ### `.release-please-manifest.json`
+
 - Seeded: `{ ".": "0.1.0" }`
 
 ## Bootstrap procedure (one-time, manual)

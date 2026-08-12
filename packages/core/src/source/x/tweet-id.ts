@@ -17,7 +17,5 @@ export function parseTweetId(url: string): string | null {
  * the tweet id (community-known formula used by X's own embeds) — no secret.
  */
 export function syndicationToken(id: string): string {
-  return ((Number(id) / 1e15) * Math.PI)
-    .toString(36)
-    .replace(/(0+|\.)/g, "");
+  return ((Number(id) / 1e15) * Math.PI).toString(36).replace(/(0+|\.)/g, "");
 }

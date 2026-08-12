@@ -1,5 +1,10 @@
 import { describe, it, expect } from "vitest";
-import { nextNavVisible, NAV_SCROLL_THRESHOLD, NAV_TOP_ZONE, showsGlobalNav } from "./bottom-nav-scroll.js";
+import {
+  nextNavVisible,
+  NAV_SCROLL_THRESHOLD,
+  NAV_TOP_ZONE,
+  showsGlobalNav,
+} from "./bottom-nav-scroll.js";
 
 describe("nextNavVisible", () => {
   it("is always visible near the top of the page", () => {
@@ -8,11 +13,15 @@ describe("nextNavVisible", () => {
   });
 
   it("hides when scrolling down past the threshold", () => {
-    expect(nextNavVisible(200, 200 + NAV_SCROLL_THRESHOLD + 1, true)).toBe(false);
+    expect(nextNavVisible(200, 200 + NAV_SCROLL_THRESHOLD + 1, true)).toBe(
+      false,
+    );
   });
 
   it("reveals when scrolling up past the threshold", () => {
-    expect(nextNavVisible(400, 400 - NAV_SCROLL_THRESHOLD - 1, false)).toBe(true);
+    expect(nextNavVisible(400, 400 - NAV_SCROLL_THRESHOLD - 1, false)).toBe(
+      true,
+    );
   });
 
   it("ignores sub-threshold jitter, keeping the previous state", () => {

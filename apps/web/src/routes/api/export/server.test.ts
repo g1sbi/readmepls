@@ -12,14 +12,29 @@ import type { ArticleExport } from "@readmepls/core";
 
 function article(p: Partial<ArticleExport> = {}): ArticleExport {
   return {
-    id: "id1", title: "One", url: "https://x.test/p", author: null, siteName: null,
-    lang: null, publishedAt: null, fetchedAt: "2026", capturedAt: "2026",
-    status: "unread", tags: [], aiTags: [], summary: "", contentHtml: "<p>hi</p>",
-    highlights: [], ...p,
+    id: "id1",
+    title: "One",
+    url: "https://x.test/p",
+    author: null,
+    siteName: null,
+    lang: null,
+    publishedAt: null,
+    fetchedAt: "2026",
+    capturedAt: "2026",
+    status: "unread",
+    tags: [],
+    aiTags: [],
+    summary: "",
+    contentHtml: "<p>hi</p>",
+    highlights: [],
+    ...p,
   };
 }
 
-function call(scope: string, userRecord: Record<string, unknown> = { tier: "pro" }) {
+function call(
+  scope: string,
+  userRecord: Record<string, unknown> = { tier: "pro" },
+) {
   const url = new URL(`http://localhost/api/export?${scope}`);
   const locals = {
     userId: "u1",
@@ -31,7 +46,9 @@ function call(scope: string, userRecord: Record<string, unknown> = { tier: "pro"
 describe("GET /api/export", () => {
   it("returns a single markdown file for scope=single", async () => {
     (resolveArticleIds as ReturnType<typeof vi.fn>).mockResolvedValue(["id1"]);
-    (loadArticleExports as ReturnType<typeof vi.fn>).mockResolvedValue([article()]);
+    (loadArticleExports as ReturnType<typeof vi.fn>).mockResolvedValue([
+      article(),
+    ]);
     const res = await call("scope=single&id=id1");
     expect(res.headers.get("content-type")).toContain("text/markdown");
     expect(res.headers.get("content-disposition")).toContain("one.md");
@@ -39,8 +56,14 @@ describe("GET /api/export", () => {
   });
 
   it("returns a zip for a multi-article scope", async () => {
-    (resolveArticleIds as ReturnType<typeof vi.fn>).mockResolvedValue(["id1", "id2"]);
-    (loadArticleExports as ReturnType<typeof vi.fn>).mockResolvedValue([article(), article({ id: "id2", title: "Two" })]);
+    (resolveArticleIds as ReturnType<typeof vi.fn>).mockResolvedValue([
+      "id1",
+      "id2",
+    ]);
+    (loadArticleExports as ReturnType<typeof vi.fn>).mockResolvedValue([
+      article(),
+      article({ id: "id2", title: "Two" }),
+    ]);
     const res = await call("scope=library");
     expect(res.headers.get("content-type")).toContain("application/zip");
   });
@@ -53,7 +76,9 @@ describe("GET /api/export", () => {
   it("401s when unauthenticated", async () => {
     const url = new URL("http://localhost/api/export?scope=library");
     const locals = { userId: null, pb: { authStore: { token: "" } } } as never;
-    await expect(GET({ url, locals } as never)).rejects.toMatchObject({ status: 401 });
+    await expect(GET({ url, locals } as never)).rejects.toMatchObject({
+      status: 401,
+    });
   });
 
   // Fix #3 — 422 when the single article's render fails (e.g. non-string contentHtml)
@@ -62,15 +87,24 @@ describe("GET /api/export", () => {
     (loadArticleExports as ReturnType<typeof vi.fn>).mockResolvedValue([
       article({ contentHtml: 123 as unknown as string }),
     ]);
-    await expect(call("scope=single&id=id1")).rejects.toMatchObject({ status: 422 });
+    await expect(call("scope=single&id=id1")).rejects.toMatchObject({
+      status: 422,
+    });
   });
 
   // Fix #4a — _export-report.md is present when at least one article fails to render
   it("zip includes _export-report.md when some articles fail to render", async () => {
-    (resolveArticleIds as ReturnType<typeof vi.fn>).mockResolvedValue(["id1", "id2"]);
+    (resolveArticleIds as ReturnType<typeof vi.fn>).mockResolvedValue([
+      "id1",
+      "id2",
+    ]);
     (loadArticleExports as ReturnType<typeof vi.fn>).mockResolvedValue([
       article(),
-      article({ id: "id2", title: "Two", contentHtml: 123 as unknown as string }),
+      article({
+        id: "id2",
+        title: "Two",
+        contentHtml: 123 as unknown as string,
+      }),
     ]);
     const res = await call("scope=library");
     const bytes = new Uint8Array(await res.arrayBuffer());
@@ -80,7 +114,10 @@ describe("GET /api/export", () => {
 
   // Fix #4b — _export-report.md is absent when all articles export cleanly
   it("zip does not include _export-report.md when all articles export cleanly", async () => {
-    (resolveArticleIds as ReturnType<typeof vi.fn>).mockResolvedValue(["id1", "id2"]);
+    (resolveArticleIds as ReturnType<typeof vi.fn>).mockResolvedValue([
+      "id1",
+      "id2",
+    ]);
     (loadArticleExports as ReturnType<typeof vi.fn>).mockResolvedValue([
       article(),
       article({ id: "id2", title: "Two" }),
@@ -93,8 +130,14 @@ describe("GET /api/export", () => {
 
   it("resolves the caller's tier and passes it to loadArticleExports", async () => {
     (resolveArticleIds as ReturnType<typeof vi.fn>).mockResolvedValue(["id1"]);
-    (loadArticleExports as ReturnType<typeof vi.fn>).mockResolvedValue([article()]);
+    (loadArticleExports as ReturnType<typeof vi.fn>).mockResolvedValue([
+      article(),
+    ]);
     await call("scope=single&id=id1", { tier: "standard" });
-    expect(loadArticleExports).toHaveBeenCalledWith(expect.anything(), ["id1"], "standard");
+    expect(loadArticleExports).toHaveBeenCalledWith(
+      expect.anything(),
+      ["id1"],
+      "standard",
+    );
   });
 });

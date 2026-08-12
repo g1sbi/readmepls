@@ -1,13 +1,30 @@
 import { z } from "zod";
 
-export const READ_STATES = ["unread", "reading", "finished", "archived"] as const;
+export const READ_STATES = [
+  "unread",
+  "reading",
+  "finished",
+  "archived",
+] as const;
 export const TIME_BUCKETS = ["quick", "medium", "long"] as const;
-export const DATE_PRESETS = ["today", "week", "month", "year", "older"] as const;
+export const DATE_PRESETS = [
+  "today",
+  "week",
+  "month",
+  "year",
+  "older",
+] as const;
 export const HAS_FLAGS = ["highlights", "notes"] as const;
 export const ATTENTION = ["partial", "failed"] as const;
 export const SORTS = [
-  "-created", "created", "-published", "-read_time", "read_time",
-  "-updated", "title", "relevance",
+  "-created",
+  "created",
+  "-published",
+  "-read_time",
+  "read_time",
+  "-updated",
+  "title",
+  "relevance",
 ] as const;
 
 export type ReadState = (typeof READ_STATES)[number];

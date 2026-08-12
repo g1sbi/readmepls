@@ -7,7 +7,7 @@ export function makeClient(url: string): PocketBase {
 export async function authAsSuperuser(
   pb: PocketBase,
   email: string,
-  password: string
+  password: string,
 ): Promise<void> {
   await pb.collection("_superusers").authWithPassword(email, password);
 }

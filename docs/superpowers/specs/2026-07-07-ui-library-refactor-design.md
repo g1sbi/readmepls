@@ -22,11 +22,11 @@ be done concretely against one target library.
 
 ## Candidates considered
 
-| Candidate | Model | Fit |
-|---|---|---|
-| **shadcn-svelte** | Copy-in component source, built on `bits-ui`, themed via CSS custom properties | Strong — additive to what's already adopted |
-| Skeleton | Pre-styled component set, Tailwind + CSS-variable (OKLCH) theming | Requires adopting Tailwind, which this repo has no footprint of; own markup/class conventions would compete with the existing token layering |
-| Park UI | Copy-in component source, built on Ark UI/Zag.js, themed via CSS custom properties | Same copy-in philosophy as shadcn-svelte, but its behavior layer (Zag) would run alongside the already-adopted `bits-ui` rather than replacing/extending it — two headless behavior libraries for no clear gain |
+| Candidate         | Model                                                                              | Fit                                                                                                                                                                                                             |
+| ----------------- | ---------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| **shadcn-svelte** | Copy-in component source, built on `bits-ui`, themed via CSS custom properties     | Strong — additive to what's already adopted                                                                                                                                                                     |
+| Skeleton          | Pre-styled component set, Tailwind + CSS-variable (OKLCH) theming                  | Requires adopting Tailwind, which this repo has no footprint of; own markup/class conventions would compete with the existing token layering                                                                    |
+| Park UI           | Copy-in component source, built on Ark UI/Zag.js, themed via CSS custom properties | Same copy-in philosophy as shadcn-svelte, but its behavior layer (Zag) would run alongside the already-adopted `bits-ui` rather than replacing/extending it — two headless behavior libraries for no clear gain |
 
 ## Recommendation: shadcn-svelte
 

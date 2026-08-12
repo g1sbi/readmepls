@@ -5,7 +5,9 @@ import ReaderControlBar from "./ReaderControlBar.svelte";
 describe("ReaderControlBar", () => {
   it("renders all four items when hasChapters is true", () => {
     render(ReaderControlBar, { hasChapters: true, onOpen: vi.fn() });
-    expect(screen.getByRole("navigation", { name: "reader controls" })).toBeTruthy();
+    expect(
+      screen.getByRole("navigation", { name: "reader controls" }),
+    ).toBeTruthy();
     for (const label of ["text", "chapters", "highlights", "more"]) {
       expect(screen.getByText(label)).toBeTruthy();
     }
@@ -25,7 +27,13 @@ describe("ReaderControlBar", () => {
   });
 
   it("marks the active item with aria-current", () => {
-    render(ReaderControlBar, { hasChapters: true, active: "more", onOpen: vi.fn() });
-    expect(screen.getByText("more").closest("button")!.getAttribute("aria-current")).toBe("true");
+    render(ReaderControlBar, {
+      hasChapters: true,
+      active: "more",
+      onOpen: vi.fn(),
+    });
+    expect(
+      screen.getByText("more").closest("button")!.getAttribute("aria-current"),
+    ).toBe("true");
   });
 });

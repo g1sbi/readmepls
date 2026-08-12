@@ -39,7 +39,7 @@ function fakePb(
             status: 404,
             data: {},
             response: { code: 404, message: "not found" },
-          } as any);
+          });
           throw err;
         }
         return existing;
@@ -90,7 +90,7 @@ describe("upsertContent", () => {
       status: 500,
       data: {},
       response: { code: 500, message: "Internal Server Error" },
-    } as any);
+    });
     const create = vi.fn();
     const update = vi.fn();
     const pb = fakePb(null, { create, update }, networkError);
@@ -111,7 +111,7 @@ describe("upsertContent", () => {
       status: 400,
       data: { data: { canonical_url: { code: "validation_not_unique" } } },
       response: { code: 400, message: "Failed to create record." },
-    } as any);
+    });
     const create = vi.fn(async () => {
       throw conflictError;
     });
@@ -131,7 +131,7 @@ describe("upsertContent", () => {
               status: 404,
               data: {},
               response: { code: 404, message: "not found" },
-            } as any);
+            });
           }
           return { id: "winner1" };
         },
@@ -153,7 +153,7 @@ describe("upsertContent", () => {
       status: 500,
       data: {},
       response: { code: 500, message: "Internal Server Error" },
-    } as any);
+    });
     const create = vi.fn(async () => {
       throw serverError;
     });

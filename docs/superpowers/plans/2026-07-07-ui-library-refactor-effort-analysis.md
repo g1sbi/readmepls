@@ -4,7 +4,7 @@
 
 **Goal:** Produce a concrete, per-component effort analysis for migrating the hand-rolled `ui/` primitives to shadcn-svelte, sized well enough to decide migration order and strategy.
 
-**Architecture:** This is an *investigation* plan, not a code plan — it produces one markdown deliverable, `docs/superpowers/specs/2026-07-07-ui-library-refactor-effort.md`, built up section by section. Each task runs concrete data-gathering commands against the repo and records findings. There is no TDD cycle; each task's verification is "the section is complete, backed by real repo data, with no TBDs." No production code changes.
+**Architecture:** This is an _investigation_ plan, not a code plan — it produces one markdown deliverable, `docs/superpowers/specs/2026-07-07-ui-library-refactor-effort.md`, built up section by section. Each task runs concrete data-gathering commands against the repo and records findings. There is no TDD cycle; each task's verification is "the section is complete, backed by real repo data, with no TBDs." No production code changes.
 
 **Tech Stack:** SvelteKit 5, `bits-ui` (already adopted), `tokens.css` CSS-variable theming, Vitest. Target library: shadcn-svelte (copy-in, `bits-ui`-based).
 
@@ -30,41 +30,51 @@ The `ui/` components under analysis (from `apps/web/src/lib/components/ui/`):
 ### Task 1: Component inventory + blast radius
 
 **Files:**
+
 - Create: `docs/superpowers/specs/2026-07-07-ui-library-refactor-effort.md`
 
 **Interfaces:**
+
 - Produces: the "## 1. Component inventory" section — one row per `ui/*.svelte` with columns `Component | LOC | Purpose (1 line) | Test file | # import sites`. Task 2 keys its rows off the same component names.
 
 - [ ] **Step 1: Gather LOC per component**
 
 Run:
+
 ```bash
 wc -l apps/web/src/lib/components/ui/*.svelte
 ```
+
 Record the line count for each `.svelte` file.
 
 - [ ] **Step 2: Map each component to its test file**
 
 Run:
+
 ```bash
 ls apps/web/src/lib/components/ui/*.test.ts
 ```
+
 Note that naming is inconsistent (PascalCase `DropdownMenu.test.ts` vs kebab `confirm-dialog.test.ts`), and `primitives.test.ts` covers the un-suffixed primitives (Button, Card, etc.). For each component record its test file, or "covered by primitives.test.ts", or "none".
 
 - [ ] **Step 3: Count import sites (blast radius) per component**
 
 For each component, run (example for Button):
+
 ```bash
 grep -rl "components/ui/Button" apps/web/src --include=*.svelte --include=*.ts | grep -v "/ui/" | wc -l
 ```
+
 Repeat for each component name. This is how many feature files break if the component's public props change. Record the count.
 
 - [ ] **Step 4: Read each component's props to record its one-line purpose + public API surface**
 
 Run:
+
 ```bash
 grep -A20 "\$props()" apps/web/src/lib/components/ui/*.svelte
 ```
+
 For each component, write a one-line purpose and note its prop surface (e.g. Button: `variant: "default"|"accent"`). This is the contract a shadcn-svelte equivalent must preserve.
 
 - [ ] **Step 5: Write the inventory section**
@@ -87,9 +97,11 @@ git commit -m "docs: add UI refactor effort analysis — component inventory"
 ### Task 2: Per-component migration mapping
 
 **Files:**
+
 - Modify: `docs/superpowers/specs/2026-07-07-ui-library-refactor-effort.md`
 
 **Interfaces:**
+
 - Consumes: the component list + import counts from Task 1.
 - Produces: the "## 2. Migration mapping" section — one row per component with columns `Component | shadcn-svelte equivalent | Retheme notes | Test to port | Visual-identity risk | Size (S/M/L)`.
 
@@ -104,9 +116,11 @@ shadcn-svelte components ship styled via their own CSS variables (`--background`
 - [ ] **Step 3: Record the test-porting cost per component**
 
 Using Task 1's test-file column: for each component note whether its existing Vitest test asserts on markup/structure that a shadcn-svelte swap would change (needs a rewrite) or on behavior/props (likely survives). Read the test where unsure:
+
 ```bash
 cat apps/web/src/lib/components/ui/sheet.test.ts
 ```
+
 Record "port as-is", "rewrite selectors", or "no test — add smoke test".
 
 - [ ] **Step 4: Flag visual-identity risk per component**
@@ -116,6 +130,7 @@ For each component, mark risk against `assets/_banner.html` identity: **Low** (g
 - [ ] **Step 5: Assign a size bucket per component**
 
 Combine retheme + test-port + risk + import count into S / M / L:
+
 - **S:** direct equivalent, remap-only, test ports as-is, low blast radius.
 - **M:** equivalent exists but needs extra CSS or test rewrite, or higher blast radius.
 - **L:** no equivalent / high visual risk / large blast radius / behavior differences.
@@ -136,9 +151,11 @@ git commit -m "docs: add UI refactor effort analysis — per-component mapping"
 ### Task 3: Synthesis, order, and strategy
 
 **Files:**
+
 - Modify: `docs/superpowers/specs/2026-07-07-ui-library-refactor-effort.md`
 
 **Interfaces:**
+
 - Consumes: the sized mapping table from Task 2.
 - Produces: the "## 3. Synthesis & recommendation" section — totals, a recommended migration order, and an incremental-vs-big-bang call. This is the section that unblocks writing an actual migration plan.
 

@@ -6,7 +6,9 @@ import { startEphemeralPb } from "./test-harness.js";
 
 const MIGRATIONS_SRC = "pocketbase/pb_migrations";
 const RENAME_FILE = "1719400000_tier_standard_rename.js";
-const ALL_MIGRATIONS = readdirSync(MIGRATIONS_SRC).filter((f) => f.endsWith(".js")).sort();
+const ALL_MIGRATIONS = readdirSync(MIGRATIONS_SRC)
+  .filter((f) => f.endsWith(".js"))
+  .sort();
 
 describe("tier standard-rename migration", () => {
   it("renames an existing free-tier user to standard once the migration is applied", async () => {
@@ -28,7 +30,10 @@ describe("tier standard-rename migration", () => {
 
     // Boot 2: same data dir, rename migration now present — PocketBase applies
     // it automatically on this boot, exactly as it would on a real deploy update.
-    copyFileSync(join(MIGRATIONS_SRC, RENAME_FILE), join(migrationsDir, RENAME_FILE));
+    copyFileSync(
+      join(MIGRATIONS_SRC, RENAME_FILE),
+      join(migrationsDir, RENAME_FILE),
+    );
     const h2 = await startEphemeralPb({ dir: dataDir, migrationsDir });
     const reread = await h2.pb.collection("users").getOne(user.id);
     expect(reread.tier).toBe("standard");
@@ -51,7 +56,10 @@ describe("tier standard-rename migration", () => {
     });
     await h1.stop();
 
-    copyFileSync(join(MIGRATIONS_SRC, RENAME_FILE), join(migrationsDir, RENAME_FILE));
+    copyFileSync(
+      join(MIGRATIONS_SRC, RENAME_FILE),
+      join(migrationsDir, RENAME_FILE),
+    );
     const h2 = await startEphemeralPb({ dir: dataDir, migrationsDir });
     const reread = await h2.pb.collection("users").getOne(user.id);
     expect(reread.tier).toBe("pro");
@@ -77,7 +85,10 @@ describe("tier standard-rename migration", () => {
     });
     await h1.stop();
 
-    copyFileSync(join(MIGRATIONS_SRC, RENAME_FILE), join(migrationsDir, RENAME_FILE));
+    copyFileSync(
+      join(MIGRATIONS_SRC, RENAME_FILE),
+      join(migrationsDir, RENAME_FILE),
+    );
     const h2 = await startEphemeralPb({ dir: dataDir, migrationsDir });
     const reread = await h2.pb.collection("users").getOne(user.id);
     expect(reread.tier).toBe("standard");

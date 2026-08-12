@@ -57,8 +57,15 @@
   }
 </script>
 
-<form onsubmit={(e) => { e.preventDefault(); submit(); }}>
-  <InputGroup.Root class="mx-auto h-14 max-w-xl rounded-full pl-2 pr-1.5 shadow-sm">
+<form
+  onsubmit={(e) => {
+    e.preventDefault();
+    submit();
+  }}
+>
+  <InputGroup.Root
+    class="mx-auto h-14 max-w-xl rounded-full pl-2 pr-1.5 shadow-sm"
+  >
     <InputGroup.Addon>
       <BookmarkPlus aria-hidden="true" />
     </InputGroup.Addon>

@@ -15,9 +15,13 @@ describe("requireVerified", () => {
     expect(status(() => requireVerified({ verified: false }, false))).toBe(403);
   });
   it("passes for a verified SaaS user", () => {
-    expect(status(() => requireVerified({ verified: true }, false))).toBe("no-throw");
+    expect(status(() => requireVerified({ verified: true }, false))).toBe(
+      "no-throw",
+    );
   });
   it("passes for self-host regardless of verified", () => {
-    expect(status(() => requireVerified({ verified: false }, true))).toBe("no-throw");
+    expect(status(() => requireVerified({ verified: false }, true))).toBe(
+      "no-throw",
+    );
   });
 });

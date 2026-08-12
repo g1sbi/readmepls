@@ -7,10 +7,14 @@
   import * as Dialog from "$lib/components/ui/dialog/index.js";
   import * as Command from "$lib/components/ui/command/index.js";
   import { goto } from "$app/navigation";
+  import { resolve } from "$app/paths";
   import type { LiveSearchResult } from "@readmepls/types";
   import { searchPalette } from "$lib/stores/search-palette.svelte.js";
   import { fetchLive } from "$lib/search/live-client.js";
-  import { loadRecentSearches, pushRecentSearch } from "$lib/search/recent-searches.js";
+  import {
+    loadRecentSearches,
+    pushRecentSearch,
+  } from "$lib/search/recent-searches.js";
   import { browserPb } from "$lib/pb.js";
   import { sourceView } from "$lib/source/source-view.js";
   import type { ArticleRecord } from "$lib/article/record.js";
@@ -113,21 +117,21 @@
   function pickArticle(id: string) {
     pushRecentSearch(query);
     close();
-    goto(`/read/${id}`);
+    goto(resolve("/read/[id]", { id }));
   }
   function pickTag(id: string) {
     close();
-    goto(`/library?tag=${id}`);
+    goto(resolve(`/library?tag=${id}`));
   }
   function pickCollection(id: string) {
     close();
-    goto(`/library?collection=${id}`);
+    goto(resolve(`/library?collection=${id}`));
   }
   function seeAll() {
     const q = query.trim();
     pushRecentSearch(q);
     close();
-    goto(`/library?q=${encodeURIComponent(q)}`);
+    goto(resolve(`/library?q=${encodeURIComponent(q)}`));
   }
   function reRun(q: string) {
     query = q;
@@ -137,14 +141,23 @@
   }
 </script>
 
-<Dialog.Root open={searchPalette.isOpen} onOpenChange={(v) => { if (!v) close(); }}>
+<Dialog.Root
+  open={searchPalette.isOpen}
+  onOpenChange={(v) => {
+    if (!v) close();
+  }}
+>
   <Dialog.Content showCloseButton={false} class="sp-content">
     <Dialog.Header class="sr-only">
       <Dialog.Title>search</Dialog.Title>
       <Dialog.Description>search your library</Dialog.Description>
     </Dialog.Header>
     <Command.Root shouldFilter={false} class="sp-command">
-      <Command.Input placeholder="search your library…" bind:value={query} autofocus />
+      <Command.Input
+        placeholder="search your library…"
+        bind:value={query}
+        autofocus
+      />
       <Command.List class="sp-list">
         {#if !query.trim()}
           {#if recent.length}
@@ -159,8 +172,12 @@
               {#each recentArticles as a (a.id)}
                 {@const source = sourceView(pb, a.expand?.content)}
                 <Command.Item onSelect={() => pickArticle(a.id)}>
-                  <span class="sp-title">{a.expand?.content?.title ?? a.url}</span>
-                  {#if source}<span class="sp-source">{source.name ?? source.host}</span>{/if}
+                  <span class="sp-title"
+                    >{a.expand?.content?.title ?? a.url}</span
+                  >
+                  {#if source}<span class="sp-source"
+                      >{source.name ?? source.host}</span
+                    >{/if}
                 </Command.Item>
               {/each}
             </Command.Group>
@@ -171,8 +188,10 @@
               {#each results.articles as a (a.id)}
                 <Command.Item onSelect={() => pickArticle(a.id)}>
                   <span class="sp-title">{a.title}</span>
-                  {#if a.sourceName}<span class="sp-source">{a.sourceName}</span>{/if}
-                  {#if a.snippet}<span class="sp-snippet">{a.snippet}</span>{/if}
+                  {#if a.sourceName}<span class="sp-source">{a.sourceName}</span
+                    >{/if}
+                  {#if a.snippet}<span class="sp-snippet">{a.snippet}</span
+                    >{/if}
                 </Command.Item>
               {/each}
             </Command.Group>
@@ -181,7 +200,9 @@
             <Command.Group heading="tags">
               {#each results.tags as t (t.id)}
                 <Command.Item onSelect={() => pickTag(t.id)}>
-                  <span aria-hidden="true">#</span><span class="sp-title">{t.name}</span>
+                  <span aria-hidden="true">#</span><span class="sp-title"
+                    >{t.name}</span
+                  >
                 </Command.Item>
               {/each}
             </Command.Group>
@@ -189,7 +210,9 @@
           {#if results.collections.length}
             <Command.Group heading="collections">
               {#each results.collections as c (c.id)}
-                <Command.Item onSelect={() => pickCollection(c.id)}>{c.name}</Command.Item>
+                <Command.Item onSelect={() => pickCollection(c.id)}
+                  >{c.name}</Command.Item
+                >
               {/each}
             </Command.Group>
           {/if}

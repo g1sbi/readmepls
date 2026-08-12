@@ -42,11 +42,15 @@ describe("highlight anchoring", () => {
   it("re-anchors after the surrounding markup changes", async () => {
     const root = document.createElement("article");
     root.innerHTML = "<p>the quick brown fox jumps over the lazy dog</p>";
-    const sel = await describeRange(rangeOver(root), selectText(root, "lazy dog"));
+    const sel = await describeRange(
+      rangeOver(root),
+      selectText(root, "lazy dog"),
+    );
 
     // Re-render: wrap a word in <em>, add a leading node. Quote text unchanged.
     const root2 = document.createElement("article");
-    root2.innerHTML = "<h2>Title</h2><p>the <em>quick</em> brown fox jumps over the lazy dog</p>";
+    root2.innerHTML =
+      "<h2>Title</h2><p>the <em>quick</em> brown fox jumps over the lazy dog</p>";
     const back = await anchor(rangeOver(root2), sel);
     expect(back).not.toBeNull();
     expect(back!.toString()).toBe("lazy dog");

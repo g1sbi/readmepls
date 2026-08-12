@@ -4,10 +4,21 @@ import type { ArticleExport } from "../plugin.js";
 
 function article(p: Partial<ArticleExport> = {}): ArticleExport {
   return {
-    id: "abc123def", title: "My Article", url: "https://x.test/p", author: "Jane",
-    siteName: "Site", lang: "en", publishedAt: "2026-01-02", fetchedAt: "2026-06-26",
-    capturedAt: "2026-06-26", status: "reading", tags: ["notes"], aiTags: ["ai"],
-    summary: "Sum", contentHtml: "<p>The body has a quote here.</p>", highlights: [],
+    id: "abc123def",
+    title: "My Article",
+    url: "https://x.test/p",
+    author: "Jane",
+    siteName: "Site",
+    lang: "en",
+    publishedAt: "2026-01-02",
+    fetchedAt: "2026-06-26",
+    capturedAt: "2026-06-26",
+    status: "reading",
+    tags: ["notes"],
+    aiTags: ["ai"],
+    summary: "Sum",
+    contentHtml: "<p>The body has a quote here.</p>",
+    highlights: [],
     ...p,
   };
 }
@@ -24,12 +35,23 @@ describe("renderArticle", () => {
   it("marks a highlight inline", () => {
     const f = renderArticle(
       article({
-        highlights: [{
-          id: "h", user: "u", article: "a", text: "quote here", prefix: "", suffix: "",
-          startOffset: 0, endOffset: 0, color: "amber", note: "", created: "2026",
-        }],
+        highlights: [
+          {
+            id: "h",
+            user: "u",
+            article: "a",
+            text: "quote here",
+            prefix: "",
+            suffix: "",
+            startOffset: 0,
+            endOffset: 0,
+            color: "amber",
+            note: "",
+            created: "2026",
+          },
+        ],
       }),
-      new Set()
+      new Set(),
     );
     expect(f.contents).toContain("==quote here==");
   });

@@ -1,7 +1,11 @@
 import { describe, it, expect, beforeAll, afterAll } from "vitest";
 import { readFileSync } from "node:fs";
 import { fileURLToPath } from "node:url";
-import { startEphemeralPb, makeTestUser, type PbHandle } from "@readmepls/core/src/pb/test-harness.js";
+import {
+  startEphemeralPb,
+  makeTestUser,
+  type PbHandle,
+} from "@readmepls/core/src/pb/test-harness.js";
 import { handleCapture, classifySource } from "@readmepls/core";
 import { claimNextJob } from "./jobs/claim.js";
 import { processJob } from "./worker.js";
@@ -14,8 +18,10 @@ import { ResolverRegistry } from "./resolve/registry.js";
 import { FakeEmbedder } from "./embed/fake-embedder.js";
 
 const html = readFileSync(
-  fileURLToPath(new URL("./extract/fixtures/simple-article.html", import.meta.url)),
-  "utf8"
+  fileURLToPath(
+    new URL("./extract/fixtures/simple-article.html", import.meta.url),
+  ),
+  "utf8",
 );
 
 let h: PbHandle;
@@ -29,9 +35,13 @@ afterAll(() => h?.stop());
 const registry = new ExtractorRegistry([new ArticleExtractor()]);
 const io: ExtractIO & ResolveIO = {
   fetchHtml: async () => html,
-  fetchJson: async () => { throw new Error("fetchJson not used in this test"); },
+  fetchJson: async () => {
+    throw new Error("fetchJson not used in this test");
+  },
   fetchRedirectTarget: async () => null,
-  runYtDlp: async () => { throw new Error("runYtDlp not used in this test"); },
+  runYtDlp: async () => {
+    throw new Error("runYtDlp not used in this test");
+  },
 };
 
 describe("phase-1 end-to-end loop", () => {
@@ -55,7 +65,11 @@ describe("phase-1 end-to-end loop", () => {
     const done = await h.pb.collection("jobs").getOne(job!.id);
     expect(done.status).toBe("done");
 
-    const second = await handleCapture(h.pb, userId, "https://example.com/post");
+    const second = await handleCapture(
+      h.pb,
+      userId,
+      "https://example.com/post",
+    );
     expect(second.body.cached).toBe(true);
   });
 });

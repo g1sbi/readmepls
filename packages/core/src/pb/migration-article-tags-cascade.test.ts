@@ -1,5 +1,9 @@
 import { describe, it, expect, beforeAll, afterAll } from "vitest";
-import { startEphemeralPb, makeTestUser, type PbHandle } from "./test-harness.js";
+import {
+  startEphemeralPb,
+  makeTestUser,
+  type PbHandle,
+} from "./test-harness.js";
 
 let h: PbHandle;
 beforeAll(async () => {
@@ -19,24 +23,40 @@ describe("deleting an article cascades to its per-user dependents", () => {
     });
 
     const article = await h.pb.collection("articles").create({
-      user: uid, content: content.id, url: "https://example.com/x",
-      status: "unread", progress: 0, is_private: false,
+      user: uid,
+      content: content.id,
+      url: "https://example.com/x",
+      status: "unread",
+      progress: 0,
+      is_private: false,
     });
 
     const tag = await h.pb.collection("tags").create({
-      user: uid, name: "ai", slug: "ai",
+      user: uid,
+      name: "ai",
+      slug: "ai",
     });
     const link = await h.pb.collection("article_tags").create({
-      article: article.id, tag: tag.id, source: "ai", confidence: 0.9,
+      article: article.id,
+      tag: tag.id,
+      source: "ai",
+      confidence: 0.9,
     });
     const highlight = await h.pb.collection("highlights").create({
-      user: uid, article: article.id, text: "hi", color: "yellow",
+      user: uid,
+      article: article.id,
+      text: "hi",
+      color: "yellow",
     });
 
     await h.pb.collection("articles").delete(article.id);
 
-    await expect(h.pb.collection("article_tags").getOne(link.id)).rejects.toThrow();
-    await expect(h.pb.collection("highlights").getOne(highlight.id)).rejects.toThrow();
+    await expect(
+      h.pb.collection("article_tags").getOne(link.id),
+    ).rejects.toThrow();
+    await expect(
+      h.pb.collection("highlights").getOne(highlight.id),
+    ).rejects.toThrow();
     // shared content survives
     const stillThere = await h.pb.collection("content").getOne(content.id);
     expect(stillThere.id).toBe(content.id);

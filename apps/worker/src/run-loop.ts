@@ -10,7 +10,7 @@ import { processJob, type ProcessDeps } from "./worker.js";
 export async function runLoopOnce(
   pb: PocketBase,
   workerId: string,
-  deps: ProcessDeps
+  deps: ProcessDeps,
 ): Promise<boolean> {
   const job = await claimNextJob(pb, workerId);
   if (!job) return false;

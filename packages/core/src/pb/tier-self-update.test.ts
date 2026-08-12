@@ -8,10 +8,15 @@ beforeAll(async () => {
 }, 30000);
 afterAll(() => h?.stop());
 
-async function makeUser(email: string): Promise<{ id: string; client: PocketBase }> {
+async function makeUser(
+  email: string,
+): Promise<{ id: string; client: PocketBase }> {
   const u = await h.pb.collection("users").create({
-    email, password: "password12345", passwordConfirm: "password12345",
-    tier: "standard", monthly_quota_used: 0,
+    email,
+    password: "password12345",
+    passwordConfirm: "password12345",
+    tier: "standard",
+    monthly_quota_used: 0,
   });
   const client = new PocketBase(h.url);
   await client.collection("users").authWithPassword(email, "password12345");
@@ -30,7 +35,7 @@ describe("tier self-update isolation", () => {
     const owner = await makeUser(`tierb${Date.now()}@test.local`);
     const intruder = await makeUser(`tierc${Date.now()}@test.local`);
     await expect(
-      intruder.client.collection("users").update(owner.id, { tier: "pro" })
+      intruder.client.collection("users").update(owner.id, { tier: "pro" }),
     ).rejects.toThrow();
     const reread = await h.pb.collection("users").getOne(owner.id);
     expect(reread.tier).toBe("standard");

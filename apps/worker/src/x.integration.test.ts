@@ -1,7 +1,10 @@
 import { describe, it, expect, beforeAll, afterAll } from "vitest";
 import { readFileSync } from "node:fs";
 import { fileURLToPath } from "node:url";
-import { startEphemeralPb, type PbHandle } from "@readmepls/core/src/pb/test-harness.js";
+import {
+  startEphemeralPb,
+  type PbHandle,
+} from "@readmepls/core/src/pb/test-harness.js";
 import { classifySource } from "@readmepls/core";
 import { processJob } from "./worker.js";
 import { ExtractorRegistry } from "./extract/registry.js";
@@ -16,14 +19,19 @@ import { FakeEmbedder } from "./embed/fake-embedder.js";
 const tweet = JSON.parse(
   readFileSync(
     fileURLToPath(
-      new URL("../../../packages/core/src/source/x/fixtures/single-tweet.json", import.meta.url)
+      new URL(
+        "../../../packages/core/src/source/x/fixtures/single-tweet.json",
+        import.meta.url,
+      ),
     ),
-    "utf8"
-  )
+    "utf8",
+  ),
 );
 
 let h: PbHandle;
-beforeAll(async () => { h = await startEphemeralPb(); }, 30000);
+beforeAll(async () => {
+  h = await startEphemeralPb();
+}, 30000);
 afterAll(() => h?.stop());
 
 describe("processJob routes X urls to the X extractor", () => {
@@ -37,15 +45,22 @@ describe("processJob routes X urls to the X extractor", () => {
     });
 
     const io: ExtractIO & ResolveIO = {
-      fetchHtml: async () => { throw new Error("unused"); },
+      fetchHtml: async () => {
+        throw new Error("unused");
+      },
       fetchJson: async () => tweet,
       fetchRedirectTarget: async () => null,
-      runYtDlp: async () => { throw new Error("unused"); },
+      runYtDlp: async () => {
+        throw new Error("unused");
+      },
     };
 
     await processJob(h.pb, job.id, {
       io,
-      registry: new ExtractorRegistry([new ArticleExtractor(), new XExtractor()]),
+      registry: new ExtractorRegistry([
+        new ArticleExtractor(),
+        new XExtractor(),
+      ]),
       resolvers: new ResolverRegistry([]),
       ai: new MockAIProvider({ tags: ["x"], summary: "tweet." }),
       classify: classifySource,

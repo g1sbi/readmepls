@@ -29,7 +29,11 @@ afterAll(() => h?.stop());
 
 describe("handleCapture via a user-scoped client", () => {
   it("enqueues a job the authenticated user is allowed to create", async () => {
-    const r = await handleCapture(userClient, userId, "https://example.com/userauth");
+    const r = await handleCapture(
+      userClient,
+      userId,
+      "https://example.com/userauth",
+    );
     expect(r.status).toBe(200);
     const job = await h.pb
       .collection("jobs")

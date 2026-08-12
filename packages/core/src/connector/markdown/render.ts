@@ -20,7 +20,9 @@ export function renderArticle(a: ArticleExport, used: Set<string>): ExportFile {
     summary: a.summary,
   });
 
-  const bodyMd = a.contentHtml ? htmlToMarkdown(a.contentHtml) : "_body unavailable_";
+  const bodyMd = a.contentHtml
+    ? htmlToMarkdown(a.contentHtml)
+    : "_body unavailable_";
   const { body, unanchored } = markHighlights(bodyMd, a.highlights);
   const section = highlightsSection(unanchored);
 

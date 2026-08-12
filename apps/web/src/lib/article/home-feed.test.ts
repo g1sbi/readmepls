@@ -8,7 +8,13 @@ const art = (id: string, status?: string) => ({
 
 describe("splitHomeFeed", () => {
   it("puts every non-ready item in active, regardless of count", () => {
-    const items = [art("a", "pending"), art("b"), art("c", "failed"), art("d", "partial"), art("e", "ok")];
+    const items = [
+      art("a", "pending"),
+      art("b"),
+      art("c", "failed"),
+      art("d", "partial"),
+      art("e", "ok"),
+    ];
     const { active } = splitHomeFeed(items);
     expect(active.map((x) => x.id)).toEqual(["a", "b", "c", "d"]);
   });

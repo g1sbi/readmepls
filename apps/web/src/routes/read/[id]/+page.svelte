@@ -3,13 +3,26 @@
   import { page } from "$app/stores";
   import { browserPb } from "$lib/pb.js";
   import { httpUrlOrNull } from "$lib/url/http-url.js";
-  import { withReaderDefaults, anchoring, rangeOver, slugify, STARTED_THRESHOLD, FINISHED_THRESHOLD } from "@readmepls/core";
-  import { Highlight, TocEntry, type ReaderPrefs, type HighlightColor } from "@readmepls/types";
+  import {
+    withReaderDefaults,
+    anchoring,
+    rangeOver,
+    slugify,
+    STARTED_THRESHOLD,
+    FINISHED_THRESHOLD,
+  } from "@readmepls/core";
+  import {
+    Highlight,
+    TocEntry,
+    type ReaderPrefs,
+    type HighlightColor,
+  } from "@readmepls/types";
   import type { Theme } from "$lib/theme/theme.js";
   import type { ArticleRecord } from "$lib/article/record.js";
   import type { RecordModel } from "pocketbase";
   import { ClientResponseError } from "pocketbase";
   import { goto } from "$app/navigation";
+  import { resolve } from "$app/paths";
   import { readerCssVars } from "$lib/reader/css-vars.js";
   import { markRange, unmarkAll } from "$lib/highlight/render";
   import { deleteArticle } from "$lib/article/delete.js";
@@ -34,11 +47,15 @@
 
   // Global theme context provided by +layout.svelte. May be undefined when
   // the reader is rendered in isolation (e.g. unit tests without the layout).
-  const themeCtx = getContext<{ current: Theme; set: (t: Theme) => void } | undefined>("theme");
+  const themeCtx = getContext<
+    { current: Theme; set: (t: Theme) => void } | undefined
+  >("theme");
   // The progress strip itself renders in +layout.svelte, outside .page --
   // .page's transform-keyframed animation makes it a stacking context, which
   // would cap the strip below TopBar no matter its z-index (see layout).
-  const progressCtx = getContext<{ set: (p: number) => void } | undefined>("readProgress");
+  const progressCtx = getContext<{ set: (p: number) => void } | undefined>(
+    "readProgress",
+  );
 
   const pb = browserPb();
   let article = $state<ArticleRecord | null>(null);
@@ -55,7 +72,7 @@
   let pendingProgress = 0;
 
   // Highlight state
-  // eslint-disable-next-line prefer-const — reassigned by bind:this, not Svelte reactivity
+  // `let`, not `const`: reassigned by bind:this, not by Svelte reactivity.
   let bodyEl = $state<HTMLElement>(null!);
   let highlights = $state<Highlight[]>([]);
   let orphans = $state<string[]>([]);
@@ -84,24 +101,39 @@
   let isDesktop = $state(false);
   let desktopMq: MediaQueryList | null = null;
   const hasChapters = $derived(toc.length > 0);
-  function onDesktopChange(e: MediaQueryListEvent) { isDesktop = e.matches; }
+  function onDesktopChange(e: MediaQueryListEvent) {
+    isDesktop = e.matches;
+  }
 
   async function loadHighlights(articleId: string) {
     const raw = await pb.collection("highlights").getFullList({
-      filter: pb.filter('article = {:id}', { id: articleId }), sort: "created",
+      filter: pb.filter("article = {:id}", { id: articleId }),
+      sort: "created",
     });
-    highlights = raw.map((r) => Highlight.parse({
-      id: r.id, user: r.user, article: r.article, text: r.text,
-      prefix: r.prefix ?? "", suffix: r.suffix ?? "",
-      startOffset: r.start_offset ?? 0, endOffset: r.end_offset ?? 0,
-      color: r.color, note: r.note ?? "", created: r.created,
-    }));
+    highlights = raw.map((r) =>
+      Highlight.parse({
+        id: r.id,
+        user: r.user,
+        article: r.article,
+        text: r.text,
+        prefix: r.prefix ?? "",
+        suffix: r.suffix ?? "",
+        startOffset: r.start_offset ?? 0,
+        endOffset: r.end_offset ?? 0,
+        color: r.color,
+        note: r.note ?? "",
+        created: r.created,
+      }),
+    );
     await renderMarks();
   }
 
   async function loadTags(articleId: string) {
     const links = await pb.collection("article_tags").getFullList({
-      filter: pb.filter('article = {:id} && source = {:src}', { id: articleId, src: "manual" }),
+      filter: pb.filter("article = {:id} && source = {:src}", {
+        id: articleId,
+        src: "manual",
+      }),
       expand: "tag",
     });
     manualTags = links.map((l) => ({
@@ -118,15 +150,18 @@
     if (!slug) return;
     let tag: RecordModel;
     try {
-      tag = await pb.collection("tags").getFirstListItem(
-        pb.filter('slug = {:slug}', { slug }),
-      );
+      tag = await pb
+        .collection("tags")
+        .getFirstListItem(pb.filter("slug = {:slug}", { slug }));
     } catch (e) {
       if (!(e instanceof ClientResponseError && e.status === 404)) throw e;
       tag = await pb.collection("tags").create({ user: uid, name, slug });
     }
     await pb.collection("article_tags").create({
-      article: $page.params.id, tag: tag.id, source: "manual", confidence: 1,
+      article: $page.params.id,
+      tag: tag.id,
+      source: "manual",
+      confidence: 1,
     });
     await loadTags($page.params.id!);
   }
@@ -152,10 +187,17 @@
 
   function onMouseUp() {
     const sel = window.getSelection();
-    if (!sel || sel.isCollapsed || !bodyEl.contains(sel.anchorNode)) { popover = null; return; }
+    if (!sel || sel.isCollapsed || !bodyEl.contains(sel.anchorNode)) {
+      popover = null;
+      return;
+    }
     const range = sel.getRangeAt(0);
     const rect = range.getBoundingClientRect();
-    popover = { x: rect.left + window.scrollX, y: rect.bottom + window.scrollY + 4, range };
+    popover = {
+      x: rect.left + window.scrollX,
+      y: rect.bottom + window.scrollY + 4,
+      range,
+    };
   }
 
   async function createHighlight(color: HighlightColor, note: string) {
@@ -163,10 +205,15 @@
     try {
       const sel = await anchoring.describe(rangeOver(bodyEl), popover.range);
       await pb.collection("highlights").create({
-        user: pb.authStore.model?.id, article: $page.params.id,
-        text: sel.text, prefix: sel.prefix, suffix: sel.suffix,
-        start_offset: sel.startOffset, end_offset: sel.endOffset,
-        color, note,
+        user: pb.authStore.model?.id,
+        article: $page.params.id,
+        text: sel.text,
+        prefix: sel.prefix,
+        suffix: sel.suffix,
+        start_offset: sel.startOffset,
+        end_offset: sel.endOffset,
+        color,
+        note,
       });
       popover = null;
       window.getSelection()?.removeAllRanges();
@@ -177,7 +224,9 @@
   }
 
   function jumpTo(id: string) {
-    bodyEl.querySelector(`mark[data-hl-id="${id}"]`)?.scrollIntoView({ behavior: "smooth", block: "center" });
+    bodyEl
+      .querySelector(`mark[data-hl-id="${id}"]`)
+      ?.scrollIntoView({ behavior: "smooth", block: "center" });
   }
 
   async function deleteHighlight(id: string) {
@@ -204,10 +253,14 @@
   // sync when TopBar changes theme) and fall back to local prefs for isolation.
   const activeTheme = $derived(themeCtx ? themeCtx.current : prefs.theme);
   const source = $derived(sourceView(pb, content));
-  const originalUrl = $derived(article?.url ? httpUrlOrNull(article.url) : null);
+  const originalUrl = $derived(
+    article?.url ? httpUrlOrNull(article.url) : null,
+  );
 
   // Push every local progress change up to the layout-rendered strip.
-  $effect(() => { progressCtx?.set(progress); });
+  $effect(() => {
+    progressCtx?.set(progress);
+  });
 
   let progressTimer: ReturnType<typeof setTimeout> | undefined;
 
@@ -230,7 +283,10 @@
     clearTimeout(progressTimer);
     progressTimer = setTimeout(() => {
       progress = pendingProgress;
-      if (article) pb.collection("articles").update(article.id, { progress: pendingProgress });
+      if (article)
+        pb.collection("articles").update(article.id, {
+          progress: pendingProgress,
+        });
     }, 400);
   }
 
@@ -240,7 +296,10 @@
   function flushSave() {
     clearTimeout(progressTimer);
     progress = pendingProgress;
-    if (article) pb.collection("articles").update(article.id, { progress: pendingProgress });
+    if (article)
+      pb.collection("articles").update(article.id, {
+        progress: pendingProgress,
+      });
   }
 
   function onVisibilityChange() {
@@ -266,7 +325,10 @@
   // Prefer the worker-emitted toc (validated); fall back to parsing the DOM.
   function resolveToc() {
     const parsed = TocEntry.array().safeParse(content?.toc);
-    toc = parsed.success && parsed.data.length ? parsed.data : buildTocFromDom(bodyEl);
+    toc =
+      parsed.success && parsed.data.length
+        ? parsed.data
+        : buildTocFromDom(bodyEl);
   }
 
   function observeHeadings() {
@@ -274,7 +336,8 @@
     if (headings.length === 0) return;
     tocObserver = new IntersectionObserver(
       (entries) => {
-        for (const e of entries) if (e.isIntersecting && e.target.id) activeHeadingId = e.target.id;
+        for (const e of entries)
+          if (e.isIntersecting && e.target.id) activeHeadingId = e.target.id;
       },
       { rootMargin: "0px 0px -70% 0px", threshold: 0 },
     );
@@ -282,7 +345,9 @@
   }
 
   function jumpToHeading(id: string) {
-    bodyEl.querySelector(`#${CSS.escape(id)}`)?.scrollIntoView({ behavior: "smooth", block: "start" });
+    bodyEl
+      .querySelector(`#${CSS.escape(id)}`)
+      ?.scrollIntoView({ behavior: "smooth", block: "start" });
     activeSheet = null;
   }
 
@@ -296,7 +361,9 @@
 
     const id = $page.params.id;
     if (!id) return;
-    article = await pb.collection("articles").getOne(id, { expand: "content.source" });
+    article = await pb
+      .collection("articles")
+      .getOne(id, { expand: "content.source" });
     // article is always non-null here — getOne throws on not-found
     content = article!.expand?.content ?? null;
     progress = article!.progress ?? 0;
@@ -308,7 +375,9 @@
       prefs = withReaderDefaults(me.reader_prefs ?? undefined);
     }
     if (article!.status === "unread") {
-      await pb.collection("articles").update(article!.id, { status: "reading" });
+      await pb
+        .collection("articles")
+        .update(article!.id, { status: "reading" });
     }
     // Load highlights and manual tags after article HTML is in the DOM (next tick).
     await tick();
@@ -341,8 +410,10 @@
     if (!article) return;
     actionError = "";
     try {
-      await pb.collection("articles").update(article.id, { status: "archived" });
-      await goto("/library");
+      await pb
+        .collection("articles")
+        .update(article.id, { status: "archived" });
+      await goto(resolve("/library"));
     } catch {
       actionError = "couldn't archive that. try again.";
     }
@@ -350,13 +421,16 @@
 
   async function loadCollections() {
     // Use pb.filter binding to prevent injection
-    collections = (await pb.collection("collections").getFullList({ sort: "name" }))
-      .map((c) => ({ id: c.id, name: c.name as string }));
+    collections = (
+      await pb.collection("collections").getFullList({ sort: "name" })
+    ).map((c) => ({ id: c.id, name: c.name as string }));
   }
 
   async function addToCollection(collectionId: string) {
     await pb.collection("collection_items").create({
-      collection: collectionId, article: $page.params.id, order: 0,
+      collection: collectionId,
+      article: $page.params.id,
+      order: 0,
     });
   }
 
@@ -369,7 +443,7 @@
       // Clear the reference so onDestroy's flushSave (which fires on teardown
       // after this navigation) doesn't write progress to a now-deleted record.
       article = null;
-      await goto("/library");
+      await goto(resolve("/library"));
     } catch {
       actionError = "couldn't delete that. try again.";
     }
@@ -380,7 +454,9 @@
 <div class="reader-shell" style={readerCssVars(prefs)}>
   {#if isDesktop}
     <div class="bar">
-      <a class="back" href="/library"><ArrowLeft class="icon-sm" aria-hidden="true" /> library</a>
+      <a class="back" href={resolve("/library")}
+        ><ArrowLeft class="icon-sm" aria-hidden="true" /> library</a
+      >
     </div>
   {/if}
 
@@ -397,11 +473,19 @@
           {#if toc.length}
             <section class="rail-chapters">
               <h2 class="rail-heading">chapters</h2>
-              <ChaptersSidebar {toc} activeId={activeHeadingId} onjump={jumpToHeading} />
+              <ChaptersSidebar
+                {toc}
+                activeId={activeHeadingId}
+                onjump={jumpToHeading}
+              />
             </section>
           {/if}
           <ReaderControls {prefs} onChange={savePrefs} />
-          <TagEditor tags={manualTags.map(t => ({ id: t.id, name: t.name }))} onadd={addTag} onremove={removeTag} />
+          <TagEditor
+            tags={manualTags.map((t) => ({ id: t.id, name: t.name }))}
+            onadd={addTag}
+            onremove={removeTag}
+          />
           <ArticleActions
             {collections}
             onAddToCollection={addToCollection}
@@ -418,11 +502,26 @@
           <h1>{content.title}</h1>
           {#if source || originalUrl}
             <div class="reader-source">
-              {#if source}<SourcePill name={source.name} host={source.host} iconUrl={source.iconUrl} />{/if}
-              {#if source && originalUrl}<span class="dot" aria-hidden="true">·</span>{/if}
+              {#if source}<SourcePill
+                  name={source.name}
+                  host={source.host}
+                  iconUrl={source.iconUrl}
+                />{/if}
+              {#if source && originalUrl}<span class="dot" aria-hidden="true"
+                  >·</span
+                >{/if}
               {#if originalUrl}
-                <Button variant="link" href={originalUrl} target="_blank" rel="noopener noreferrer" class="open-original">
-                  open original <ArrowUpRight class="icon-sm" aria-hidden="true" />
+                <Button
+                  variant="link"
+                  href={originalUrl}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  class="open-original"
+                >
+                  open original <ArrowUpRight
+                    class="icon-sm"
+                    aria-hidden="true"
+                  />
                 </Button>
               {/if}
             </div>
@@ -430,20 +529,31 @@
           <!-- content_html is sanitized in the worker (Task 2) before storage -->
           <!-- bind:this anchors the highlight anchoring scope to the article body -->
           <div bind:this={bodyEl}>
+            <!-- eslint-disable-next-line svelte/no-at-html-tags -- worker-sanitized above; rendering article HTML is the reader's whole purpose -->
             {@html content.content_html}
           </div>
         </article>
       </div>
 
       {#if isDesktop}
-        <HighlightsSidebar {highlights} {orphans} onjump={jumpTo} ondelete={deleteHighlight} />
+        <HighlightsSidebar
+          {highlights}
+          {orphans}
+          onjump={jumpTo}
+          ondelete={deleteHighlight}
+        />
       {/if}
     </div>
   {/if}
 </div>
 
 {#if popover}
-  <HighlightPopover x={popover.x} y={popover.y} onpick={createHighlight} oncancel={() => (popover = null)} />
+  <HighlightPopover
+    x={popover.x}
+    y={popover.y}
+    onpick={createHighlight}
+    oncancel={() => (popover = null)}
+  />
 {/if}
 
 <ConfirmDialog
@@ -455,7 +565,11 @@
 />
 
 {#if !isDesktop}
-  <a class="back-floating" href="/library" data-hidden={!controlsVisible}>
+  <a
+    class="back-floating"
+    href={resolve("/library")}
+    data-hidden={!controlsVisible}
+  >
     <ArrowLeft class="icon-sm" aria-hidden="true" /> library
   </a>
 {/if}
@@ -468,22 +582,54 @@
     onOpen={(s) => (activeSheet = s)}
   />
 
-  <BottomSheet open={activeSheet === "type"} onClose={() => (activeSheet = null)} title="text">
+  <BottomSheet
+    open={activeSheet === "type"}
+    onClose={() => (activeSheet = null)}
+    title="text"
+  >
     <ReaderControls {prefs} onChange={savePrefs} />
   </BottomSheet>
 
   {#if hasChapters}
-    <BottomSheet open={activeSheet === "chapters"} onClose={() => (activeSheet = null)} title="chapters">
-      <ChaptersSidebar {toc} activeId={activeHeadingId} onjump={jumpToHeading} />
+    <BottomSheet
+      open={activeSheet === "chapters"}
+      onClose={() => (activeSheet = null)}
+      title="chapters"
+    >
+      <ChaptersSidebar
+        {toc}
+        activeId={activeHeadingId}
+        onjump={jumpToHeading}
+      />
     </BottomSheet>
   {/if}
 
-  <BottomSheet open={activeSheet === "highlights"} onClose={() => (activeSheet = null)} title="highlights">
-    <HighlightsSidebar {highlights} {orphans} onjump={(id) => { jumpTo(id); activeSheet = null; }} ondelete={deleteHighlight} />
+  <BottomSheet
+    open={activeSheet === "highlights"}
+    onClose={() => (activeSheet = null)}
+    title="highlights"
+  >
+    <HighlightsSidebar
+      {highlights}
+      {orphans}
+      onjump={(id) => {
+        jumpTo(id);
+        activeSheet = null;
+      }}
+      ondelete={deleteHighlight}
+    />
   </BottomSheet>
 
-  <BottomSheet open={activeSheet === "more"} onClose={() => (activeSheet = null)} title="more">
-    <TagEditor tags={manualTags.map(t => ({ id: t.id, name: t.name }))} onadd={addTag} onremove={removeTag} />
+  <BottomSheet
+    open={activeSheet === "more"}
+    onClose={() => (activeSheet = null)}
+    title="more"
+  >
+    <TagEditor
+      tags={manualTags.map((t) => ({ id: t.id, name: t.name }))}
+      onadd={addTag}
+      onremove={removeTag}
+    />
     <ArticleActions
       {collections}
       onAddToCollection={addToCollection}
@@ -497,34 +643,94 @@
   /* --reading-measure is set inline on .reader-shell so the column width
      follows the pref (narrow/normal/wide) end-to-end (FIX 2).
      The shell is wider than the prose measure so the highlights rail has room. */
-  .reader-shell { max-width: var(--width-prose); margin: 0 auto; }
-  .bar { display: flex; align-items: center; gap: var(--space-3); margin-bottom: var(--space-4); }
-  .bar .back { display: inline-flex; align-items: center; gap: var(--space-1); font-family: var(--font-ui); color: var(--color-text-muted); text-decoration: none; }
-  .bar .back:hover { color: var(--color-text); }
+  .reader-shell {
+    max-width: var(--width-prose);
+    margin: 0 auto;
+  }
+  .bar {
+    display: flex;
+    align-items: center;
+    gap: var(--space-3);
+    margin-bottom: var(--space-4);
+  }
+  .bar .back {
+    display: inline-flex;
+    align-items: center;
+    gap: var(--space-1);
+    font-family: var(--font-ui);
+    color: var(--color-text-muted);
+    text-decoration: none;
+  }
+  .bar .back:hover {
+    color: var(--color-text);
+  }
 
-  .rail-heading { font-family: var(--font-ui); font-size: var(--text-sm); color: var(--color-text-muted); margin: 0 0 var(--space-2); }
+  .rail-heading {
+    font-family: var(--font-ui);
+    font-size: var(--text-sm);
+    color: var(--color-text-muted);
+    margin: 0 0 var(--space-2);
+  }
 
   .reader {
-    background: var(--reading-bg); color: var(--reading-text);
-    font-family: var(--reading-font); font-size: var(--reading-size);
+    background: var(--reading-bg);
+    color: var(--reading-text);
+    font-family: var(--reading-font);
+    font-size: var(--reading-size);
     line-height: var(--reading-leading);
     /* calc accounts for padding so content width = measure exactly (box-sizing: border-box from Task 1) */
     max-width: calc(var(--reading-measure) + 2 * 1.5rem);
-    margin: 0 auto; padding: 1.5rem; border-radius: var(--radius-lg);
+    margin: 0 auto;
+    padding: 1.5rem;
+    border-radius: var(--radius-lg);
   }
-  .reader :global(h1) { font-family: var(--font-reading); line-height: 1.15; }
-  .reader :global(a) { color: var(--color-accent); }
-  .reader :global(pre), .reader :global(code) { font-family: var(--font-mono); }
-  .reader :global(pre) { background: var(--color-surface-sunken); padding: 1rem; border-radius: var(--radius-md); overflow-x: auto; }
-  .reader :global(blockquote) { border-left: 3px solid var(--color-accent); margin: 1rem 0; padding-left: 1rem; color: var(--color-text-muted); }
-  .reader :global(img) { max-width: 100%; height: auto; border-radius: var(--radius-md); }
+  .reader :global(h1) {
+    font-family: var(--font-reading);
+    line-height: 1.15;
+  }
+  .reader :global(a) {
+    color: var(--color-accent);
+  }
+  .reader :global(pre),
+  .reader :global(code) {
+    font-family: var(--font-mono);
+  }
+  .reader :global(pre) {
+    background: var(--color-surface-sunken);
+    padding: 1rem;
+    border-radius: var(--radius-md);
+    overflow-x: auto;
+  }
+  .reader :global(blockquote) {
+    border-left: 3px solid var(--color-accent);
+    margin: 1rem 0;
+    padding-left: 1rem;
+    color: var(--color-text-muted);
+  }
+  .reader :global(img) {
+    max-width: 100%;
+    height: auto;
+    border-radius: var(--radius-md);
+  }
 
   /* single-column by default: rail (controls+actions) above article, highlights below */
-  .reader-layout { display: grid; grid-template-columns: 1fr; gap: var(--space-5); }
+  .reader-layout {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: var(--space-5);
+  }
   @media (min-width: 1024px) {
-    .reader-shell { max-width: var(--width-reader); }
-    .reader-layout { grid-template-columns: 14rem minmax(0, 1fr) 16rem; align-items: start; }
-    .reader-layout :global(.hl-sidebar) { position: sticky; top: var(--space-4); }
+    .reader-shell {
+      max-width: var(--width-reader);
+    }
+    .reader-layout {
+      grid-template-columns: 14rem minmax(0, 1fr) 16rem;
+      align-items: start;
+    }
+    .reader-layout :global(.hl-sidebar) {
+      position: sticky;
+      top: var(--space-4);
+    }
   }
   /* Mobile: run the article card nearly edge-to-edge. It sits inside .page's
      1.25rem inset; pull it out by 1rem so reading uses the full width, leaving
@@ -536,30 +742,72 @@
       border-radius: var(--radius-md);
     }
   }
-  .delete-error { margin: 0 0 0.75rem; font-size: var(--text-sm); color: var(--color-accent); }
-  .reader-source { display: flex; align-items: center; gap: var(--space-2); flex-wrap: wrap; margin: 0 0 var(--space-4); }
-  .reader-source .dot { color: var(--color-text-muted); }
-  .reader-source :global(.open-original) { font-family: var(--font-ui); font-size: var(--text-sm); height: auto; padding: 0; gap: var(--space-1); }
+  .delete-error {
+    margin: 0 0 0.75rem;
+    font-size: var(--text-sm);
+    color: var(--color-accent);
+  }
+  .reader-source {
+    display: flex;
+    align-items: center;
+    gap: var(--space-2);
+    flex-wrap: wrap;
+    margin: 0 0 var(--space-4);
+  }
+  .reader-source .dot {
+    color: var(--color-text-muted);
+  }
+  .reader-source :global(.open-original) {
+    font-family: var(--font-ui);
+    font-size: var(--text-sm);
+    height: auto;
+    padding: 0;
+    gap: var(--space-1);
+  }
 
   .back-floating {
-    display: inline-flex; align-items: center; gap: var(--space-1);
-    position: fixed; z-index: 30;
-    top: calc(env(safe-area-inset-top) + var(--space-2)); left: var(--space-2);
-    min-height: 44px; padding: 0 var(--space-3);
-    background: var(--color-surface); border: 1px solid var(--color-border);
-    border-radius: var(--radius-pill); box-shadow: var(--shadow-lg);
-    font-family: var(--font-ui); font-size: var(--text-sm);
-    color: var(--color-text-muted); text-decoration: none;
-    transition: transform var(--dur-base) var(--ease-paper), opacity var(--dur-base) var(--ease-paper);
+    display: inline-flex;
+    align-items: center;
+    gap: var(--space-1);
+    position: fixed;
+    z-index: 30;
+    top: calc(env(safe-area-inset-top) + var(--space-2));
+    left: var(--space-2);
+    min-height: 44px;
+    padding: 0 var(--space-3);
+    background: var(--color-surface);
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-pill);
+    box-shadow: var(--shadow-lg);
+    font-family: var(--font-ui);
+    font-size: var(--text-sm);
+    color: var(--color-text-muted);
+    text-decoration: none;
+    transition:
+      transform var(--dur-base) var(--ease-paper),
+      opacity var(--dur-base) var(--ease-paper);
   }
-  .back-floating:hover { color: var(--color-accent); }
-  .back-floating[data-hidden="true"] { transform: translateY(calc(-100% - var(--space-4))); opacity: 0; pointer-events: none; }
+  .back-floating:hover {
+    color: var(--color-accent);
+  }
+  .back-floating[data-hidden="true"] {
+    transform: translateY(calc(-100% - var(--space-4)));
+    opacity: 0;
+    pointer-events: none;
+  }
   /* Keep the last lines of prose clear of the fixed bottom bar on mobile. */
   /* Below 1024px the global TopBar is hidden and the floating back-link takes
      its place — pad the top so the article title clears the pill, and the
      bottom so the last lines clear the fixed control bar. */
   @media (max-width: 1023.98px) {
-    .reader-shell { padding-top: calc(env(safe-area-inset-top) + 3.25rem); padding-bottom: 72px; }
+    .reader-shell {
+      padding-top: calc(env(safe-area-inset-top) + 3.25rem);
+      padding-bottom: 72px;
+    }
   }
-  @media (prefers-reduced-motion: reduce) { .back-floating { transition: none; } }
+  @media (prefers-reduced-motion: reduce) {
+    .back-floating {
+      transition: none;
+    }
+  }
 </style>

@@ -1,5 +1,6 @@
 <script lang="ts">
   import { page } from "$app/stores";
+  import { resolve } from "$app/paths";
   import { browserPb } from "$lib/pb.js";
   import type { ArticleRecord } from "$lib/article/record.js";
   import CardGrid from "$lib/components/ui/CardGrid.svelte";
@@ -15,9 +16,9 @@
     (async () => {
       const pb = browserPb();
       // Use pb.filter binding to prevent injection
-      const col = await pb.collection("collections").getFirstListItem(
-        pb.filter("slug = {:slug}", { slug: s }),
-      );
+      const col = await pb
+        .collection("collections")
+        .getFirstListItem(pb.filter("slug = {:slug}", { slug: s }));
       name = col.name as string;
       const items = await pb.collection("collection_items").getFullList({
         // Use pb.filter binding for collection id — never raw interpolation
@@ -35,7 +36,9 @@
 
 <svelte:head><title>{name}</title></svelte:head>
 <div class="collection-view">
-  <a class="back" href="/library"><ArrowLeft class="icon-sm" aria-hidden="true" /> library</a>
+  <a class="back" href={resolve("/library")}
+    ><ArrowLeft class="icon-sm" aria-hidden="true" /> library</a
+  >
   <h1>{name}</h1>
   {#if articles.length === 0}
     <p class="empty-note">no articles in this collection yet.</p>
@@ -49,9 +52,33 @@
 </div>
 
 <style>
-  .collection-view { max-width: var(--width-prose); margin: 0 auto; }
-  .back { display: inline-flex; align-items: center; gap: var(--space-1); font-family: var(--font-ui); color: var(--color-text-muted); text-decoration: none; margin-bottom: var(--space-3); }
-  .back:hover { color: var(--color-text); }
-  h1 { font-family: var(--font-ui); font-size: var(--text-xl); font-weight: var(--weight-semibold); color: var(--color-text); margin: 0 0 var(--space-5); }
-  .empty-note { color: var(--color-text-muted); font-family: var(--font-ui); text-align: center; padding: var(--space-6) 0; }
+  .collection-view {
+    max-width: var(--width-prose);
+    margin: 0 auto;
+  }
+  .back {
+    display: inline-flex;
+    align-items: center;
+    gap: var(--space-1);
+    font-family: var(--font-ui);
+    color: var(--color-text-muted);
+    text-decoration: none;
+    margin-bottom: var(--space-3);
+  }
+  .back:hover {
+    color: var(--color-text);
+  }
+  h1 {
+    font-family: var(--font-ui);
+    font-size: var(--text-xl);
+    font-weight: var(--weight-semibold);
+    color: var(--color-text);
+    margin: 0 0 var(--space-5);
+  }
+  .empty-note {
+    color: var(--color-text-muted);
+    font-family: var(--font-ui);
+    text-align: center;
+    padding: var(--space-6) 0;
+  }
 </style>

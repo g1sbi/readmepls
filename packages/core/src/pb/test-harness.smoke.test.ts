@@ -1,5 +1,9 @@
 import { describe, it, expect, afterAll, beforeAll } from "vitest";
-import { startEphemeralPb, makeTestUser, type PbHandle } from "./test-harness.js";
+import {
+  startEphemeralPb,
+  makeTestUser,
+  type PbHandle,
+} from "./test-harness.js";
 
 let h: PbHandle;
 beforeAll(async () => {

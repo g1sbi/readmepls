@@ -66,6 +66,8 @@ describe("CaptureBar", () => {
       { target: { value: "https://example.com" } },
     );
     await fireEvent.click(screen.getByRole("button", { name: /save link/i }));
-    expect(await screen.findByRole("alert")).toHaveTextContent(/could not capture/i);
+    expect(await screen.findByRole("alert")).toHaveTextContent(
+      /could not capture/i,
+    );
   });
 });

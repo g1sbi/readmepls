@@ -22,15 +22,22 @@ describe("buildLibraryQuery", () => {
   });
 
   it("OR within the read group, AND across groups", () => {
-    const q = buildLibraryQuery(P({ read: ["unread", "reading"], time: ["long"] }), NOW);
+    const q = buildLibraryQuery(
+      P({ read: ["unread", "reading"], time: ["long"] }),
+      NOW,
+    );
     // read group OR-joins its two members, then AND-joins the time group
-    expect(q.filterExpr).toMatch(/\(status = \{:\w+\} \|\| status = \{:\w+\}\)/);
+    expect(q.filterExpr).toMatch(
+      /\(status = \{:\w+\} \|\| status = \{:\w+\}\)/,
+    );
     expect(q.filterExpr).toContain("&&");
     expect(q.filterExpr).toContain("content.read_time >");
   });
 
   it("time buckets map to read_time ranges", () => {
-    expect(buildLibraryQuery(P({ time: ["quick"] }), NOW).filterExpr).toContain("content.read_time <");
+    expect(buildLibraryQuery(P({ time: ["quick"] }), NOW).filterExpr).toContain(
+      "content.read_time <",
+    );
     const med = buildLibraryQuery(P({ time: ["medium"] }), NOW);
     expect(med.filterExpr).toContain("content.read_time >=");
     expect(med.filterExpr).toContain("content.read_time <=");
@@ -39,7 +46,9 @@ describe("buildLibraryQuery", () => {
   it("tags use the article_tags back-relation, OR-joined", () => {
     const q = buildLibraryQuery(P({ tag: ["t1", "t2"] }), NOW);
     expect(q.filterExpr).toContain("article_tags_via_article.tag");
-    expect(Object.values(q.filterParams)).toEqual(expect.arrayContaining(["t1", "t2"]));
+    expect(Object.values(q.filterParams)).toEqual(
+      expect.arrayContaining(["t1", "t2"]),
+    );
   });
 
   it("collections use the collection_items back-relation", () => {
@@ -48,30 +57,42 @@ describe("buildLibraryQuery", () => {
   });
 
   it("has=highlights / has=notes filter the highlights back-relation", () => {
-    expect(buildLibraryQuery(P({ has: ["highlights"] }), NOW).filterExpr)
-      .toContain("highlights_via_article.id");
-    expect(buildLibraryQuery(P({ has: ["notes"] }), NOW).filterExpr)
-      .toContain("highlights_via_article.note");
+    expect(
+      buildLibraryQuery(P({ has: ["highlights"] }), NOW).filterExpr,
+    ).toContain("highlights_via_article.id");
+    expect(buildLibraryQuery(P({ has: ["notes"] }), NOW).filterExpr).toContain(
+      "highlights_via_article.note",
+    );
   });
 
   it("attention filters extract_status", () => {
     const q = buildLibraryQuery(P({ attention: ["failed", "partial"] }), NOW);
     expect(q.filterExpr).toContain("content.extract_status = {:");
-    expect(Object.values(q.filterParams)).toEqual(expect.arrayContaining(["failed", "partial"]));
+    expect(Object.values(q.filterParams)).toEqual(
+      expect.arrayContaining(["failed", "partial"]),
+    );
   });
 
   it("saved=week uses a created lower bound; older uses an upper bound", () => {
-    expect(buildLibraryQuery(P({ saved: "week" }), NOW).filterExpr).toContain("created >=");
-    expect(buildLibraryQuery(P({ saved: "older" }), NOW).filterExpr).toContain("created <");
+    expect(buildLibraryQuery(P({ saved: "week" }), NOW).filterExpr).toContain(
+      "created >=",
+    );
+    expect(buildLibraryQuery(P({ saved: "older" }), NOW).filterExpr).toContain(
+      "created <",
+    );
   });
 
   it("published date filters content.published_at", () => {
-    expect(buildLibraryQuery(P({ published: "month" }), NOW).filterExpr)
-      .toContain("content.published_at >=");
+    expect(
+      buildLibraryQuery(P({ published: "month" }), NOW).filterExpr,
+    ).toContain("content.published_at >=");
   });
 
   it("lang and author OR-join their members", () => {
-    const q = buildLibraryQuery(P({ lang: ["en", "es"], author: ["jane"] }), NOW);
+    const q = buildLibraryQuery(
+      P({ lang: ["en", "es"], author: ["jane"] }),
+      NOW,
+    );
     expect(q.filterExpr).toContain("content.lang = {:");
     expect(q.filterExpr).toContain("content.author = {:");
   });
@@ -84,11 +105,15 @@ describe("buildLibraryQuery", () => {
   });
 
   it("relevance sort yields an empty PB sort string", () => {
-    expect(buildLibraryQuery(P({ q: "x", sort: "relevance" }), NOW).sort).toBe("");
+    expect(buildLibraryQuery(P({ q: "x", sort: "relevance" }), NOW).sort).toBe(
+      "",
+    );
   });
 
   it("title sort maps to the content title", () => {
-    expect(buildLibraryQuery(P({ sort: "title" }), NOW).sort).toBe("content.title");
+    expect(buildLibraryQuery(P({ sort: "title" }), NOW).sort).toBe(
+      "content.title",
+    );
   });
 
   it("never inlines a raw value into the expression", () => {

@@ -8,18 +8,23 @@ import { ExtractResult } from "@readmepls/types";
 
 const html = readFileSync(
   fileURLToPath(new URL("./fixtures/simple-article.html", import.meta.url)),
-  "utf8"
+  "utf8",
 );
 
 function ioWith(body: string): ExtractIO {
   return {
     fetchHtml: async () => body,
-    fetchJson: async () => { throw new Error("unused"); },
-    runYtDlp: async () => { throw new Error("unused"); },
+    fetchJson: async () => {
+      throw new Error("unused");
+    },
+    runYtDlp: async () => {
+      throw new Error("unused");
+    },
   };
 }
 
-const THIN = "<html><head><title>Gated</title></head><body><p>Subscribe to continue reading this story.</p></body></html>";
+const THIN =
+  "<html><head><title>Gated</title></head><body><p>Subscribe to continue reading this story.</p></body></html>";
 const ARCHIVED = `<html><head><title>Recovered</title></head><body><article><p>${"Recovered body text. ".repeat(80)}</p></article></body></html>`;
 
 describe("parseArticleHtml", () => {
@@ -49,7 +54,10 @@ describe("parseArticleHtml", () => {
 
 describe("ArticleExtractor", () => {
   it("fetches via io and parses", async () => {
-    const res = await new ArticleExtractor().extract("https://example.com/post", ioWith(html));
+    const res = await new ArticleExtractor().extract(
+      "https://example.com/post",
+      ioWith(html),
+    );
     expect(res.status).toBe("ok");
     expect(res.title).toBe("Hello World Article");
   });
@@ -60,11 +68,18 @@ describe("ArticleExtractor archive fallback", () => {
     const io: ExtractIO = {
       fetchHtml: async (u) => (u.includes("web.archive.org") ? ARCHIVED : THIN),
       fetchJson: async () => ({
-        archived_snapshots: { closest: { available: true, url: "https://web.archive.org/web/1/x" } },
+        archived_snapshots: {
+          closest: { available: true, url: "https://web.archive.org/web/1/x" },
+        },
       }),
-      runYtDlp: async () => { throw new Error("unused"); },
+      runYtDlp: async () => {
+        throw new Error("unused");
+      },
     };
-    const res = await new ArticleExtractor().extract("https://paywalled.example/post", io);
+    const res = await new ArticleExtractor().extract(
+      "https://paywalled.example/post",
+      io,
+    );
     expect(res.status).toBe("partial");
     expect(res.failureReason).toBe("recovered from web archive");
     expect(res.contentText).toContain("Recovered body text");
@@ -74,9 +89,14 @@ describe("ArticleExtractor archive fallback", () => {
     const io: ExtractIO = {
       fetchHtml: async () => THIN,
       fetchJson: async () => ({ archived_snapshots: {} }),
-      runYtDlp: async () => { throw new Error("unused"); },
+      runYtDlp: async () => {
+        throw new Error("unused");
+      },
     };
-    const res = await new ArticleExtractor().extract("https://paywalled.example/post", io);
+    const res = await new ArticleExtractor().extract(
+      "https://paywalled.example/post",
+      io,
+    );
     expect(["failed", "ok", "partial"]).toContain(res.status);
     expect(res.failureReason).not.toBe("recovered from web archive");
   });

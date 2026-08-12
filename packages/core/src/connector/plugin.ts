@@ -42,7 +42,10 @@ export interface ConnectorPlugin {
   readonly type: string;
   /** true when the connector is a not-yet-implemented placeholder. */
   readonly stub: boolean;
-  export(articles: ArticleExport[], config?: ConnectorConfig): Promise<ExportResult>;
+  export(
+    articles: ArticleExport[],
+    config?: ConnectorConfig,
+  ): Promise<ExportResult>;
 }
 
 export class NotImplementedError extends Error {

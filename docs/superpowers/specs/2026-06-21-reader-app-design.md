@@ -17,6 +17,7 @@ except a working Markdown export connector that proves the plugin seam.
 ## 2. Goals / Non-Goals
 
 ### Goals (v1)
+
 - Frictionless capture: paste URL → stored, extracted, tagged.
 - Extraction for: standard articles/blogs, X threads, YouTube transcripts.
   Paywalled content handled best-effort; failures degrade gracefully.
@@ -29,6 +30,7 @@ except a working Markdown export connector that proves the plugin seam.
 - Dual deploy: hosted SaaS + self-hostable (Docker Compose).
 
 ### Non-Goals (v1)
+
 - Notion/Obsidian/other live connectors (scaffold only).
 - Mobile native apps and browser extensions (web app first).
 - Full-page visual archival (screenshots/PDF/Monolith-style) — later.
@@ -46,6 +48,7 @@ except a working Markdown export connector that proves the plugin seam.
 - **AI:** pluggable provider abstraction. Default `claude-haiku-4-5`.
 
 ### Frontend ↔ Backend interaction (Approach C: hybrid)
+
 - Browser uses the PocketBase JS SDK directly for auth, CRUD, and realtime.
   PB API rules enforce per-user access (`user = @request.auth.id`).
 - SvelteKit **server** routes handle only secret-bearing actions:
@@ -115,6 +118,7 @@ connectors       id, user, type (markdown|notion|obsidian|...),
 ```
 
 Notes:
+
 - `content_text` powers PB full-text search and feeds AI tagging.
 - AI tags live on `content` because they are content-derived and therefore
   shareable. A user's **manual** tags, highlights, reading-state, and collections
@@ -135,6 +139,7 @@ To avoid re-extracting and re-tagging popular links, public content is extracted
 once and reused.
 
 Capture lookup:
+
 ```
 canonicalize(url) → look up content by canonical_url
   HIT  → create articles row pointing at existing content, and seed the user's
@@ -145,6 +150,7 @@ canonicalize(url) → look up content by canonical_url
 ```
 
 Guardrails:
+
 - **Never globally cache gated content.** Paywalled / cookie / private-X
   extractions may rely on one user's session; sharing them would leak gated
   content. Such extractions are stored per-user in `private_content` with
@@ -191,10 +197,13 @@ exists in the library in a failed/partial state.
 
 ```ts
 interface AIProvider {
-  tagAndSummarize(text: string, opts: AIOpts): Promise<{
-    tags: string[]
-    summary: string
-  }>
+  tagAndSummarize(
+    text: string,
+    opts: AIOpts,
+  ): Promise<{
+    tags: string[];
+    summary: string;
+  }>;
 }
 
 // Implementations: ClaudeProvider (default, claude-haiku-4-5),
@@ -217,13 +226,13 @@ function resolveProvider(user): AIProvider {
 
 ```ts
 interface ConnectorPlugin {
-  type: string
-  export(articles: Article[], config: ConnectorConfig): Promise<ExportResult>
+  type: string;
+  export(articles: Article[], config: ConnectorConfig): Promise<ExportResult>;
 }
 
-registry.register(new MarkdownConnector())  // WORKS in v1: emits .md files → zip.
-registry.register(new NotionConnector())    // stub: throws NotImplemented.
-registry.register(new ObsidianConnector())  // stub: throws NotImplemented.
+registry.register(new MarkdownConnector()); // WORKS in v1: emits .md files → zip.
+registry.register(new NotionConnector()); // stub: throws NotImplemented.
+registry.register(new ObsidianConnector()); // stub: throws NotImplemented.
 ```
 
 - The `connectors` collection holds per-user config and enabled state.
@@ -273,4 +282,7 @@ registry.register(new ObsidianConnector())  // stub: throws NotImplemented.
   test it as an isolated unit.
 - **Paywall fallback hit-rate is low by design** — treated as best-effort; the
   graceful-failure path is the real requirement.
+
+```
+
 ```

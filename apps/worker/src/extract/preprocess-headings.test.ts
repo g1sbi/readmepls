@@ -28,7 +28,7 @@ describe("preprocessHeadings", () => {
   });
 
   it("leaves a document without wrappers untouched", () => {
-    const d = doc("<h2 id=\"x\">Plain</h2><p>body</p>");
+    const d = doc('<h2 id="x">Plain</h2><p>body</p>');
     preprocessHeadings(d);
     expect(d.querySelector("h2")?.id).toBe("x");
     expect(d.querySelector("p")?.textContent).toBe("body");

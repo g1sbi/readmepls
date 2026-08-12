@@ -4,7 +4,8 @@
   let { size = 48 }: { size?: number } = $props();
 </script>
 
-<span class="paper-corner" aria-hidden="true" style="--corner-size: {size}px;"></span>
+<span class="paper-corner" aria-hidden="true" style="--corner-size: {size}px;"
+></span>
 
 <style>
   .paper-corner {
@@ -14,7 +15,11 @@
     width: var(--corner-size);
     height: var(--corner-size);
     pointer-events: none;
-    background: linear-gradient(225deg, var(--color-fold) 0 50%, transparent 50%);
+    background: linear-gradient(
+      225deg,
+      var(--color-fold) 0 50%,
+      transparent 50%
+    );
     border-bottom-left-radius: var(--radius-md);
   }
 </style>

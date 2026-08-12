@@ -25,7 +25,9 @@ describe("root layout load", () => {
   it("self-hosted with a key configured: resolves pro regardless of user.tier", async () => {
     vi.stubEnv("SELF_HOSTED", "true");
     vi.stubEnv("ANTHROPIC_API_KEY", "sk-test");
-    const data = await load({ locals: locals("u1", { tier: "standard" }) } as never);
+    const data = await load({
+      locals: locals("u1", { tier: "standard" }),
+    } as never);
     expect(data).toEqual({ tier: "pro", selfHosted: true });
   });
 
