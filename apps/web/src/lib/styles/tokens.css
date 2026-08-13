@@ -140,6 +140,12 @@
   --grain-opacity: 0.04; /* banner ::before grain strength */
   --dur-view: var(--dur-base); /* cross-route view-transition duration */
 
+  /* Height of the sticky TopBar. Republished at runtime by the bar itself
+     (actions/track-topbar-height.ts) because it is content-driven; this 0
+     default is what sticky columns fall back to where there is no bar at all
+     (login, the mobile reader, SSR's first paint). */
+  --topbar-h: 0px;
+
   --z-base: 0;
   --z-raised: 10;
   --z-sticky: 100;

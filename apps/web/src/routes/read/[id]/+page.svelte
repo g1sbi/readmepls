@@ -727,9 +727,15 @@
       grid-template-columns: 14rem minmax(0, 1fr) 16rem;
       align-items: start;
     }
+    /* Same pinning contract as the rail (see Rail.svelte): clear the sticky
+       TopBar, and scroll internally once the highlight list outgrows the
+       viewport instead of trailing off the bottom of it. */
     .reader-layout :global(.hl-sidebar) {
       position: sticky;
-      top: var(--space-4);
+      top: calc(var(--topbar-h) + var(--space-4));
+      max-height: calc(100dvh - var(--topbar-h) - 2 * var(--space-4));
+      overflow-y: auto;
+      overscroll-behavior: contain;
     }
   }
   /* Mobile: run the article card nearly edge-to-edge. It sits inside .page's

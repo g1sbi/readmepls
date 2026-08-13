@@ -4,6 +4,7 @@
   import Sheet from "$lib/components/ui/Sheet.svelte";
   import GetExtensionButton from "./GetExtensionButton.svelte";
   import { searchPalette } from "$lib/stores/search-palette.svelte.js";
+  import { trackTopbarHeight } from "$lib/actions/track-topbar-height.js";
   import {
     Search,
     Library,
@@ -49,7 +50,7 @@
   >
 {/snippet}
 
-<header class="topbar">
+<header class="topbar" use:trackTopbarHeight>
   <a class="brand" href={resolve("/")}>readme<span>pls</span></a>
   <nav>
     <a href={resolve("/library")}
