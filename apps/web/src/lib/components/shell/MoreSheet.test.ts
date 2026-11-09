@@ -42,6 +42,12 @@ describe("MoreSheet", () => {
     expect(screen.getByText("More")).toBeInTheDocument();
   });
 
+  it("leaves Home and Library to the tab bar by default", () => {
+    mount();
+    expect(screen.queryByRole("link", { name: "Home" })).toBeNull();
+    expect(screen.queryByRole("link", { name: "Library" })).toBeNull();
+  });
+
   it("keeps Settings pinned outside the scroll region", () => {
     mount();
     const settings = screen.getByRole("link", { name: "Settings" });

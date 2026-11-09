@@ -7,6 +7,8 @@
   import NewCollection from "./NewCollection.svelte";
   import SidebarCollections from "./SidebarCollections.svelte";
   import { sidebarRow } from "./sidebar-row.js";
+  import { closeOnLink } from "$lib/shell/close-on-link.js";
+  import NavRows from "./NavRows.svelte";
 
   let {
     open,
@@ -14,30 +16,28 @@
     pathname,
     collections,
     onCreated,
+    withNav = false,
   }: {
     open: boolean;
     onClose: () => void;
     pathname: string;
     collections: CollectionSummary[];
     onCreated: () => void;
+    /** Lead with Home and Library, for surfaces that have no tab bar. */
+    withNav?: boolean;
   } = $props();
 
   const active = $derived(activeKey(pathname));
   const activeSlug = $derived(activeCollectionSlug(pathname));
   let collectionsHeadingId = $state("");
 
-  // A plain link tap navigates, so the sheet gets out of the way. Modified
-  // clicks (new tab/window) leave the page in place, so they leave it open.
-  function closeOnLink(e: MouseEvent) {
-    if (e.ctrlKey || e.metaKey || e.shiftKey || e.altKey || e.button !== 0)
-      return;
-    if ((e.target as Element).closest("a")) onClose();
-  }
+  const onLinkClick = $derived(closeOnLink(onClose));
 </script>
 
 <BottomSheet {open} {onClose} title="More">
   <!-- svelte-ignore a11y_click_events_have_key_events, a11y_no_static_element_interactions -->
-  <div onclick={closeOnLink}>
+  <div onclick={onLinkClick}>
+    {#if withNav}<NavRows {pathname} />{/if}
     <a
       href={resolve("/settings")}
       aria-current={active === "settings" ? "page" : undefined}

@@ -21,7 +21,7 @@
   import type { ArticleRecord } from "$lib/article/record.js";
   import type { RecordModel } from "pocketbase";
   import { ClientResponseError } from "pocketbase";
-  import { goto } from "$app/navigation";
+  import { goto, afterNavigate } from "$app/navigation";
   import { resolve } from "$app/paths";
   import { readerCssVars } from "$lib/reader/css-vars.js";
   import { markRange, unmarkAll } from "$lib/highlight/render";
@@ -33,7 +33,7 @@
   import TagEditor from "$lib/components/TagEditor.svelte";
   import Rail from "$lib/components/ui/Rail.svelte";
   import ArticleActions from "$lib/components/ArticleActions.svelte";
-  import { ArrowLeft, ArrowUpRight } from "@lucide/svelte";
+  import { ArrowUpRight } from "@lucide/svelte";
   import { Skeleton } from "$lib/components/ui/skeleton";
   import HighlightPopover from "$lib/components/HighlightPopover.svelte";
   import HighlightsSidebar from "$lib/components/HighlightsSidebar.svelte";
@@ -44,6 +44,10 @@
   import BottomSheet from "$lib/components/ui/BottomSheet.svelte";
   import { nextNavVisible } from "$lib/components/bottom-nav-scroll.js";
   import type { SheetKey } from "$lib/reader/control-bar.js";
+  import ReaderHeader from "$lib/components/shell/ReaderHeader.svelte";
+  import NavOverlay from "$lib/components/shell/NavOverlay.svelte";
+  import { readerBackTarget } from "$lib/shell/back-target.js";
+  import type { CollectionSummary } from "$lib/collections/types.js";
 
   // Global theme context provided by +layout.svelte. May be undefined when
   // the reader is rendered in isolation (e.g. unit tests without the layout).
@@ -58,6 +62,22 @@
   );
 
   const pb = browserPb();
+
+  // Back returns to wherever the reader was entered from. Captured once:
+  // hopping article-to-article keeps the original origin, not the last
+  // article. A fresh deep link never navigates in, so it stays /library.
+  let backHref = $state(readerBackTarget(null));
+  let originCaptured = false;
+  afterNavigate(({ from }) => {
+    if (originCaptured) return;
+    originCaptured = true;
+    backHref = readerBackTarget(from?.url.pathname ?? null);
+  });
+  let navOpen = $state(false);
+  const navCollections = $derived<CollectionSummary[]>(
+    $page.data?.collections ?? [],
+  );
+
   let article = $state<ArticleRecord | null>(null);
   let content = $state<RecordModel | null>(null);
   let prefs = $state<ReaderPrefs>(withReaderDefaults());
@@ -93,8 +113,8 @@
   let activeHeadingId = $state<string | null>(null);
   let tocObserver: IntersectionObserver | null = null;
 
-  // Mobile control chrome: one sheet open at a time, and the bar/floating
-  // back link hide on scroll-down, reveal on scroll-up (see bottom-nav-scroll.js).
+  // Mobile control chrome: one sheet open at a time, and the control bar and
+  // header hide on scroll-down, reveal on scroll-up (see bottom-nav-scroll.js).
   let activeSheet = $state<SheetKey | null>(null);
   let controlsVisible = $state(true);
   let prevScrollY = 0;
@@ -365,8 +385,7 @@
 
   onMount(async () => {
     // Set up before the article fetch (not after) so isDesktop is correct
-    // from the very first paint — including during the loading skeleton,
-    // which otherwise had no back link on either breakpoint.
+    // from the very first paint, including during the loading skeleton.
     desktopMq = window.matchMedia("(min-width: 1024px)");
     isDesktop = desktopMq.matches;
     desktopMq.addEventListener("change", onDesktopChange);
@@ -462,16 +481,21 @@
   }
 </script>
 
+<ReaderHeader
+  {backHref}
+  hidden={!controlsVisible}
+  onMenu={() => (navOpen = true)}
+/>
+
+<NavOverlay
+  open={navOpen}
+  onClose={() => (navOpen = false)}
+  pathname={$page.url.pathname}
+  collections={navCollections}
+/>
+
 <!-- reader vars live on the shell so the width pref governs the shell, not just the article -->
 <div class="reader-shell" style={readerCssVars(prefs)}>
-  {#if isDesktop}
-    <div class="bar">
-      <a class="back" href={resolve("/library")}
-        ><ArrowLeft class="icon-sm" aria-hidden="true" /> library</a
-      >
-    </div>
-  {/if}
-
   {#if actionError}
     <p class="delete-error" role="alert">{actionError}</p>
   {/if}
@@ -582,16 +606,6 @@
   onCancel={() => (confirmingDelete = false)}
 />
 
-{#if !isDesktop}
-  <a
-    class="back-floating"
-    href={resolve("/library")}
-    data-hidden={!controlsVisible}
-  >
-    <ArrowLeft class="icon-sm" aria-hidden="true" /> library
-  </a>
-{/if}
-
 {#if content && !isDesktop}
   <ReaderControlBar
     {hasChapters}
@@ -665,24 +679,6 @@
     max-width: var(--width-prose);
     margin: 0 auto;
   }
-  .bar {
-    display: flex;
-    align-items: center;
-    gap: var(--space-3);
-    margin-bottom: var(--space-4);
-  }
-  .bar .back {
-    display: inline-flex;
-    align-items: center;
-    gap: var(--space-1);
-    font-family: var(--font-ui);
-    color: var(--color-text-muted);
-    text-decoration: none;
-  }
-  .bar .back:hover {
-    color: var(--color-text);
-  }
-
   .rail-heading {
     font-family: var(--font-ui);
     font-size: var(--text-sm);
@@ -789,49 +785,10 @@
     gap: var(--space-1);
   }
 
-  .back-floating {
-    display: inline-flex;
-    align-items: center;
-    gap: var(--space-1);
-    position: fixed;
-    z-index: 30;
-    top: calc(env(safe-area-inset-top) + var(--space-2));
-    left: var(--space-2);
-    min-height: 44px;
-    padding: 0 var(--space-3);
-    background: var(--color-surface);
-    border: 1px solid var(--color-border);
-    border-radius: var(--radius-pill);
-    box-shadow: var(--shadow-lg);
-    font-family: var(--font-ui);
-    font-size: var(--text-sm);
-    color: var(--color-text-muted);
-    text-decoration: none;
-    transition:
-      transform var(--dur-base) var(--ease-out),
-      opacity var(--dur-base) var(--ease-out);
-  }
-  .back-floating:hover {
-    color: var(--color-accent);
-  }
-  .back-floating[data-hidden="true"] {
-    transform: translateY(calc(-100% - var(--space-4)));
-    opacity: 0;
-    pointer-events: none;
-  }
-  /* Keep the last lines of prose clear of the fixed bottom bar on mobile. */
-  /* Below 1024px the global TopBar is hidden and the floating back-link takes
-     its place — pad the top so the article title clears the pill, and the
-     bottom so the last lines clear the fixed control bar. */
+  /* Keep the last lines of prose clear of the fixed control bar on mobile. */
   @media (max-width: 1023.98px) {
     .reader-shell {
-      padding-top: calc(env(safe-area-inset-top) + 3.25rem);
       padding-bottom: 72px;
-    }
-  }
-  @media (prefers-reduced-motion: reduce) {
-    .back-floating {
-      transition: none;
     }
   }
 </style>

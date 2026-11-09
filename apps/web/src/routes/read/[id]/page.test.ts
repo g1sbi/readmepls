@@ -175,7 +175,7 @@ vi.mock("$lib/highlight/render", () => ({
 // src/__mocks__/app-navigation.ts, which exports goto as vi.fn(). Import it
 // after mocks are registered so the same reference is available for assertions.
 import ReaderPage from "./+page.svelte";
-import { goto } from "$app/navigation";
+import { goto, afterNavigate } from "$app/navigation";
 import { unmarkAll } from "$lib/highlight/render";
 
 // ---------------------------------------------------------------------------
@@ -661,8 +661,8 @@ describe("reader page — mobile control chrome", () => {
     expect(
       await screen.findByRole("navigation", { name: "reader controls" }),
     ).toBeTruthy();
-    // floating exit present
-    expect(screen.getByRole("link", { name: "library" })).toBeTruthy();
+    // header exit present
+    expect(screen.getByRole("link", { name: "Back" })).toBeTruthy();
     // no visible chapters nav until the bar item is tapped
     // The bar's "chapters" item only appears once resolveToc() has run (a tick
     // or more after the article heading first renders) — findByText retries
@@ -694,5 +694,60 @@ describe("reader page — mobile control chrome", () => {
     const payload = usersUpdate.mock.calls.at(-1)![1];
     expect(payload.reader_prefs.size).toBe(19);
     expect(payload.reader_prefs.theme).toBe("dark");
+  });
+});
+
+describe("reader page — focused chrome", () => {
+  beforeEach(() => {
+    vi.clearAllMocks();
+    articleUpdate.mockResolvedValue({});
+  });
+
+  it("renders no app sidebar", async () => {
+    render(ReaderPage);
+    await waitFor(() =>
+      expect(screen.getByText("Test Article")).toBeInTheDocument(),
+    );
+    expect(document.querySelector('nav[aria-label="Main"]')).toBeNull();
+  });
+
+  it("sends Back to the library on a fresh deep link", async () => {
+    render(ReaderPage);
+    expect(screen.getByRole("link", { name: "Back" })).toHaveAttribute(
+      "href",
+      "/library",
+    );
+  });
+
+  it("sends Back to where the reader was entered from", async () => {
+    render(ReaderPage);
+    const cb = vi.mocked(afterNavigate).mock.calls.at(-1)![0];
+    cb({
+      from: { url: new URL("http://localhost/collections/physics") },
+    } as never);
+    await waitFor(() =>
+      expect(screen.getByRole("link", { name: "Back" })).toHaveAttribute(
+        "href",
+        "/collections/physics",
+      ),
+    );
+    // Moving on to another article keeps the original origin.
+    cb({ from: { url: new URL("http://localhost/read/art0") } } as never);
+    await Promise.resolve();
+    expect(screen.getByRole("link", { name: "Back" })).toHaveAttribute(
+      "href",
+      "/collections/physics",
+    );
+  });
+
+  it("opens the navigation overlay from the header menu", async () => {
+    render(ReaderPage);
+    await fireEvent.click(
+      screen.getByRole("button", { name: "Open navigation" }),
+    );
+    expect(await screen.findByRole("link", { name: "Home" })).toHaveAttribute(
+      "href",
+      "/",
+    );
   });
 });
