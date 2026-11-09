@@ -1,26 +1,12 @@
 <script lang="ts">
   import { resolve } from "$app/paths";
-  import { THEME_PREFS, type ThemePref } from "$lib/theme/theme.js";
+  import type { ThemePref } from "$lib/theme/theme.js";
+  import ThemeControl from "./ThemeControl.svelte";
   import * as Sheet from "$lib/components/ui/sheet";
   import GetExtensionButton from "./GetExtensionButton.svelte";
   import { searchPalette } from "$lib/stores/search-palette.svelte.js";
   import { trackTopbarHeight } from "$lib/actions/track-topbar-height.js";
-  import {
-    Search,
-    Library,
-    Sun,
-    Moon,
-    Monitor,
-    LogOut,
-    Menu,
-  } from "@lucide/svelte";
-
-  // Pref → icon + visible label; the label is also the accessible name.
-  const themeOption = {
-    light: { icon: Sun, label: "Light" },
-    dark: { icon: Moon, label: "Dark" },
-    system: { icon: Monitor, label: "Match system" },
-  } as const;
+  import { Search, Library, LogOut, Menu } from "@lucide/svelte";
 
   let {
     theme,
@@ -35,20 +21,7 @@
 </script>
 
 {#snippet themeControls()}
-  <div class="themes" role="group" aria-label="theme">
-    {#each THEME_PREFS as t (t)}
-      {@const Icon = themeOption[t].icon}
-      <button
-        type="button"
-        aria-pressed={theme === t}
-        data-active={theme === t}
-        onclick={() => onTheme(t)}
-        ><Icon class="icon-sm" aria-hidden="true" /><span class="label"
-          >{themeOption[t].label}</span
-        ></button
-      >
-    {/each}
-  </div>
+  <ThemeControl value={theme} onChange={onTheme} />
 {/snippet}
 
 {#snippet signOutButton()}
@@ -145,29 +118,6 @@
     align-items: center;
     gap: var(--space-4);
   }
-  .themes {
-    display: inline-flex;
-    border: 1px solid var(--color-border);
-    border-radius: var(--radius-pill);
-    overflow: hidden;
-  }
-  .themes button {
-    display: inline-flex;
-    align-items: center;
-    gap: var(--space-1);
-    font-family: var(--font-ui);
-    font-size: 0.8rem;
-    padding: 0.25rem 0.6rem;
-    border: none;
-    background: transparent;
-    color: var(--color-text-muted);
-    cursor: pointer;
-  }
-  .themes button[data-active="true"] {
-    background: var(--color-accent-wash);
-    color: var(--color-text);
-  }
-  .themes button:focus-visible,
   .signout:focus-visible,
   .menu-btn:focus-visible {
     outline: 2px solid var(--color-ring);
@@ -242,16 +192,6 @@
     flex-direction: column;
     gap: var(--space-3);
   }
-  .sheet-menu .themes {
-    flex-direction: column;
-    border-radius: var(--radius-md);
-  }
-  .sheet-menu .themes button {
-    min-height: 44px;
-    justify-content: flex-start;
-    font-size: var(--text-sm);
-    padding: 0 var(--space-3);
-  }
   .sheet-menu .signout {
     min-height: 44px;
     justify-content: flex-start;
@@ -270,14 +210,6 @@
     } /* moved to bottom nav / menu sheet */
     .menu-btn {
       display: inline-flex;
-    }
-    /* Keep labels visible inside the menu sheet even on mobile. */
-    .sheet-menu .themes button .label {
-      position: static;
-      width: auto;
-      height: auto;
-      clip: auto;
-      margin: 0;
     }
   }
 </style>

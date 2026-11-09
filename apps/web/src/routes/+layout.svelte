@@ -10,6 +10,7 @@
   import { shouldAnimateNavigation } from "$lib/view-transition.js";
   import { page } from "$app/stores";
   import { browserPb } from "$lib/pb.js";
+  import { signOut as doSignOut } from "$lib/auth/sign-out.js";
   import {
     resolveThemePref,
     resolveMode,
@@ -133,8 +134,7 @@
   }
 
   async function signOut() {
-    pb.authStore.clear();
-    await goto(resolve("/login"));
+    await doSignOut(pb, () => goto(resolve("/login")));
   }
 </script>
 

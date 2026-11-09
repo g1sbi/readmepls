@@ -1,6 +1,8 @@
 <script lang="ts">
   import { listConnectors } from "@readmepls/core";
   import { resolve } from "$app/paths";
+  import { Button } from "$lib/components/ui/button";
+  import { ArrowLeft } from "@lucide/svelte";
 
   const connectors = listConnectors().map((c) => ({
     type: c.type,
@@ -11,6 +13,9 @@
 <svelte:head><title>connectors · settings</title></svelte:head>
 
 <section class="connectors">
+  <Button variant="ghost" size="sm" href={resolve("/settings")}
+    ><ArrowLeft aria-hidden="true" />Settings</Button
+  >
   <h1>connectors</h1>
   <p class="lede">send your clean articles where they belong.</p>
 
