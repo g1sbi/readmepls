@@ -25,6 +25,36 @@ body {
   min-height: 100dvh;
 }
 
+/* Form-control subset of Tailwind preflight (preflight itself is excluded so
+   the reader's un-scoped {@html} prose keeps its UA styles). Without it the
+   UA outset border, grey buttonface and monospace textarea leak through the
+   primitives. In @layer base so Tailwind utilities (a later layer) win. */
+@layer base {
+  button,
+  input,
+  select,
+  textarea,
+  optgroup {
+    font: inherit;
+    letter-spacing: inherit;
+    color: inherit;
+    margin: 0;
+  }
+
+  button,
+  input,
+  select,
+  textarea {
+    border: 0 solid;
+    background-color: transparent;
+    border-radius: 0;
+  }
+
+  button {
+    cursor: pointer;
+  }
+}
+
 /* Icon sizing utilities (Track 2 slice 2). Applied via the lucide component's
    `class` prop so size/stroke stay tokenized and themeable. Color inherits
    currentColor (lucide's default stroke), so an icon takes its button/link's

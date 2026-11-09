@@ -1,3 +1,4 @@
+import { dev } from "$app/environment";
 import PocketBase from "pocketbase";
 import { redirect, type Handle } from "@sveltejs/kit";
 import { routeGuard } from "$lib/server/auth.js";
@@ -29,6 +30,12 @@ export const handle: Handle = async ({ event, resolve }) => {
   if (isApi && event.request.method === "OPTIONS") {
     const ph = preflightHeaders(origin, allowed);
     return new Response(null, { status: ph ? 204 : 403, headers: ph ?? {} });
+  }
+
+  // The /dev/* sheets are dev tooling; give production a real 404 status
+  // (the route's client-side load guard alone would serve a 200 shell).
+  if (!dev && event.url.pathname.startsWith("/dev/")) {
+    return new Response("Not found", { status: 404 });
   }
 
   const selfHosted = process.env.SELF_HOSTED === "true";

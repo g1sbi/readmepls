@@ -152,6 +152,18 @@ describe("tokens.css (Marker)", () => {
     ).toBe(true);
   });
 
+  it("resets form controls in @layer base so utilities still win", () => {
+    const appCss = readFileSync(join(__dirname, "..", "..", "app.css"), "utf8");
+    const m = appCss.match(/@layer base \{([\s\S]*?)\n\}\n/);
+    expect(m).not.toBeNull();
+    const base = m![1] ?? "";
+    expect(base).toMatch(/font:\s*inherit/);
+    expect(base).toMatch(/border:\s*0 solid/);
+    expect(base).toMatch(/background-color:\s*transparent/);
+    expect(base).toMatch(/border-radius:\s*0/);
+    expect(base).toMatch(/button \{\s*cursor:\s*pointer/);
+  });
+
   it("declares color-scheme per mode so native controls follow the theme", () => {
     expect(css).toMatch(
       /:root,\s*\[data-theme="light"\] \{[^}]*color-scheme:\s*light;/,

@@ -7,9 +7,21 @@
   import { Button } from "$lib/components/ui/button";
 
   // Local-only: sets the attribute for this page, never persists to the account.
-  let theme = $state<"light" | "dark">("light");
+  const root = document.documentElement;
+  const previous = root.dataset.theme;
+  let theme = $state<"light" | "dark">(
+    previous === "dark" || previous === "light"
+      ? previous
+      : globalThis.matchMedia?.("(prefers-color-scheme: dark)").matches
+        ? "dark"
+        : "light",
+  );
   $effect(() => {
-    document.documentElement.dataset.theme = theme;
+    root.dataset.theme = theme;
+  });
+  $effect(() => () => {
+    if (previous === undefined) delete root.dataset.theme;
+    else root.dataset.theme = previous;
   });
 
   const sections: { title: string; Body: Component }[] = [
@@ -39,7 +51,7 @@
       variant="outline"
       onclick={() => (theme = theme === "light" ? "dark" : "light")}
     >
-      Overlay theme: {theme}
+      Overlays: {theme}
     </Button>
   </header>
 

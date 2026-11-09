@@ -6,6 +6,7 @@ vi.mock("pocketbase", () => ({
   },
 }));
 vi.mock("$lib/server/api-auth.js", () => ({ resolvePbAuth: vi.fn() }));
+vi.mock("$app/environment", () => ({ dev: false, browser: false }));
 vi.mock("$lib/server/auth.js", () => ({ routeGuard: () => null }));
 
 import { handle } from "./hooks.server.js";
@@ -31,6 +32,21 @@ function event(method: string, path: string, origin?: string) {
 const okResolve = async () => new Response("ok", { status: 200 });
 
 describe("handle", () => {
+  it("404s /dev/* outside dev without resolving the route", async () => {
+    mockResolve.mockResolvedValue({
+      userId: null,
+      viaBearer: false,
+      verified: false,
+    });
+    const resolve = vi.fn(okResolve);
+    const res = await handle({
+      event: event("GET", "/dev/components"),
+      resolve,
+    } as never);
+    expect(res.status).toBe(404);
+    expect(resolve).not.toHaveBeenCalled();
+  });
+
   it("short-circuits an allow-listed OPTIONS preflight with 204 + ACAO", async () => {
     mockResolve.mockResolvedValue({
       userId: null,
