@@ -1,5 +1,5 @@
 <script lang="ts">
-  import Card from "./ui/Card.svelte";
+  import { Card } from "$lib/components/ui/card";
   import { Badge } from "$lib/components/ui/badge";
   import { Button } from "$lib/components/ui/button";
   import { Spinner } from "./ui/spinner";
@@ -89,7 +89,7 @@
   }
 </script>
 
-<Card>
+<Card interactive>
   {#if state === "processing"}
     <Spinner label="Processing" />
     <span class="url">{hostOf(article.url)}</span>
@@ -248,8 +248,10 @@
     opacity: 0;
     transition: opacity var(--dur-fast) var(--ease-out);
   }
-  :global(.card):hover .card-menu :global([data-slot="dropdown-menu-trigger"]),
-  :global(.card):focus-within
+  :global([data-slot="card"]):hover
+    .card-menu
+    :global([data-slot="dropdown-menu-trigger"]),
+  :global([data-slot="card"]):focus-within
     .card-menu
     :global([data-slot="dropdown-menu-trigger"]),
   .card-menu :global([data-slot="dropdown-menu-trigger"][data-state="open"]),

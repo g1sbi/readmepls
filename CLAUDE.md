@@ -81,8 +81,10 @@ design phase does not add features.
   `bits-ui` primitives directly into a feature component. Compose the generated
   primitives (`ui/button/`, `ui/badge/`, `ui/dialog/`, …) into feature components.
   Prefer an installed shadcn-svelte primitive over a hand-rolled `.svelte` when
-  both exist. Existing hand-rolled exceptions (`Sheet.svelte`, `ConfirmDialog.svelte`)
-  predate this convention and are grandfathered, not a pattern to copy for new work.
+  both exist. Confirmations go through the `ConfirmAction` composition
+  (`$lib/components/ConfirmAction.svelte`, built on shadcn `AlertDialog`).
+  `ui/no-hand-rolled.test.ts` guards against hand-rolled replacements for
+  shadcn primitives and direct `bits-ui` imports outside `ui/`.
 - **Mobile-first, always responsive.** This is a reader app — most reading happens
   on phones. Design and build for the smallest viewport first, then enhance upward.
   Every component must be usable and uncluttered at 360px wide: no horizontal
