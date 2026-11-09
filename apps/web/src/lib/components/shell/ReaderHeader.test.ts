@@ -1,5 +1,20 @@
 import { describe, it, expect, vi, beforeEach } from "vitest";
 import { render, screen, fireEvent } from "@testing-library/svelte";
+
+const { media } = vi.hoisted(() => ({
+  media: { wide: false, queries: [] as string[] },
+}));
+vi.mock("svelte/reactivity", async (orig) => ({
+  ...(await orig<typeof import("svelte/reactivity")>()),
+  MediaQuery: class {
+    constructor(readonly query: string) {
+      media.queries.push(query);
+    }
+    get current() {
+      return media.wide;
+    }
+  },
+}));
 import ReaderHeader from "./ReaderHeader.svelte";
 import { searchPalette } from "$lib/stores/search-palette.svelte.js";
 
@@ -16,6 +31,7 @@ const mount = (over: Record<string, unknown> = {}) => {
 
 describe("ReaderHeader", () => {
   beforeEach(() => {
+    media.wide = false;
     searchPalette.close();
     document.documentElement.style.removeProperty("--topbar-h");
   });
@@ -52,6 +68,30 @@ describe("ReaderHeader", () => {
     expect(header.className.split(/\s+/)).toContain(
       "motion-reduce:transition-none",
     );
+  });
+
+  describe("inert while hidden", () => {
+    // jsdom has no `inert` reflection, so Svelte may set an expando property.
+    const isInert = (el: HTMLElement) =>
+      el.hasAttribute("inert") ||
+      (el as HTMLElement & { inert?: boolean }).inert === true;
+
+    it("takes itself out of the tab order when hidden on phones", async () => {
+      const { container, rerender } = mount();
+      const header = container.querySelector("header")!;
+      expect(isInert(header)).toBe(false);
+      await rerender({ hidden: true });
+      expect(isInert(header)).toBe(true);
+      await rerender({ hidden: false });
+      expect(isInert(header)).toBe(false);
+    });
+
+    it("stays usable from md up, where it never slides away", () => {
+      media.wide = true;
+      const { container } = mount({ hidden: true });
+      expect(isInert(container.querySelector("header")!)).toBe(false);
+      expect(media.queries).toContain("(min-width: 48rem)");
+    });
   });
 
   it("gives every control a 44px target", () => {
