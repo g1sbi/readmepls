@@ -84,17 +84,6 @@
     box-shadow: var(--shadow-lg);
     z-index: var(--z-sticky);
   }
-  :global(.hl-popover)::before {
-    content: "";
-    position: absolute;
-    inset: 0;
-    pointer-events: none;
-    z-index: 0;
-    background-image: var(--texture-grain);
-    opacity: var(--grain-opacity);
-    mix-blend-mode: multiply;
-    border-radius: inherit;
-  }
   :global(.hl-popover) .swatches {
     display: flex;
     gap: var(--space-1);

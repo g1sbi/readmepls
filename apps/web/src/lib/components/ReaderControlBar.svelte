@@ -59,7 +59,7 @@
     background: var(--color-surface);
     border-top: 1px solid var(--color-border);
     padding-bottom: env(safe-area-inset-bottom);
-    transition: transform var(--dur-base) var(--ease-paper);
+    transition: transform var(--dur-base) var(--ease-out);
   }
   .control-bar[data-hidden="true"] {
     transform: translateY(100%);

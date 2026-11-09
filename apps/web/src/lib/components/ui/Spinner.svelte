@@ -9,7 +9,7 @@
     display: inline-block;
     width: 1rem;
     height: 1rem;
-    border: 2px solid var(--color-fold);
+    border: 2px solid var(--color-surface-sunken);
     border-top-color: var(--color-accent);
     border-radius: 50%;
     animation: spin var(--dur-slow) linear infinite;

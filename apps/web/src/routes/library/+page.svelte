@@ -18,7 +18,6 @@
   import type { ArticleRecord } from "$lib/article/record.js";
   import ArticleCard from "$lib/components/ArticleCard.svelte";
   import CardGrid from "$lib/components/ui/CardGrid.svelte";
-  import PaperCorner from "$lib/components/ui/PaperCorner.svelte";
   import LibraryToolbar from "$lib/components/LibraryToolbar.svelte";
   import ActiveFilters from "$lib/components/ActiveFilters.svelte";
   import FilterDrawer from "$lib/components/FilterDrawer.svelte";
@@ -196,7 +195,6 @@
 
 {#if data.page.items.length === 0}
   <div class="empty">
-    <PaperCorner />
     <p>
       nothing matches those filters. <button class="link" onclick={clearAll}
         >clear filters</button

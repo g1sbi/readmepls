@@ -16,7 +16,7 @@ describe("readerCssVars", () => {
       "--reading-font: var(--font-reading)",
     );
     expect(readerCssVars(withReaderDefaults({ font: "sans" }))).toContain(
-      "--reading-font: var(--reading-font-sans)",
+      "--reading-font: var(--font-reading)",
     );
   });
 });

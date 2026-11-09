@@ -103,7 +103,7 @@
     z-index: 20; /* below the reading-progress strip (z-index: 21), which overlays the chrome */
   }
   .brand {
-    font-family: var(--font-display);
+    font-family: var(--font-ui);
     font-size: 1.3rem;
     font-weight: 600;
     color: var(--color-text);

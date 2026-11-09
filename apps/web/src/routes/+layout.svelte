@@ -123,18 +123,8 @@
 <style>
   .app {
     min-height: 100dvh;
-    background: var(--color-bg-gradient);
+    background: var(--color-bg);
     position: relative;
-  }
-  .app::before {
-    content: "";
-    position: fixed;
-    inset: 0;
-    pointer-events: none;
-    z-index: 0;
-    background-image: var(--texture-grain);
-    opacity: var(--grain-opacity);
-    mix-blend-mode: multiply;
   }
   .page {
     position: relative;
@@ -142,7 +132,7 @@
     max-width: var(--width-page);
     margin: 0 auto;
     padding: 1.5rem 1.25rem;
-    animation: reveal var(--dur-slow) var(--ease-paper) both;
+    animation: reveal var(--dur-slow) var(--ease-out) both;
   }
   .page--wide {
     max-width: var(--width-reader);

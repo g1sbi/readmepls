@@ -90,7 +90,7 @@
     min-height: 100dvh;
     display: grid;
     place-items: center;
-    background: var(--color-bg-gradient);
+    background: var(--color-bg);
     padding: 1.5rem;
   }
   .card {
@@ -101,17 +101,6 @@
     background: var(--color-surface);
     border-radius: var(--radius-xl);
     box-shadow: var(--shadow-lg);
-  }
-  .card::after {
-    content: "";
-    position: absolute;
-    top: 0;
-    right: 0;
-    width: 40px;
-    height: 40px;
-    background: var(--color-fold);
-    clip-path: polygon(100% 0, 0 0, 100% 100%);
-    border-top-right-radius: var(--radius-xl);
   }
   h1 {
     font-family: var(--font-ui);

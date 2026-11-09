@@ -36,15 +36,4 @@
       transform: none;
     }
   }
-  .card::before {
-    content: "";
-    position: absolute;
-    inset: 0;
-    pointer-events: none;
-    z-index: 0;
-    background-image: var(--texture-grain);
-    opacity: var(--grain-opacity);
-    mix-blend-mode: multiply;
-    border-radius: inherit;
-  }
 </style>

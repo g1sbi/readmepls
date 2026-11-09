@@ -30,7 +30,7 @@
 
 <style>
   .greeting {
-    /* --font-ui, not --font-display: Fredoka is wordmark-only per tokens.css */
+    /* --font-ui: Ronzino, per tokens.css */
     font-family: var(--font-ui);
     font-size: var(--text-xl);
     color: var(--color-text);

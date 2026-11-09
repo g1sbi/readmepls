@@ -90,7 +90,7 @@
     min-height: 100dvh;
     display: grid;
     place-items: center;
-    background: var(--color-bg-gradient);
+    background: var(--color-bg);
     padding: 1.5rem;
   }
   .card {

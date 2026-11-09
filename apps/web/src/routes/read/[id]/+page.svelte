@@ -790,8 +790,8 @@
     color: var(--color-text-muted);
     text-decoration: none;
     transition:
-      transform var(--dur-base) var(--ease-paper),
-      opacity var(--dur-base) var(--ease-paper);
+      transform var(--dur-base) var(--ease-out),
+      opacity var(--dur-base) var(--ease-out);
   }
   .back-floating:hover {
     color: var(--color-accent);

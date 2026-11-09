@@ -9,8 +9,8 @@ const WIDTHS: Record<ReaderPrefs["width"], string> = {
 /** Inline custom properties for the reader container, layered over tokens.css.
  *  Emits the --reading-* names the theme + reader CSS already consume. */
 export function readerCssVars(prefs: ReaderPrefs): string {
-  const font =
-    prefs.font === "serif" ? "var(--font-reading)" : "var(--reading-font-sans)";
+  // Both options resolve to Ronzino now; plan 4 removes the `font` pref.
+  const font = "var(--font-reading)";
   return [
     `--reading-font: ${font}`,
     `--reading-size: ${prefs.size}px`,
