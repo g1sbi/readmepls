@@ -14,6 +14,7 @@ function run(opts: {
   store?: Record<string, string>;
   systemDark?: boolean;
   throwingStorage?: boolean;
+  writeThrowsOnly?: boolean;
 }) {
   const store = { ...(opts.store ?? {}) };
   const dataset: Record<string, string> = {};
@@ -35,9 +36,14 @@ function run(opts: {
           store[k] = v;
         },
         removeItem: (k: string) => {
+          if (opts.writeThrowsOnly) throw new Error("read-only");
           delete store[k];
         },
       };
+  if (opts.writeThrowsOnly)
+    localStorage.setItem = () => {
+      throw new Error("read-only");
+    };
   const document = { documentElement: { dataset } };
   const matchMedia = () => ({ matches: !!opts.systemDark });
   new Function("document", "localStorage", "matchMedia", bootBody())(
@@ -70,5 +76,10 @@ describe("theme boot script", () => {
   });
   it("throwing storage -> light, no exception", () => {
     expect(run({ throwingStorage: true }).dataset.theme).toBe("light");
+  });
+  it("write-only storage failure, system dark -> dark", () => {
+    expect(run({ writeThrowsOnly: true, systemDark: true }).dataset.theme).toBe(
+      "dark",
+    );
   });
 });

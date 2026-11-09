@@ -21,21 +21,21 @@ function block(source: string, selector: string): Map<string, string> {
   const body = source.slice(open + 1, end).replace(/\/\*[\s\S]*?\*\//g, "");
   const out = new Map<string, string>();
   for (const m of body.matchAll(/(--[\w-]+)\s*:\s*([^;]+);/g)) {
-    out.set(m[1], m[2].trim().replace(/\s+/g, " "));
+    out.set(m[1] ?? "", (m[2] ?? "").trim().replace(/\s+/g, " "));
   }
   return out;
 }
 
 function lum(hex: string): number {
   const n = parseInt(hex.slice(1), 16);
-  const [r, g, b] = [n >> 16, (n >> 8) & 255, n & 255].map((v) => {
+  const [r = 0, g = 0, b = 0] = [n >> 16, (n >> 8) & 255, n & 255].map((v) => {
     const c = v / 255;
     return c <= 0.03928 ? c / 12.92 : ((c + 0.055) / 1.055) ** 2.4;
   });
   return 0.2126 * r + 0.7152 * g + 0.0722 * b;
 }
 function contrast(a: string, b: string): number {
-  const [hi, lo] = [lum(a), lum(b)].sort((x, y) => y - x);
+  const [hi = 0, lo = 0] = [lum(a), lum(b)].sort((x, y) => y - x);
   return (hi + 0.05) / (lo + 0.05);
 }
 
@@ -82,7 +82,7 @@ function hex(mode: Map<string, string>, name: string): string {
   const v = mode.get(name) ?? light.get(name);
   if (v === undefined) throw new Error(`${name} undefined`);
   const ref = v.match(/^var\((--[\w-]+)\)$/);
-  return ref ? hex(mode, ref[1]) : v;
+  return ref ? hex(mode, ref[1] ?? "") : v;
 }
 
 describe("tokens.css (Marker)", () => {
@@ -147,7 +147,7 @@ describe("tokens.css (Marker)", () => {
     const appCss = readFileSync(join(__dirname, "..", "..", "app.css"), "utf8");
     const bodies = [...appCss.matchAll(/(?:^|\n)body \{([^}]*)\}/g)];
     expect(
-      bodies.some((m) => /font-family:\s*var\(--font-ui\)/.test(m[1])),
+      bodies.some((m) => /font-family:\s*var\(--font-ui\)/.test(m[1] ?? "")),
     ).toBe(true);
   });
 });

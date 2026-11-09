@@ -43,10 +43,12 @@
         var mode = "light";
         try {
           var ls = localStorage;
-          if (ls.getItem("theme-v") !== "2") {
-            if (ls.getItem("theme") !== "dark") ls.removeItem("theme");
-            ls.setItem("theme-v", "2");
-          }
+          try {
+            if (ls.getItem("theme-v") !== "2") {
+              if (ls.getItem("theme") !== "dark") ls.removeItem("theme");
+              ls.setItem("theme-v", "2");
+            }
+          } catch (e) {}
           var pref = ls.getItem("theme");
           if (pref === "light" || pref === "dark") mode = pref;
           else

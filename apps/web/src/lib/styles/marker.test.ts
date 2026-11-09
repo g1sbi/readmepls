@@ -17,7 +17,7 @@ function mediaList(query: string, source = css): string[] {
   const re = /@media ([^{]+)\{/g;
   let m: RegExpExecArray | null;
   while ((m = re.exec(source))) {
-    if (m[1].trim() !== query) continue;
+    if ((m[1] ?? "").trim() !== query) continue;
     let depth = 1;
     let k = re.lastIndex;
     while (depth > 0 && k < source.length) {

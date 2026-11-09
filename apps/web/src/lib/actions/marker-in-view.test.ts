@@ -59,6 +59,7 @@ describe("markerInView", () => {
     const node = document.createElement("span");
     markerInView(node);
     const io = instances[0];
+    if (!io) throw new Error("no IntersectionObserver instance created");
     expect(io.observe).toHaveBeenCalledWith(node);
     expect(io.options?.threshold).toBe(0.6);
     io.fire(false);
