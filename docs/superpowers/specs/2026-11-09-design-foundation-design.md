@@ -320,9 +320,10 @@ These are marked as my calls; the owner can override any of them.
 
 - **Capture.** The **+** opens a capture **dialog on desktop** and a
   **bottom sheet on phones**. It's one feature component that wraps the
-  existing capture logic. The inline `CaptureBar` on home is removed; home
-  gets its modules in #14. This is a relocation of an existing feature, not
-  a new one.
+  existing capture logic. **Owner decision (2026-11-09):** home also
+  keeps a prominent inline "Save a link" field, driven by the same capture
+  form, at least until #14 redesigns home. This is a relocation of an
+  existing feature, not a new one.
 - **Theme storage.** `theme` becomes `light | dark | system`, defaulting to
   `system`.
   - **Existing users:** the PocketBase migration maps `sepia` and `light` to

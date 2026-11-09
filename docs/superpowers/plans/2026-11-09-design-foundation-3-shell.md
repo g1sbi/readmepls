@@ -18,9 +18,10 @@
   tab bar, More sheet, and reader overlay all render from it.
 - **Collections:** the root layout server load provides the user's
   collections, so the sidebar and the More sheet can list them.
-- **Capture:** the logic moves out of `CaptureBar` into a small function,
-  wrapped by one `CaptureSheet` feature component. It is a Dialog from
-  `md` up and a BottomSheet below.
+- **Capture:** the logic moves out of `CaptureBar` into a small function
+  and one `CaptureForm`. The home page keeps it as a prominent inline
+  field, and the header's **+** opens it in a `CaptureSheet` (a Dialog from
+  `md` up, a BottomSheet below).
 - **Old components:** `TopBar` and `BottomNav` are deleted. Their jobs
   (theme switch, sign out, search) move to `/settings` and the page header.
 
@@ -302,13 +303,9 @@ approved phone mockup is
     - It hides on scroll down via `nextNavVisible`
       (`translate-y-full`, `ease-out`, `motion-reduce:transition-none`).
   - **`MoreSheet`:** props `open: boolean, onClose: () => void,
-pathname: string, collections: CollectionSummary[], onCreated: () => void`.
-    - It is a BottomSheet titled "More".
-    - Top: a "Settings" row (a pinned row and not inside the scroll area,
-      per Review Focus 5).
-    - Then "Collections" with "+ New collection" and `SidebarCollections`
-      in a scroll region (`data-more-scroll`, `max-h-[50dvh] overflow-y-auto`).
-    - Tapping any link closes the sheet.
+pathname: string, collections: CollectionSummary[], onCreated: () => void`. - It is a BottomSheet titled "More". - Top: a "Settings" row (a pinned row and not inside the scroll area,
+    per Review Focus 5). - Then "Collections" with "+ New collection" and `SidebarCollections`
+    in a scroll region (`data-more-scroll`, `max-h-[50dvh] overflow-y-auto`). - Tapping any link closes the sheet.
 
 - [ ] **Step 1: Write the failing tests.**
   - `TabBar`:
@@ -332,7 +329,11 @@ pathname: string, collections: CollectionSummary[], onCreated: () => void`.
 
 ---
 
-### Task 5: PageHeader with search and capture; CaptureSheet replaces the home CaptureBar
+### Task 5: One CaptureForm for the home field and the header's capture sheet; PageHeader
+
+Owner decision (2026-11-09): the home page **keeps** a prominent "Save a
+link" field, and the header's **+** opens the same form in a sheet on every
+page. One component drives both, so there is no duplicated logic.
 
 **Files:**
 
@@ -341,35 +342,50 @@ pathname: string, collections: CollectionSummary[], onCreated: () => void`.
   - It is the request logic moved out of `CaptureBar.svelte`.
   - 402 → `"quota"`; any other non-ok response → `"rejected"`; a thrown
     error → `"network"`.
-- Create: `apps/web/src/lib/components/shell/CaptureSheet.svelte`,
+  - Export `CAPTURE_MESSAGES: Record<"quota" | "rejected" | "network", string>`
+    with the exact copy below.
+- Create: `apps/web/src/lib/components/capture/CaptureForm.svelte`,
+  `apps/web/src/lib/components/shell/CaptureSheet.svelte`,
   `apps/web/src/lib/components/shell/PageHeader.svelte`
-- Delete: `apps/web/src/lib/components/CaptureBar.svelte` and its test.
-  Remove its use from `routes/+page.svelte`. Keep `CyclingGreeting`; the home
-  modules are #14.
+- Replace: `apps/web/src/lib/components/CaptureBar.svelte` is deleted.
+  `routes/+page.svelte` renders `CaptureForm` with `variant="inline"` in its
+  place, under the header and above the greeting. Keep `CyclingGreeting`;
+  the home modules are #14.
 - Test: `apps/web/src/lib/capture/submit.test.ts`,
+  `apps/web/src/lib/components/capture/CaptureForm.test.ts`,
   `apps/web/src/lib/components/shell/CaptureSheet.test.ts`,
   `apps/web/src/lib/components/shell/PageHeader.test.ts`
 
 **Interfaces:**
 
 - Produces:
-  - **`CaptureSheet`:** props `open: boolean, onClose: () => void`.
-    - It uses `new MediaQuery("(min-width: 48rem)")`. When true it renders
-      a Dialog titled "Save a link"; otherwise a BottomSheet with the same
-      title.
-    - Its body:
-      - an Input (`type="url"`, `inputmode="url"`, `autocomplete="off"`,
-        autofocused, placeholder `"Paste a link"`);
-      - a "Save" Button (`default`, full-width on phones), busy state
-        with Spinner and `disabled`;
-      - error text under the Input (`role="alert"`).
-    - On success it calls `invalidateAll()`, clears the field, and calls
-      `onClose()`.
-    - On failure it stays open, keeps the URL, and shows:
+  - **`CaptureForm`:** props `variant: "inline" | "sheet", autofocus?: boolean, onSaved?: () => void, placeholders?: string[]`.
+    - Shared behavior:
+      - a URL Input (`type="url"`, `inputmode="url"`, `autocomplete="off"`);
+      - a "Save" Button with a busy state (Spinner, `disabled`);
+      - error text under the field (`role="alert"`).
+    - On success it calls `invalidateAll()`, clears the field, then
+      `onSaved?.()`.
+    - On failure it keeps the URL and shows:
       - quota: "You've reached this month's limit — upgrade to save more."
       - rejected: "That link couldn't be saved. Check the address and try again."
       - network: "You're offline or the server didn't answer. Try again."
       - empty: no request; it focuses the input.
+    - `variant="inline"` (home): a single `InputGroup` pill, `h-14`, with a
+      leading `BookmarkPlus` addon and a trailing `size="icon"` default
+      Button (`aria-label="Save"`, `ArrowUp` icon). It keeps the existing
+      typewriter placeholder (`createTypewriter`, paused while focused or
+      non-empty) using `placeholders`, defaulting to CaptureBar's current
+      list.
+    - `variant="sheet"`: a plain Input with the static placeholder
+      "Paste a link" and a full-width "Save" Button below it on phones
+      (inline on `md`).
+  - **`CaptureSheet`:** props `open: boolean, onClose: () => void`.
+    - It uses `new MediaQuery("(min-width: 48rem)")`. When true it renders
+      a Dialog titled "Save a link"; otherwise a BottomSheet with the same
+      title.
+    - Its body is `CaptureForm` with `variant="sheet"`, `autofocus`, and
+      `onSaved={onClose}`.
   - **`PageHeader`:** props `title: string, actions?: Snippet`.
     - It renders `<header>` with an `h1` (`text-2xl md:text-3xl font-medium tracking-tight`).
     - On the right: optional `actions`; then the search button
@@ -383,28 +399,34 @@ pathname: string, collections: CollectionSummary[], onCreated: () => void`.
 - [ ] **Step 1: Write the failing tests.**
   - `submit.test.ts`: the four outcomes, plus `"  "` → `"empty"` with no
     fetch call.
+  - `CaptureForm.test.ts`:
+    - success → `invalidateAll` called, field cleared, `onSaved` called
+      (Review Focus 2);
+    - quota, rejected, and network → URL kept and the exact
+      `CAPTURE_MESSAGES` text shown in `role="alert"` (Review Focus 3);
+    - `variant="inline"` renders the pill with the trailing Save button and
+      no sheet chrome;
+    - `variant="sheet"` renders the static placeholder "Paste a link".
   - `CaptureSheet.test.ts` (with a stubbed `MediaQuery` both ways):
     - it renders as a Dialog when wide and a BottomSheet when narrow (by
       `data-slot`);
-    - success → `invalidateAll` called and `onClose` called (Review
-      Focus 2);
-    - quota, rejected, and network → it stays open, the input value is
-      kept, and the exact message shows (Review Focus 3).
+    - a successful save closes it (`onClose` called).
   - `PageHeader.test.ts`:
     - the title is the `h1`;
     - Search calls `searchPalette.open`;
     - "Save a link" opens the CaptureSheet;
     - both buttons are size-11.
+  - Home page test: the inline capture field is present (labelled "Save
+    a link"), and the header's capture button is also present.
 - [ ] **Step 2: Run them and confirm they fail.**
-      `pnpm exec vitest run capture/submit CaptureSheet PageHeader`.
-      Expected: FAIL.
-- [ ] **Step 3: Implement it.** Delete `CaptureBar` and update the home page
-      and its tests.
-- [ ] **Step 4: Run the tests and confirm they pass.**
       `pnpm exec vitest run capture CaptureSheet PageHeader routes/page`.
-      Expected: PASS.
+      Expected: FAIL.
+- [ ] **Step 3: Implement it.** Delete `CaptureBar` (its tests move to
+      `CaptureForm`) and update the home page.
+- [ ] **Step 4: Run the tests and confirm they pass.** Same command;
+      expected: PASS.
 - [ ] **Step 5: Commit**
-      `feat(web): page header with search and a capture sheet`.
+      `feat(web): shared capture form — home field and header sheet`.
 
 ---
 
