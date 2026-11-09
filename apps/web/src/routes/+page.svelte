@@ -25,10 +25,15 @@
   let unsub: (() => void) | undefined;
   const feed = $derived(splitHomeFeed(articles));
 
+  // Mount, realtime events and saves all call load(), and their requests can
+  // land out of order; only the newest one may write the list.
+  let loadSeq = 0;
   async function load() {
+    const seq = ++loadSeq;
     const list = await pb
       .collection("articles")
       .getList(1, 50, { sort: "-created", expand: "content" });
+    if (seq !== loadSeq) return;
     articles = list.items as ArticleRecord[];
   }
   async function retry(id: string) {
@@ -43,7 +48,9 @@
     await load();
     unsub = await pb
       .collection("articles")
-      .subscribe("*", () => load(), { expand: "content" });
+      .subscribe("*", () => load().catch(console.error), {
+        expand: "content",
+      });
   });
   onDestroy(() => unsub?.());
 
@@ -54,7 +61,7 @@
     const n = captureSaved.count;
     if (n === lastSaved) return;
     lastSaved = n;
-    load();
+    load().catch(console.error);
   });
 </script>
 

@@ -76,4 +76,43 @@ describe("home page hero", () => {
     captureSaved.notify();
     await waitFor(() => expect(getList).toHaveBeenCalledTimes(2));
   });
+
+  it("keeps the newest result when two loads resolve out of order", async () => {
+    const card = (id: string, title: string) => ({
+      id,
+      url: `https://example.com/${id}`,
+      status: "unread",
+      expand: {
+        content: { id: `c-${id}`, title, extract_status: "ok" },
+      },
+    });
+    let resolveStale!: (v: unknown) => void;
+    getList
+      .mockReturnValueOnce(
+        new Promise((r) => {
+          resolveStale = r;
+        }),
+      )
+      .mockResolvedValueOnce({ items: [card("b", "fresh article")] });
+    render(Page);
+    await waitFor(() => expect(getList).toHaveBeenCalledTimes(1));
+    captureSaved.notify();
+    expect(await screen.findByText("fresh article")).toBeInTheDocument();
+    // The first (older) request lands last; it must not clobber the list.
+    resolveStale({ items: [card("a", "stale article")] });
+    await new Promise((r) => setTimeout(r, 0));
+    expect(screen.queryByText("stale article")).toBeNull();
+    expect(screen.getByText("fresh article")).toBeInTheDocument();
+  });
+
+  it("logs a failed refetch instead of leaving it unhandled", async () => {
+    const error = vi.spyOn(console, "error").mockImplementation(() => {});
+    render(Page);
+    await waitFor(() => expect(getList).toHaveBeenCalledTimes(1));
+    const boom = new Error("offline");
+    getList.mockRejectedValueOnce(boom);
+    captureSaved.notify();
+    await waitFor(() => expect(error).toHaveBeenCalledWith(boom));
+    error.mockRestore();
+  });
 });
