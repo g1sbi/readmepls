@@ -49,6 +49,17 @@ describe("home page hero", () => {
     ).toBeInTheDocument();
   });
 
+  it("places the greeting above the capture field", () => {
+    const { container } = render(Page);
+    const greeting = container.querySelector(".greeting");
+    const field = screen.getByRole("textbox", { name: "Save a link" });
+    expect(greeting).not.toBeNull();
+    expect(
+      greeting!.compareDocumentPosition(field) &
+        Node.DOCUMENT_POSITION_FOLLOWING,
+    ).toBeTruthy();
+  });
+
   it("renders quick-action chips linking to library and collections", () => {
     render(Page);
     expect(

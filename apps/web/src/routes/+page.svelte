@@ -62,8 +62,8 @@
 
 <section class="hero">
   <h2 class="sr-only">save any link and actually read it</h2>
-  <CaptureForm variant="inline" />
-  <div class="mt-5"><CyclingGreeting phrases={GREETINGS} /></div>
+  <CyclingGreeting phrases={GREETINGS} />
+  <div class="mt-5"><CaptureForm variant="inline" /></div>
   <nav class="quick" aria-label="quick actions">
     <Button
       href="/library"
