@@ -10,10 +10,19 @@ function remapTheme(app, matches, next) {
     // json fields come back as raw bytes in the JSVM; getString yields the JSON text.
     const raw = row.getString("reader_prefs");
     if (!raw) continue;
-    const prefs = JSON.parse(raw);
+    // A crash here blocks PocketBase boot, so one unreadable legacy row must
+    // not abort the migration — skip it.
+    let prefs;
+    try {
+      prefs = JSON.parse(raw);
+    } catch (_) {
+      continue;
+    }
     if (!prefs || typeof prefs !== "object" || !matches(prefs.theme)) continue;
     row.set("reader_prefs", Object.assign({}, prefs, { theme: next }));
-    app.save(row);
+    // No validation: this rewrites one key of an existing row, and a legacy
+    // row that fails today's rules must not throw and abort the migration.
+    app.saveNoValidate(row);
   }
 }
 
