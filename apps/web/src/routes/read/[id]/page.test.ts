@@ -67,6 +67,8 @@ const articleGetOne = vi.fn().mockResolvedValue(defaultArticle());
 const articleUpdate = vi.fn().mockResolvedValue({});
 const articleDelete = vi.fn().mockResolvedValue(undefined);
 const usersUpdate = vi.fn().mockResolvedValue({});
+const collectionsList = vi.fn().mockResolvedValue([]);
+const collectionItemCreate = vi.fn().mockResolvedValue({ id: "ci1" });
 
 vi.mock("$lib/pb.js", () => ({
   browserPb: () => ({
@@ -87,7 +89,13 @@ vi.mock("$lib/pb.js", () => ({
           update: usersUpdate,
         };
       }
-      // highlights, article_tags, collections — all empty
+      if (name === "collections") {
+        return { getFullList: collectionsList };
+      }
+      if (name === "collection_items") {
+        return { create: collectionItemCreate };
+      }
+      // highlights, article_tags — all empty
       return {
         getFullList: vi.fn().mockResolvedValue([]),
         getFirstListItem: vi.fn().mockResolvedValue({ id: "tag1" }),
@@ -175,7 +183,7 @@ vi.mock("$lib/highlight/render", () => ({
 // src/__mocks__/app-navigation.ts, which exports goto as vi.fn(). Import it
 // after mocks are registered so the same reference is available for assertions.
 import ReaderPage from "./+page.svelte";
-import { goto, afterNavigate } from "$app/navigation";
+import { goto, afterNavigate, invalidateAll } from "$app/navigation";
 import { unmarkAll } from "$lib/highlight/render";
 
 // ---------------------------------------------------------------------------
@@ -242,7 +250,42 @@ describe("reader page — delete error path", () => {
     await fireEvent.click(
       screen.getByRole("button", { name: "archive article" }),
     );
-    await waitFor(() => expect(goto).toHaveBeenCalledWith("/library"));
+    // The shell's collection counts and the library list are stale now.
+    await waitFor(() =>
+      expect(goto).toHaveBeenCalledWith("/library", { invalidateAll: true }),
+    );
+  });
+
+  it("refreshes shell data after deleting", async () => {
+    render(ReaderPage);
+    await waitFor(() =>
+      expect(screen.getByText("Test Article")).toBeInTheDocument(),
+    );
+    await fireEvent.click(screen.getByText("more"));
+    await fireEvent.click(
+      screen.getByRole("button", { name: "delete article" }),
+    );
+    await fireEvent.click(screen.getByRole("button", { name: "delete" }));
+    await waitFor(() =>
+      expect(goto).toHaveBeenCalledWith("/library", { invalidateAll: true }),
+    );
+  });
+
+  it("refreshes shell data after adding to a collection", async () => {
+    collectionsList.mockResolvedValueOnce([{ id: "col1", name: "physics" }]);
+    render(ReaderPage);
+    await waitFor(() =>
+      expect(screen.getByText("Test Article")).toBeInTheDocument(),
+    );
+    await fireEvent.click(screen.getByText("more"));
+    const trigger = screen.getByRole("button", { name: "add to collection" });
+    await fireEvent.keyDown(trigger, { key: "Enter" });
+    await fireEvent.click(
+      await screen.findByRole("menuitem", { name: "physics" }),
+    );
+    await waitFor(() => expect(collectionItemCreate).toHaveBeenCalled());
+    // The sidebar's collection counts come from the root layout load.
+    await waitFor(() => expect(invalidateAll).toHaveBeenCalled());
   });
 
   it("does not flush a progress write on teardown after a successful delete", async () => {
@@ -269,7 +312,11 @@ describe("reader page — delete error path", () => {
     );
     await fireEvent.click(screen.getByRole("button", { name: "delete" }));
 
-    await waitFor(() => expect(goto).toHaveBeenCalledWith("/library"));
+    await waitFor(() =>
+      expect(goto).toHaveBeenCalledWith("/library", {
+        invalidateAll: true,
+      }),
+    );
 
     articleUpdate.mockClear(); // ignore any pre-delete writes (e.g. mount-time status update)
 

@@ -21,7 +21,7 @@
   import type { ArticleRecord } from "$lib/article/record.js";
   import type { RecordModel } from "pocketbase";
   import { ClientResponseError } from "pocketbase";
-  import { goto, afterNavigate } from "$app/navigation";
+  import { goto, afterNavigate, invalidateAll } from "$app/navigation";
   import { resolve } from "$app/paths";
   import { readerCssVars } from "$lib/reader/css-vars.js";
   import { markRange, unmarkAll } from "$lib/highlight/render";
@@ -444,7 +444,9 @@
       await pb
         .collection("articles")
         .update(article.id, { status: "archived" });
-      await goto(resolve("/library"));
+      // invalidateAll: the shell's collection counts come from the root
+      // layout load, which only re-runs when told to.
+      await goto(resolve("/library"), { invalidateAll: true });
     } catch {
       actionError = "couldn't archive that. try again.";
     }
@@ -463,6 +465,8 @@
       article: $page.params.id,
       order: 0,
     });
+    // Refresh the shell's collection counts (root layout load).
+    await invalidateAll();
   }
 
   async function confirmDelete() {
@@ -474,7 +478,7 @@
       // Clear the reference so onDestroy's flushSave (which fires on teardown
       // after this navigation) doesn't write progress to a now-deleted record.
       article = null;
-      await goto(resolve("/library"));
+      await goto(resolve("/library"), { invalidateAll: true });
     } catch {
       actionError = "couldn't delete that. try again.";
     }
