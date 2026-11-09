@@ -1,22 +1,25 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
-import { render, screen } from "@testing-library/svelte";
+import { render, screen, waitFor } from "@testing-library/svelte";
 
 // Home page constructs a PocketBase client and subscribes on mount; stub it so
 // the component renders without touching the network.
+const { getList } = vi.hoisted(() => ({ getList: vi.fn() }));
 vi.mock("$lib/pb.js", () => ({
   browserPb: () => ({
     collection: () => ({
-      getList: vi.fn().mockResolvedValue({ items: [] }),
+      getList,
       subscribe: vi.fn().mockResolvedValue(() => {}),
     }),
   }),
 }));
 
+import { captureSaved } from "$lib/capture/saved.svelte.js";
 import Page from "./+page.svelte";
 
 describe("home page hero", () => {
   // PageHeader's capture sheet reads a MediaQuery, which needs matchMedia.
   beforeEach(() => {
+    getList.mockReset().mockResolvedValue({ items: [] });
     vi.stubGlobal("matchMedia", (q: string) => ({
       matches: true,
       media: q,
@@ -54,5 +57,12 @@ describe("home page hero", () => {
     expect(
       screen.getByRole("link", { name: /your collections/i }),
     ).toHaveAttribute("href", "/collections");
+  });
+
+  it("refetches the list after a link is saved", async () => {
+    render(Page);
+    await waitFor(() => expect(getList).toHaveBeenCalledTimes(1));
+    captureSaved.notify();
+    await waitFor(() => expect(getList).toHaveBeenCalledTimes(2));
   });
 });

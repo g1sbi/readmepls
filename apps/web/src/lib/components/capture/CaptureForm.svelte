@@ -7,6 +7,7 @@
   import { Button } from "$lib/components/ui/button/index.js";
   import { Spinner } from "$lib/components/ui/spinner/index.js";
   import { createTypewriter } from "$lib/typewriter.svelte.js";
+  import { captureSaved } from "$lib/capture/saved.svelte.js";
   import { submitCapture, CAPTURE_MESSAGES } from "$lib/capture/submit.js";
 
   const DEFAULT_PLACEHOLDERS = [
@@ -55,8 +56,14 @@
       if (result.ok) {
         // Refresh the page's data first so the new article is listed by the
         // time the sheet closes.
-        await invalidateAll();
+        try {
+          await invalidateAll();
+        } catch (e) {
+          // The link is saved either way; don't leave the form looking unsent.
+          console.error("invalidateAll failed after capture", e);
+        }
         url = "";
+        captureSaved.notify();
         onSaved?.();
       } else if (result.reason === "empty") {
         inputEl?.focus();
@@ -72,6 +79,9 @@
     type: "url",
     inputmode: "url",
     autocomplete: "off",
+    autocapitalize: "off",
+    autocorrect: "off",
+    spellcheck: false,
   } as const;
 </script>
 

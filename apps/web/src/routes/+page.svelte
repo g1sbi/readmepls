@@ -5,6 +5,7 @@
   import { splitHomeFeed } from "$lib/article/home-feed.js";
   import type { ArticleRecord } from "$lib/article/record.js";
   import CaptureForm from "$lib/components/capture/CaptureForm.svelte";
+  import { captureSaved } from "$lib/capture/saved.svelte.js";
   import PageHeader from "$lib/components/shell/PageHeader.svelte";
   import CyclingGreeting from "$lib/components/CyclingGreeting.svelte";
   import ArticleCard from "$lib/components/ArticleCard.svelte";
@@ -45,6 +46,16 @@
       .subscribe("*", () => load(), { expand: "content" });
   });
   onDestroy(() => unsub?.());
+
+  // invalidateAll() can't refresh this client-fetched list, so refetch when a
+  // save completes (the realtime event alone isn't guaranteed to arrive).
+  let lastSaved = captureSaved.count;
+  $effect(() => {
+    const n = captureSaved.count;
+    if (n === lastSaved) return;
+    lastSaved = n;
+    load();
+  });
 </script>
 
 <PageHeader title="Home" />

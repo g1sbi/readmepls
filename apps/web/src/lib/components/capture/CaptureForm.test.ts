@@ -2,6 +2,7 @@ import { describe, it, expect, beforeEach, afterEach, vi } from "vitest";
 import { render, screen, fireEvent, waitFor } from "@testing-library/svelte";
 import { invalidateAll } from "$app/navigation";
 import { CAPTURE_MESSAGES } from "$lib/capture/submit.js";
+import { captureSaved } from "$lib/capture/saved.svelte.js";
 import CaptureForm from "./CaptureForm.svelte";
 
 const stubFetch = (status: number | Error) =>
@@ -103,5 +104,50 @@ describe("CaptureForm", () => {
     render(CaptureForm, { variant: "sheet" });
     expect(screen.getByPlaceholderText("Paste a link")).toBeInTheDocument();
     expect(document.querySelector("[data-slot='input-group']")).toBeNull();
+  });
+
+  it("success notifies captureSaved", async () => {
+    stubFetch(200);
+    const before = captureSaved.count;
+    render(CaptureForm, { variant: "inline" });
+    await type("https://example.com");
+    await save();
+    await waitFor(() => expect(captureSaved.count).toBe(before + 1));
+  });
+
+  it("a rejected invalidateAll still clears, notifies and calls onSaved", async () => {
+    stubFetch(200);
+    vi.spyOn(console, "error").mockImplementation(() => {});
+    vi.mocked(invalidateAll).mockRejectedValueOnce(new Error("boom"));
+    const before = captureSaved.count;
+    const onSaved = vi.fn();
+    render(CaptureForm, { variant: "sheet", onSaved });
+    const input = await type("https://example.com");
+    await save();
+    await waitFor(() => expect(onSaved).toHaveBeenCalled());
+    expect(input.value).toBe("");
+    expect(captureSaved.count).toBe(before + 1);
+  });
+
+  it("url input carries mobile keyboard hints", () => {
+    render(CaptureForm, { variant: "sheet" });
+    const input = screen.getByRole("textbox");
+    expect(input).toHaveAttribute("autocapitalize", "off");
+    expect(input).toHaveAttribute("autocorrect", "off");
+    expect(input).toHaveAttribute("spellcheck", "false");
+  });
+
+  it("sheet variant autofocuses when asked", () => {
+    render(CaptureForm, { variant: "sheet", autofocus: true });
+    expect(screen.getByRole("textbox")).toHaveFocus();
+  });
+
+  it("submitting the form (Enter) saves", async () => {
+    stubFetch(200);
+    const onSaved = vi.fn();
+    render(CaptureForm, { variant: "sheet", onSaved });
+    await type("https://example.com");
+    await fireEvent.submit(screen.getByRole("textbox").closest("form")!);
+    await waitFor(() => expect(onSaved).toHaveBeenCalled());
   });
 });
