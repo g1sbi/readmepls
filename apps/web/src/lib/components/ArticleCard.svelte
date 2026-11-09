@@ -2,7 +2,7 @@
   import Card from "./ui/Card.svelte";
   import { Badge } from "$lib/components/ui/badge";
   import { Button } from "$lib/components/ui/button";
-  import Spinner from "./ui/Spinner.svelte";
+  import { Spinner } from "./ui/spinner";
   import SourcePill from "./ui/SourcePill.svelte";
   import ConfirmDialog from "./ui/ConfirmDialog.svelte";
   import DropdownMenu from "./ui/DropdownMenu.svelte";

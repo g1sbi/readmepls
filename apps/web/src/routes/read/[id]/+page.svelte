@@ -34,7 +34,7 @@
   import Rail from "$lib/components/ui/Rail.svelte";
   import ArticleActions from "$lib/components/ArticleActions.svelte";
   import { ArrowLeft, ArrowUpRight } from "@lucide/svelte";
-  import Skeleton from "$lib/components/ui/Skeleton.svelte";
+  import { Skeleton } from "$lib/components/ui/skeleton";
   import HighlightPopover from "$lib/components/HighlightPopover.svelte";
   import HighlightsSidebar from "$lib/components/HighlightsSidebar.svelte";
   import SourcePill from "$lib/components/ui/SourcePill.svelte";
@@ -477,7 +477,11 @@
   {/if}
 
   {#if !content}
-    <Skeleton lines={8} />
+    <div class="flex flex-col gap-2" aria-hidden="true">
+      {#each Array(8) as _, i (i)}
+        <Skeleton class="h-4" />
+      {/each}
+    </div>
   {:else}
     <div class="reader-layout">
       {#if isDesktop}
