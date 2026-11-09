@@ -40,4 +40,18 @@ describe("Button", () => {
       .map(([k]) => k);
     expect(withMarker).toEqual(["marker"]);
   });
+
+  it("renders destructive as a soft red pill at rest", () => {
+    const cls = buttonVariants({ variant: "destructive" });
+    expect(cls).toContain("bg-destructive/10");
+    expect(cls).toContain("hover:bg-destructive/20");
+    expect(cls).toContain("color-mix(in_srgb,var(--color-destructive)");
+  });
+
+  it("underlines the link variant with the marker", () => {
+    const cls = buttonVariants({ variant: "link" });
+    expect(cls).toContain("underline");
+    expect(cls).toContain("decoration-marker");
+    expect(cls).toContain("text-foreground");
+  });
 });

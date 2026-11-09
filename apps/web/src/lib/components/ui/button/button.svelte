@@ -26,8 +26,11 @@
         outline:
           "bg-transparent text-foreground ring-1 ring-hairline hover:bg-muted",
         ghost: "text-foreground hover:bg-muted",
-        destructive: "text-destructive hover:bg-destructive/10",
-        link: "text-primary underline-offset-4 hover:underline",
+        // Text is danger mixed toward ink: raw danger on the tint is ~4.0:1 in
+        // light mode (fails AA); the mix clears 4.5:1 on every surface.
+        destructive:
+          "bg-destructive/10 text-[color-mix(in_srgb,var(--color-destructive)_70%,var(--color-text))] hover:bg-destructive/20",
+        link: "text-foreground underline decoration-marker decoration-2 underline-offset-[3px] hover:decoration-4",
       },
       size: {
         default: "h-11 px-5 text-sm",
