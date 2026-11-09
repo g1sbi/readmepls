@@ -1,5 +1,12 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
-import { render, screen, cleanup } from "@testing-library/svelte";
+import {
+  render,
+  screen,
+  cleanup,
+  fireEvent,
+  waitFor,
+} from "@testing-library/svelte";
+import { afterNavigate } from "$app/navigation";
 import { createRawSnippet } from "svelte";
 import { existsSync } from "node:fs";
 import { fileURLToPath } from "node:url";
@@ -116,6 +123,23 @@ describe("root layout shell", () => {
     mount("/login");
     pressCmdK();
     expect(searchPalette.isOpen).toBe(false);
+  });
+
+  it("closes the More sheet on navigation", async () => {
+    mount("/library");
+    await fireEvent.click(screen.getByRole("button", { name: "More" }));
+    expect(screen.getByRole("button", { name: "More" })).toHaveAttribute(
+      "aria-expanded",
+      "true",
+    );
+    const cb = vi.mocked(afterNavigate).mock.calls.at(-1)![0];
+    cb({} as never);
+    await waitFor(() =>
+      expect(screen.getByRole("button", { name: "More" })).toHaveAttribute(
+        "aria-expanded",
+        "false",
+      ),
+    );
   });
 
   it("the old TopBar and BottomNav are gone", () => {

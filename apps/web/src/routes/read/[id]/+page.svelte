@@ -68,12 +68,15 @@
   // article. A fresh deep link never navigates in, so it stays /library.
   let backHref = $state(readerBackTarget(null));
   let originCaptured = false;
+  let navOpen = $state(false);
   afterNavigate(({ from }) => {
+    // The page component is reused across /read/a -> /read/b; don't carry
+    // an open overlay over to the next article.
+    navOpen = false;
     if (originCaptured) return;
     originCaptured = true;
     backHref = readerBackTarget(from?.url ?? null);
   });
-  let navOpen = $state(false);
   const navCollections = $derived<CollectionSummary[]>(
     $page.data?.collections ?? [],
   );

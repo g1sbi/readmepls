@@ -799,6 +799,20 @@ describe("reader page — focused chrome", () => {
     );
   });
 
+  it("closes the navigation overlay on navigation", async () => {
+    render(ReaderPage);
+    await fireEvent.click(
+      screen.getByRole("button", { name: "Open navigation" }),
+    );
+    await screen.findByRole("link", { name: "Home" });
+    // The page component is reused across /read/a -> /read/b.
+    const cb = vi.mocked(afterNavigate).mock.calls.at(-1)![0];
+    cb({ from: { url: new URL("http://localhost/read/art0") } } as never);
+    await waitFor(() =>
+      expect(screen.queryByRole("link", { name: "Home" })).toBeNull(),
+    );
+  });
+
   it("opens the navigation overlay from the header menu", async () => {
     render(ReaderPage);
     await fireEvent.click(

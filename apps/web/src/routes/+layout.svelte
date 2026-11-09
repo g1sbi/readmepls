@@ -5,7 +5,7 @@
   import "../app.css";
   import "$lib/styles/shadcn-bridge.css";
   import { onMount, setContext, type Snippet } from "svelte";
-  import { invalidateAll, onNavigate } from "$app/navigation";
+  import { afterNavigate, invalidateAll, onNavigate } from "$app/navigation";
   import { shouldAnimateNavigation } from "$lib/view-transition.js";
   import { page } from "$app/stores";
   import { browserPb } from "$lib/pb.js";
@@ -79,6 +79,9 @@
   // own chrome; "none": standalone auth screens.
   const shell = $derived(shellFor(pathname));
   let moreOpen = $state(false);
+  // Any navigation -- a link inside the sheet, back/forward, a search pick --
+  // lands on a new page; the sheet shouldn't still be covering it.
+  afterNavigate(() => (moreOpen = false));
 
   // Search belongs to the signed-in surfaces, not the auth screens.
   function onWindowKeydown(e: KeyboardEvent) {
