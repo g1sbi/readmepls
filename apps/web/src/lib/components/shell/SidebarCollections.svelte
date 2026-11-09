@@ -6,11 +6,15 @@
   let {
     collections,
     activeSlug = null,
-  }: { collections: CollectionSummary[]; activeSlug?: string | null } =
-    $props();
+    labelledby,
+  }: {
+    collections: CollectionSummary[];
+    activeSlug?: string | null;
+    labelledby?: string;
+  } = $props();
 </script>
 
-<ul class="flex flex-col gap-0.5">
+<ul class="flex flex-col gap-0.5" aria-labelledby={labelledby}>
   {#each collections as c (c.id)}
     {@const active = c.slug === activeSlug}
     <li>

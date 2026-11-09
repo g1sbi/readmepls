@@ -77,12 +77,17 @@
   // Collection CRUD — a different feature from collection *filtering* (FilterDrawer's
   // "collections" fieldset above). Mutates then invalidates so `data.facets.collections`
   // refreshes via the server load instead of a manual re-fetch.
+  const libraryErrorCopy = {
+    duplicate: "a collection with that name already exists",
+    empty: "give it a name first",
+    failed: "couldn't create it. try again.",
+    unauthenticated: "sign in again to create collections.",
+  } as const;
   async function createCollection(name: string) {
     collectionError = "";
     const res = await createCollectionAction(pb, name);
     if (res.ok) await invalidateAll();
-    else if (res.error === "duplicate")
-      collectionError = "a collection with that name already exists";
+    else collectionError = libraryErrorCopy[res.error];
   }
   async function renameCollection(id: string, name: string) {
     await pb

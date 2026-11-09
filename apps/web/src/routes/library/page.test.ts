@@ -139,6 +139,25 @@ describe("library page", () => {
     await waitFor(() => expect(invalidateAll).toHaveBeenCalled());
   });
 
+  it("shows an error instead of throwing when creating a collection fails", async () => {
+    collectionCreate.mockRejectedValueOnce(new Error("boom"));
+    render(Library, { data } as never);
+    await fireEvent.click(screen.getByRole("button", { name: /filters/i }));
+    const drawer = within(screen.getByRole("dialog"));
+    await fireEvent.click(
+      drawer.getByRole("button", { name: /new collection/i }),
+    );
+    await fireEvent.input(drawer.getByLabelText(/new collection name/i), {
+      target: { value: "later reads" },
+    });
+    await fireEvent.click(drawer.getByRole("button", { name: /^create$/i }));
+    await waitFor(() =>
+      expect(screen.getAllByText(/couldn't create it/i).length).toBeGreaterThan(
+        0,
+      ),
+    );
+  });
+
   it("hides the pager when everything fits on one page", () => {
     render(Library, { data } as never);
     expect(

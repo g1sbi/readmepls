@@ -1,4 +1,5 @@
 <script lang="ts">
+  import { tick } from "svelte";
   import { resolve } from "$app/paths";
   import { Plus, House, Library, Settings } from "@lucide/svelte";
   import { Button } from "$lib/components/ui/button";
@@ -6,6 +7,7 @@
   import { NAV_ITEMS, activeKey } from "$lib/shell/nav.js";
   import { createCollection } from "$lib/collections/actions.js";
   import type { CollectionSummary } from "$lib/collections/types.js";
+  import { createErrorCopy } from "$lib/collections/copy.js";
   import { browserPb } from "$lib/pb.js";
   import SidebarCollections from "./SidebarCollections.svelte";
   import { sidebarRow } from "./sidebar-row.js";
@@ -23,9 +25,18 @@
   const active = $derived(activeKey(pathname));
   const activeSlug = $derived(
     active === "collections"
-      ? (pathname.split(/[?#]/)[0]?.split("/")[2] ?? null)
+      ? decodeSegment(pathname.split(/[?#]/)[0]?.split("/")[2])
       : null,
   );
+
+  function decodeSegment(seg: string | undefined) {
+    if (!seg) return null;
+    try {
+      return decodeURIComponent(seg);
+    } catch {
+      return seg;
+    }
+  }
 
   const icons = { home: House, library: Library } as const;
 
@@ -34,15 +45,21 @@
   let error = $state("");
   let busy = $state(false);
 
-  const errorCopy = {
-    duplicate: "A collection with that name already exists",
-    empty: "Give it a name first",
-  } as const;
+  let plusButton = $state<HTMLButtonElement | null>(null);
+  let nameInput = $state<HTMLInputElement | null>(null);
+
+  function openCreate() {
+    creating = true;
+    // Already open: the input exists, so refocus it directly.
+    nameInput?.focus();
+  }
 
   function cancel() {
     creating = false;
     draft = "";
     error = "";
+    // The field unmounts with focus on it; hand focus back to its trigger.
+    void tick().then(() => plusButton?.focus());
   }
 
   async function submit() {
@@ -54,8 +71,10 @@
         cancel();
         onCreated();
       } else {
-        error = errorCopy[res.error];
+        error = createErrorCopy[res.error];
       }
+    } catch {
+      error = createErrorCopy.failed;
     } finally {
       busy = false;
     }
@@ -109,6 +128,7 @@
 
     <div class="mt-6 mb-1 flex items-center justify-between pr-1 pl-4">
       <h2
+        id="sidebar-collections-heading"
         class="text-xs font-semibold tracking-wide text-muted-foreground uppercase"
       >
         Collections
@@ -117,7 +137,8 @@
         variant="ghost"
         size="icon-sm"
         aria-label="New collection"
-        onclick={() => (creating = true)}
+        bind:ref={plusButton}
+        onclick={openCreate}
       >
         <Plus />
       </Button>
@@ -126,9 +147,11 @@
     {#if creating}
       <div class="mb-2 px-1">
         <Input
+          bind:ref={nameInput}
           bind:value={draft}
           aria-label="New collection name"
           aria-invalid={error ? true : undefined}
+          aria-describedby={error ? "sidebar-collection-error" : undefined}
           placeholder="Name it, press enter"
           autocomplete="off"
           onkeydown={onKeydown}
@@ -136,14 +159,22 @@
           {@attach focusOnMount}
         />
         {#if error}
-          <p role="alert" class="mt-1.5 px-4 text-xs text-destructive">
+          <p
+            id="sidebar-collection-error"
+            role="alert"
+            class="mt-1.5 px-4 text-xs text-destructive"
+          >
             {error}
           </p>
         {/if}
       </div>
     {/if}
 
-    <SidebarCollections {collections} {activeSlug} />
+    <SidebarCollections
+      {collections}
+      {activeSlug}
+      labelledby="sidebar-collections-heading"
+    />
   </div>
 
   <div class="border-t border-hairline px-3 py-3">

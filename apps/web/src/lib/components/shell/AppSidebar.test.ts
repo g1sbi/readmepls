@@ -1,8 +1,18 @@
 import { describe, it, expect, vi, beforeEach } from "vitest";
 import { render, screen, fireEvent, waitFor } from "@testing-library/svelte";
 
-const { createCollection } = vi.hoisted(() => ({ createCollection: vi.fn() }));
-vi.mock("$lib/collections/actions.js", () => ({ createCollection }));
+const { createCollection, rejecting } = vi.hoisted(() => ({
+  createCollection: vi.fn(),
+  rejecting: { on: false },
+}));
+// Wrapper so a rejecting call is a plain promise, not one vitest's spy tracks
+// (it re-surfaces tracked rejections as a failure of the test).
+vi.mock("$lib/collections/actions.js", () => ({
+  createCollection: (...args: unknown[]) =>
+    rejecting.on
+      ? Promise.reject(new Error("boom"))
+      : createCollection(...args),
+}));
 vi.mock("$lib/pb.js", () => ({ browserPb: () => ({}) }));
 
 import AppSidebar from "./AppSidebar.svelte";
@@ -23,7 +33,10 @@ const mount = (over: Record<string, unknown> = {}) => {
   return { onCreated };
 };
 
-beforeEach(() => createCollection.mockReset());
+beforeEach(() => {
+  createCollection.mockReset();
+  rejecting.on = false;
+});
 
 describe("AppSidebar", () => {
   it("renders Home and Library but no unbuilt sections", () => {
@@ -140,5 +153,85 @@ describe("AppSidebar", () => {
       key: "Enter",
     });
     expect(await screen.findByText("Give it a name first")).toBeInTheDocument();
+  });
+
+  it("shows the failed and unauthenticated messages as alerts", async () => {
+    createCollection.mockResolvedValue({ ok: false, error: "failed" });
+    mount();
+    await fireEvent.click(
+      screen.getByRole("button", { name: "New collection" }),
+    );
+    const input = screen.getByLabelText("New collection name");
+    await fireEvent.input(input, { target: { value: "x" } });
+    await fireEvent.keyDown(input, { key: "Enter" });
+    const alert = await screen.findByRole("alert");
+    expect(alert).toHaveTextContent("Couldn't create it. Try again.");
+    expect(input).toHaveAttribute("aria-describedby", alert.id);
+
+    createCollection.mockResolvedValue({ ok: false, error: "unauthenticated" });
+    await fireEvent.keyDown(input, { key: "Enter" });
+    expect(
+      await screen.findByText("Sign in again to create collections."),
+    ).toBeInTheDocument();
+  });
+
+  it("does not throw when create rejects", async () => {
+    rejecting.on = true;
+    mount();
+    await fireEvent.click(
+      screen.getByRole("button", { name: "New collection" }),
+    );
+    const input = screen.getByLabelText("New collection name");
+    await fireEvent.input(input, { target: { value: "x" } });
+    await fireEvent.keyDown(input, { key: "Enter" });
+    expect(
+      await screen.findByText("Couldn't create it. Try again."),
+    ).toBeInTheDocument();
+  });
+
+  it("returns focus to + after Escape and after a create", async () => {
+    createCollection.mockResolvedValue({ ok: true });
+    mount();
+    const plus = screen.getByRole("button", { name: "New collection" });
+    await fireEvent.click(plus);
+    const input = screen.getByLabelText("New collection name");
+    expect(input).toHaveFocus();
+    await fireEvent.keyDown(input, { key: "Escape" });
+    await waitFor(() => expect(plus).toHaveFocus());
+
+    await fireEvent.click(plus);
+    const input2 = screen.getByLabelText("New collection name");
+    await fireEvent.input(input2, { target: { value: "ok" } });
+    await fireEvent.keyDown(input2, { key: "Enter" });
+    await waitFor(() => expect(plus).toHaveFocus());
+  });
+
+  it("refocuses the input when + is clicked while open", async () => {
+    mount();
+    const plus = screen.getByRole("button", { name: "New collection" });
+    await fireEvent.click(plus);
+    plus.focus();
+    await fireEvent.click(plus);
+    await waitFor(() =>
+      expect(screen.getByLabelText("New collection name")).toHaveFocus(),
+    );
+  });
+
+  it("matches an encoded slug and labels the list", () => {
+    mount({
+      pathname: "/collections/caf%C3%A9",
+      collections: [{ id: "c9", name: "Café", slug: "café", count: 1 }],
+    });
+    expect(screen.getByRole("link", { name: /Café/ })).toHaveAttribute(
+      "aria-current",
+      "page",
+    );
+    expect(
+      screen.getByRole("list", { name: "Collections" }),
+    ).toBeInTheDocument();
+  });
+
+  it("survives a malformed encoded pathname", () => {
+    expect(() => mount({ pathname: "/collections/%E0%A4%A" })).not.toThrow();
   });
 });

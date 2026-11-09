@@ -33,9 +33,41 @@ describe("createCollection", () => {
     });
   });
 
-  it("rethrows other failures", async () => {
+  it("reports a 500 as failed", async () => {
+    const create = vi
+      .fn()
+      .mockRejectedValue(new ClientResponseError({ status: 500 }));
+    expect(await createCollection(fakePb(create), "x")).toEqual({
+      ok: false,
+      error: "failed",
+    });
+  });
+
+  it("reports a network error (status 0) as failed", async () => {
+    const create = vi
+      .fn()
+      .mockRejectedValue(new ClientResponseError({ status: 0 }));
+    expect(await createCollection(fakePb(create), "x")).toEqual({
+      ok: false,
+      error: "failed",
+    });
+  });
+
+  it("reports an unexpected throw as failed", async () => {
     const create = vi.fn().mockRejectedValue(new Error("boom"));
-    await expect(createCollection(fakePb(create), "x")).rejects.toThrow("boom");
+    expect(await createCollection(fakePb(create), "x")).toEqual({
+      ok: false,
+      error: "failed",
+    });
+  });
+
+  it("reports no signed-in user as unauthenticated, without a request", async () => {
+    const create = vi.fn();
+    expect(await createCollection(fakePb(create, null), "x")).toEqual({
+      ok: false,
+      error: "unauthenticated",
+    });
+    expect(create).not.toHaveBeenCalled();
   });
 
   it("rejects a blank name without a request", async () => {
