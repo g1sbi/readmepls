@@ -52,10 +52,8 @@ describe("shadcn ↔ tokens bridge", () => {
     }
   });
 
-  it("pins the two app breakpoints", () => {
-    const c = css();
-    expect(c).toMatch(/--breakpoint-sm:\s*40rem/);
-    expect(c).toMatch(/--breakpoint-lg:\s*64rem/);
+  it("relies on Tailwind's default breakpoints rather than restating them", () => {
+    expect(css()).not.toMatch(/--breakpoint-[\w-]+\s*:/);
   });
 
   it("declares the alias block on :root and every [data-theme] scope", () => {

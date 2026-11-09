@@ -82,8 +82,5 @@
   --ease-bounce: var(--motion-bounce);
 }
 
-/* The app's two breakpoints (640px, 1024px). */
-@theme {
-  --breakpoint-sm: 40rem;
-  --breakpoint-lg: 64rem;
-}
+/* Breakpoints: the app uses Tailwind's defaults, sm = 40rem (640px) and
+ * lg = 64rem (1024px). Nothing to override here. */
