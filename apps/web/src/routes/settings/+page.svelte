@@ -1,4 +1,5 @@
 <script lang="ts">
+  import PageHeader from "$lib/components/shell/PageHeader.svelte";
   import { getContext } from "svelte";
   import { goto } from "$app/navigation";
   import { resolve } from "$app/paths";
@@ -18,8 +19,8 @@
 
 <svelte:head><title>Settings</title></svelte:head>
 
-<div class="mx-auto flex w-full max-w-xl flex-col gap-8 px-4 py-6">
-  <h1 class="font-display text-2xl">Settings</h1>
+<div class="mx-auto flex w-full max-w-xl flex-col gap-8">
+  <PageHeader title="Settings" />
 
   <section class="flex flex-col gap-3" aria-labelledby="settings-appearance">
     <h2 id="settings-appearance" class="text-lg font-semibold">Appearance</h2>

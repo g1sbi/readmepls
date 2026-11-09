@@ -4,6 +4,14 @@ import "@testing-library/jest-dom/vitest";
 import Page from "./+page.svelte";
 
 describe("connectors settings page", () => {
+  it("titles the page Connectors in the shared page header", () => {
+    const { getByRole } = render(Page);
+    expect(
+      getByRole("heading", { level: 1, name: "Connectors" }),
+    ).toBeInTheDocument();
+    expect(getByRole("button", { name: "Save a link" })).toBeInTheDocument();
+  });
+
   it("lists markdown as active with an export link", () => {
     const { getByText, getByRole } = render(Page);
     expect(getByText(/markdown/i)).toBeInTheDocument();

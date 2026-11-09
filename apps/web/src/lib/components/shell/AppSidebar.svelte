@@ -41,7 +41,7 @@
   </div>
 
   <div data-sidebar-scroll class="flex-1 overflow-y-auto px-3 pb-4">
-    <ul class="flex flex-col gap-0.5">
+    <ul class="m-0 flex list-none flex-col gap-0.5 p-0">
       {#each NAV_ITEMS as item (item.key)}
         {@const Icon = icons[item.key]}
         {@const isActive = active === item.key}

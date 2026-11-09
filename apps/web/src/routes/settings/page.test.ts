@@ -26,6 +26,10 @@ describe("/settings", () => {
     expect(
       screen.getByRole("heading", { level: 1, name: "Settings" }),
     ).toBeInTheDocument();
+    // The shared PageHeader (search + capture) owns the title.
+    expect(
+      screen.getByRole("button", { name: "Save a link" }),
+    ).toBeInTheDocument();
   });
 
   it("choosing Dark calls the theme context set", async () => {

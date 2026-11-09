@@ -79,3 +79,22 @@ if (realWindow) {
     });
   }
 }
+
+// jsdom doesn't implement matchMedia. The shared PageHeader's capture sheet
+// picks its variant with svelte/reactivity's MediaQuery, which calls it on
+// construction — so every page that renders the header needs it. Matches
+// nothing (a phone-width, light, motion-OK default); tests that care about a
+// specific query stub their own with vi.stubGlobal.
+if (typeof window !== "undefined" && typeof window.matchMedia !== "function") {
+  window.matchMedia = (query: string) =>
+    ({
+      matches: false,
+      media: query,
+      onchange: null,
+      addEventListener: () => {},
+      removeEventListener: () => {},
+      addListener: () => {},
+      removeListener: () => {},
+      dispatchEvent: () => false,
+    }) as MediaQueryList;
+}

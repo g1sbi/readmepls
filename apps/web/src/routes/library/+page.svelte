@@ -1,5 +1,6 @@
 <!-- apps/web/src/routes/library/+page.svelte -->
 <script lang="ts">
+  import PageHeader from "$lib/components/shell/PageHeader.svelte";
   import { onMount, onDestroy } from "svelte";
   import { goto, invalidateAll } from "$app/navigation";
   import { resolve } from "$app/paths";
@@ -149,7 +150,7 @@
   onDestroy(() => unsub?.());
 </script>
 
-<h1>your library</h1>
+<PageHeader title="Library" />
 
 <LibraryCollections
   collections={data.facets.collections}
@@ -236,13 +237,6 @@
 {/if}
 
 <style>
-  h1 {
-    font-family: var(--font-ui);
-    font-size: var(--text-xl);
-    font-weight: var(--weight-semibold);
-    color: var(--color-text);
-    margin: 0 0 var(--space-5);
-  }
   .empty {
     text-align: center;
     padding: var(--space-7) var(--space-4);

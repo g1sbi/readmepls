@@ -38,11 +38,11 @@
           await goto(resolve("/verify"));
           return;
         }
-        await goto(resolve("/"));
+        await goto(resolve("/"), { invalidateAll: true });
         return;
       }
       await pb.collection("users").authWithPassword(email, password);
-      await goto(resolve("/"));
+      await goto(resolve("/"), { invalidateAll: true });
     } catch {
       err =
         mode === "signup"

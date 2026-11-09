@@ -1,4 +1,5 @@
 <script lang="ts">
+  import PageHeader from "$lib/components/shell/PageHeader.svelte";
   import { listConnectors } from "@readmepls/core";
   import { resolve } from "$app/paths";
   import { Button } from "$lib/components/ui/button";
@@ -16,7 +17,7 @@
   <Button variant="ghost" size="sm" href={resolve("/settings")}
     ><ArrowLeft aria-hidden="true" />Settings</Button
   >
-  <h1>connectors</h1>
+  <PageHeader title="Connectors" />
   <p class="lede">send your clean articles where they belong.</p>
 
   <ul class="list">
@@ -40,11 +41,6 @@
     max-width: var(--width-narrow);
     margin: 0 auto;
     padding: var(--space-6) var(--space-5);
-  }
-  h1 {
-    font-family: var(--font-ui);
-    font-size: var(--text-xl);
-    color: var(--color-text);
   }
   .lede {
     color: var(--color-text-muted);

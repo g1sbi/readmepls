@@ -47,7 +47,9 @@ describe("/verify page", () => {
     await waitFor(() =>
       expect(h.confirmVerification).toHaveBeenCalledWith("tok123"),
     );
-    await waitFor(() => expect(h.goto).toHaveBeenCalledWith("/"));
+    await waitFor(() =>
+      expect(h.goto).toHaveBeenCalledWith("/", { invalidateAll: true }),
+    );
   });
 
   it("shows an error and resend option when the token is invalid", async () => {
@@ -71,6 +73,6 @@ describe("/verify page", () => {
     expect(
       await screen.findByRole("link", { name: /sign in/i }),
     ).toBeInTheDocument();
-    expect(h.goto).not.toHaveBeenCalledWith("/");
+    expect(h.goto).not.toHaveBeenCalledWith("/", expect.anything());
   });
 });

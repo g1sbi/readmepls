@@ -1,4 +1,5 @@
 <script lang="ts">
+  import PageHeader from "$lib/components/shell/PageHeader.svelte";
   import { page } from "$app/stores";
   import { resolve } from "$app/paths";
   import { browserPb } from "$lib/pb.js";
@@ -39,7 +40,7 @@
   <a class="back" href={resolve("/library")}
     ><ArrowLeft class="icon-sm" aria-hidden="true" /> library</a
   >
-  <h1>{name}</h1>
+  <PageHeader title={name} />
   {#if articles.length === 0}
     <p class="empty-note">no articles in this collection yet.</p>
   {:else}
@@ -67,13 +68,6 @@
   }
   .back:hover {
     color: var(--color-text);
-  }
-  h1 {
-    font-family: var(--font-ui);
-    font-size: var(--text-xl);
-    font-weight: var(--weight-semibold);
-    color: var(--color-text);
-    margin: 0 0 var(--space-5);
   }
   .empty-note {
     color: var(--color-text-muted);

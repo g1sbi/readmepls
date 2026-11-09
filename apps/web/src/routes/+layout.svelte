@@ -4,13 +4,11 @@
   import "$lib/styles/marker.css";
   import "../app.css";
   import "$lib/styles/shadcn-bridge.css";
-  import { onMount, setContext } from "svelte";
-  import { goto, onNavigate } from "$app/navigation";
-  import { resolve } from "$app/paths";
+  import { onMount, setContext, type Snippet } from "svelte";
+  import { invalidateAll, onNavigate } from "$app/navigation";
   import { shouldAnimateNavigation } from "$lib/view-transition.js";
   import { page } from "$app/stores";
   import { browserPb } from "$lib/pb.js";
-  import { signOut as doSignOut } from "$lib/auth/sign-out.js";
   import {
     resolveThemePref,
     resolveMode,
@@ -21,14 +19,16 @@
     type Mode,
   } from "$lib/theme/theme.js";
   import { releaseTransformContainingBlock } from "$lib/actions/release-transform-containing-block.js";
-  import TopBar from "$lib/components/TopBar.svelte";
-  import BottomNav from "$lib/components/BottomNav.svelte";
   import SearchPalette from "$lib/components/SearchPalette.svelte";
+  import AppSidebar from "$lib/components/shell/AppSidebar.svelte";
+  import TabBar from "$lib/components/shell/TabBar.svelte";
+  import MoreSheet from "$lib/components/shell/MoreSheet.svelte";
+  import { shellFor } from "$lib/shell/nav.js";
   import { handleSearchKeydown } from "$lib/search/handle-keydown.js";
   import { initExtensionDetection } from "$lib/stores/extension.svelte.js";
-  import { showsGlobalNav } from "$lib/components/bottom-nav-scroll.js";
+  import type { LayoutData } from "./$types";
 
-  let { children } = $props();
+  let { children, data }: { children: Snippet; data: LayoutData } = $props();
   const pb = browserPb();
   let theme = $state<ThemePref>("system");
   let mode = $state<Mode>("light");
@@ -50,10 +50,9 @@
   // The reading-progress strip must render as a sibling of .page, not a
   // descendant: .page is `position: relative; z-index: 1`, which makes it a
   // stacking context of its own, capping any z-index set on a descendant at
-  // rank 1 -- no z-index inside .page can ever outrank TopBar (a .page
-  // sibling). Lifting the element up here (same fix pattern as the portaled
-  // Sheet) lets it sit in the same stacking context as TopBar and actually
-  // overlay it.
+  // rank 1 -- no z-index inside .page could ever outrank the reader's sticky
+  // header. Lifting the element up here (same fix pattern as the portaled
+  // Sheet) lets it overlay the chrome.
   setContext("readProgress", {
     set: (p: number) => {
       readProgress = p;
@@ -75,11 +74,16 @@
     });
   });
 
-  // Chrome (TopBar + paper bg) is hidden on the standalone login screen.
-  const chrome = $derived($page.url.pathname !== "/login");
-  // The reader's own 3-column layout (rail + article + highlights) needs more
-  // room than card-grid pages, which stay at --width-page so cards don't stretch.
-  const isReader = $derived($page.url.pathname.startsWith("/read/"));
+  const pathname = $derived($page.url.pathname);
+  // "app": sidebar (md+) or tab bar (phones); "reader": the article owns its
+  // own chrome; "none": standalone auth screens.
+  const shell = $derived(shellFor(pathname));
+  let moreOpen = $state(false);
+
+  // Search belongs to the signed-in surfaces, not the auth screens.
+  function onWindowKeydown(e: KeyboardEvent) {
+    if (shell !== "none") handleSearchKeydown(e);
+  }
 
   function systemPrefersDark(): boolean {
     try {
@@ -132,35 +136,54 @@
       });
     }
   }
-
-  async function signOut() {
-    await doSignOut(pb, () => goto(resolve("/login")));
-  }
 </script>
 
-<svelte:window onkeydown={handleSearchKeydown} />
+<svelte:window onkeydown={onWindowKeydown} />
 
-<div class="app" class:reader={isReader}>
-  {#if chrome}
-    <TopBar {theme} onTheme={setTheme} onSignOut={signOut} />
-  {/if}
-  {#if $page.url.pathname.startsWith("/read/")}
-    <div class="progress" style="--p: {readProgress}" aria-hidden="true"></div>
-  {/if}
-  <div
-    class="page"
-    class:page--wide={isReader}
-    use:releaseTransformContainingBlock
-  >
-    {@render children()}
+{#if shell === "app"}
+  <div class="app grid md:grid-cols-[15rem_1fr]">
+    <div class="sticky top-0 hidden h-dvh self-start md:flex">
+      <AppSidebar
+        {pathname}
+        collections={data.collections}
+        onCreated={invalidateAll}
+      />
+    </div>
+    <!-- Bottom padding below md keeps content clear of the fixed tab bar. -->
+    <main class="min-w-0 pb-[calc(5rem+env(safe-area-inset-bottom))] md:pb-0">
+      <div class="page" use:releaseTransformContainingBlock>
+        {@render children()}
+      </div>
+    </main>
   </div>
-  {#if chrome}
-    {#if showsGlobalNav($page.url.pathname)}
-      <BottomNav pathname={$page.url.pathname} />
-    {/if}
-    <SearchPalette />
-  {/if}
-</div>
+  <TabBar {pathname} {moreOpen} onMore={() => (moreOpen = !moreOpen)} />
+  <MoreSheet
+    open={moreOpen}
+    onClose={() => (moreOpen = false)}
+    {pathname}
+    collections={data.collections}
+    onCreated={invalidateAll}
+  />
+{:else if shell === "reader"}
+  <div class="app">
+    <div class="progress" style="--p: {readProgress}" aria-hidden="true"></div>
+    <!-- The reader's 3-column layout (rail + article + highlights) needs more
+         room than card-grid pages, which stay at --width-page. -->
+    <div class="page page--wide" use:releaseTransformContainingBlock>
+      {@render children()}
+    </div>
+  </div>
+{:else}
+  <div class="app">
+    <div class="page" use:releaseTransformContainingBlock>
+      {@render children()}
+    </div>
+  </div>
+{/if}
+
+{#if shell !== "none"}
+  <SearchPalette />
+{/if}
 
 <style>
   .app {
@@ -189,8 +212,8 @@
       transform: none;
     }
   }
-  /* z-index above TopBar's sticky header (20) -- both sit at top:0, and the
-     reading-progress strip is meant to overlay the chrome, not hide behind it. */
+  /* z-index above the reader's sticky header (20) -- both sit at top:0, and
+     the reading-progress strip is meant to overlay the chrome. */
   .progress {
     position: fixed;
     top: 0;
@@ -209,21 +232,6 @@
   @media (prefers-reduced-motion: reduce) {
     .page {
       animation: none;
-    }
-  }
-  @media (max-width: 640px) {
-    .page {
-      padding-bottom: calc(56px + env(safe-area-inset-bottom) + 1rem);
-    }
-  }
-  /* The reader owns its own chrome below 1024px (floating back-link + bottom
-     control bar), so the global TopBar is suppressed there — otherwise its
-     opaque sticky bar covers the floating back-link, which is trapped in
-     .page's stacking context and can't outrank it. Desktop reader keeps the
-     TopBar and its in-flow back link. */
-  @media (max-width: 1023.98px) {
-    .app.reader :global(.topbar) {
-      display: none;
     }
   }
 </style>

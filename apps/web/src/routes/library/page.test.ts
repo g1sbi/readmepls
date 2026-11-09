@@ -84,6 +84,16 @@ async function deleteViaMenu() {
 }
 
 describe("library page", () => {
+  it("titles the page Library in the shared page header", () => {
+    render(Library, { data } as never);
+    expect(
+      screen.getByRole("heading", { level: 1, name: "Library" }),
+    ).toBeInTheDocument();
+    expect(
+      screen.getByRole("button", { name: "Save a link" }),
+    ).toBeInTheDocument();
+  });
+
   it("renders articles from the load data", () => {
     render(Library, { data } as never);
     expect(screen.getByText("Hello")).toBeInTheDocument();

@@ -14,7 +14,10 @@
   } = $props();
 </script>
 
-<ul class="flex flex-col gap-0.5" aria-labelledby={labelledby}>
+<ul
+  class="m-0 flex list-none flex-col gap-0.5 p-0"
+  aria-labelledby={labelledby}
+>
   {#each collections as c (c.id)}
     {@const active = c.slug === activeSlug}
     <li>

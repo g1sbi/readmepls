@@ -234,4 +234,18 @@ describe("AppSidebar", () => {
   it("survives a malformed encoded pathname", () => {
     expect(() => mount({ pathname: "/collections/%E0%A4%A" })).not.toThrow();
   });
+
+  // app.css owns the reset and Tailwind preflight is excluded, so a bare <ul>
+  // keeps its browser bullets and 40px indent (horizontal overflow in the
+  // More sheet at 360px).
+  it("strips the browser list styling from its lists", () => {
+    mount();
+    const lists = screen
+      .getByRole("navigation", { name: "Main" })
+      .querySelectorAll("ul");
+    expect(lists.length).toBeGreaterThan(1);
+    for (const ul of lists) {
+      expect(ul).toHaveClass("m-0", "list-none", "p-0");
+    }
+  });
 });

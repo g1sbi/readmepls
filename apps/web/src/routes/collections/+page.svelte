@@ -1,4 +1,5 @@
 <script lang="ts">
+  import PageHeader from "$lib/components/shell/PageHeader.svelte";
   import type { PageData } from "./$types";
   import { resolve } from "$app/paths";
   import CollectionFolder from "$lib/components/ui/CollectionFolder.svelte";
@@ -8,7 +9,7 @@
 
 <svelte:head><title>collections</title></svelte:head>
 
-<h1>collections</h1>
+<PageHeader title="Collections" />
 
 {#if data.collections.length === 0}
   <p class="empty-note">
@@ -25,13 +26,6 @@
 {/if}
 
 <style>
-  h1 {
-    font-family: var(--font-ui);
-    font-size: var(--text-xl);
-    font-weight: var(--weight-semibold);
-    color: var(--color-text);
-    margin: 0 0 var(--space-5);
-  }
   .folder-grid {
     display: flex;
     flex-wrap: wrap;

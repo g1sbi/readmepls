@@ -27,7 +27,7 @@
         } catch {
           // stale session is harmless; fall through to home, guard re-checks.
         }
-        await goto(resolve("/"));
+        await goto(resolve("/"), { invalidateAll: true });
       }
     } catch {
       status = "error";

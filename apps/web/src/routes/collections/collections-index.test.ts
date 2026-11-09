@@ -3,6 +3,16 @@ import { render, screen } from "@testing-library/svelte";
 import Collections from "./+page.svelte";
 
 describe("collections index", () => {
+  it("titles the page Collections in the shared page header", () => {
+    render(Collections, { data: { collections: [] } } as never);
+    expect(
+      screen.getByRole("heading", { level: 1, name: "Collections" }),
+    ).toBeInTheDocument();
+    expect(
+      screen.getByRole("button", { name: "Save a link" }),
+    ).toBeInTheDocument();
+  });
+
   it("renders a folder per collection with counts", () => {
     render(Collections, {
       data: {
