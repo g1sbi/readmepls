@@ -5,7 +5,7 @@ const DEFAULTS: ReaderPrefs = {
   size: 18,
   lineHeight: 1.6,
   width: "normal",
-  theme: "light",
+  theme: "system",
 };
 
 const clamp = (n: number, lo: number, hi: number) =>

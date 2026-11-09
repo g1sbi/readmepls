@@ -8,7 +8,7 @@ describe("withReaderDefaults", () => {
       size: 18,
       lineHeight: 1.6,
       width: "normal",
-      theme: "light",
+      theme: "system",
     });
   });
 
@@ -29,5 +29,10 @@ describe("withReaderDefaults", () => {
   it("ignores unknown/invalid enum values and falls back to default", () => {
     const p = withReaderDefaults({ font: "comic" as never });
     expect(p.font).toBe("sans");
+  });
+
+  it("falls back to system for a legacy sepia theme", () => {
+    const p = withReaderDefaults({ theme: "sepia" as never });
+    expect(p.theme).toBe("system");
   });
 });
