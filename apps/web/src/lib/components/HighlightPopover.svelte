@@ -1,5 +1,5 @@
 <script lang="ts">
-  import { Popover } from "bits-ui";
+  import * as Popover from "$lib/components/ui/popover";
   import { X } from "@lucide/svelte";
   import type { HighlightColor } from "@readmepls/types";
 
@@ -42,7 +42,7 @@
 <Popover.Root open {onOpenChange}>
   <Popover.Content
     customAnchor={anchor}
-    class="hl-popover"
+    class="hl-popover flex-row items-center"
     role="dialog"
     aria-label="add highlight"
     sideOffset={4}
@@ -76,21 +76,7 @@
     width: 0;
     height: 0;
   }
-  /* Bits UI portals Popover.Content to the body, so styles are :global with a
-     specific class. Values copied from the previous version — no visual change. */
-  :global(.hl-popover) {
-    position: relative;
-    overflow: hidden;
-    display: flex;
-    gap: var(--space-2);
-    align-items: center;
-    padding: var(--space-2);
-    background: var(--color-surface);
-    border: 1px solid var(--color-border);
-    border-radius: var(--radius-md);
-    box-shadow: var(--shadow-lg);
-    z-index: var(--z-sticky);
-  }
+  /* Popover content portals to the body, so inner rules are :global. */
   :global(.hl-popover) .swatches {
     display: flex;
     gap: var(--space-1);

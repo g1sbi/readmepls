@@ -1,6 +1,6 @@
 import { describe, it, expect, vi } from "vitest";
 import { render, screen, fireEvent } from "@testing-library/svelte";
-import { readFileSync, existsSync } from "node:fs";
+import { readFileSync } from "node:fs";
 import { resolve } from "node:path";
 import SheetHarness from "./sheet-harness.svelte";
 
@@ -43,11 +43,5 @@ describe("Sheet", () => {
 
   it("overlay uses the scrim token", () => {
     expect(read("sheet-overlay.svelte")).toContain("bg-scrim");
-  });
-
-  it("the hand-rolled ui/Sheet.svelte is gone", () => {
-    expect(existsSync(resolve(import.meta.dirname, "../Sheet.svelte"))).toBe(
-      false,
-    );
   });
 });

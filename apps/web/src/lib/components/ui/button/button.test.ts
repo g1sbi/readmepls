@@ -1,8 +1,6 @@
 import { describe, it, expect } from "vitest";
 import { render, screen } from "@testing-library/svelte";
 import { createRawSnippet } from "svelte";
-import { readFileSync, globSync } from "node:fs";
-import { resolve } from "node:path";
 import Button, { buttonVariants } from "./button.svelte";
 
 const text = (s: string) =>
@@ -41,17 +39,5 @@ describe("Button", () => {
       .filter(([, v]) => String(v).includes("bg-marker"))
       .map(([k]) => k);
     expect(withMarker).toEqual(["marker"]);
-  });
-
-  it("no consumer imports the hand-rolled Button", () => {
-    const root = resolve(import.meta.dirname, "../../../..");
-    const files = globSync("**/*.svelte", { cwd: root });
-    expect(files.length).toBeGreaterThan(10);
-    const offenders = files.filter((f) =>
-      /ui\/Button\.svelte|from "\.\/Button\.svelte"/.test(
-        readFileSync(resolve(root, f), "utf8"),
-      ),
-    );
-    expect(offenders).toEqual([]);
   });
 });

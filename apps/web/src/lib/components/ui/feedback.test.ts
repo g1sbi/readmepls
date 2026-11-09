@@ -21,10 +21,4 @@ describe("feedback primitives", () => {
     render(Spinner);
     expect(screen.getByRole("status", { name: "Loading" })).toBeInTheDocument();
   });
-
-  it("the hand-rolled Skeleton and Spinner are gone", () => {
-    const files = Object.keys(import.meta.glob("./*.svelte"));
-    expect(files).not.toContain("./Skeleton.svelte");
-    expect(files).not.toContain("./Spinner.svelte");
-  });
 });

@@ -19,10 +19,6 @@ const RETIRED = [
   "Card",
 ];
 
-// Pre-existing direct bits-ui consumers awaiting migration to a shadcn
-// primitive (Popover). Do not add to this list.
-const BITS_UI_ALLOWLIST = ["lib/components/HighlightPopover.svelte"];
-
 describe("shadcn-only primitives", () => {
   it("ui/ holds no hand-rolled replacement for a shadcn primitive", () => {
     const top = readdirSync(uiDir).filter((f) => f.endsWith(".svelte"));
@@ -33,14 +29,18 @@ describe("shadcn-only primitives", () => {
     expect(offenders).toEqual([]);
   });
 
-  it("no .svelte outside ui/ imports bits-ui", () => {
-    const files = globSync("**/*.svelte", { cwd: srcRoot });
+  it("nothing outside ui/ imports bits-ui", () => {
+    const files = [
+      ...globSync("**/*.svelte", { cwd: srcRoot }),
+      ...globSync("**/*.ts", { cwd: srcRoot }),
+    ];
     expect(files.length).toBeGreaterThan(10);
+    const self = "lib/components/ui/no-hand-rolled.test.ts";
     const offenders = files.filter(
       (f) =>
         !f.startsWith("lib/components/ui/") &&
-        !BITS_UI_ALLOWLIST.includes(f) &&
-        /from\s+["']bits-ui["']/.test(
+        f !== self &&
+        /["']bits-ui(\/[^"']*)?["']/.test(
           readFileSync(resolve(srcRoot, f), "utf8"),
         ),
     );

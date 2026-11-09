@@ -1,7 +1,5 @@
 import { describe, it, expect, vi, beforeEach } from "vitest";
 import { render, screen, fireEvent } from "@testing-library/svelte";
-import { readFileSync, globSync } from "node:fs";
-import { resolve } from "node:path";
 import ConfirmAction from "./ConfirmAction.svelte";
 
 const base = {
@@ -69,16 +67,5 @@ describe("ConfirmAction", () => {
       onCancel: vi.fn(),
     });
     expect(screen.queryByText("This can't be undone.")).not.toBeInTheDocument();
-  });
-
-  it("the hand-rolled ConfirmDialog is gone", () => {
-    const root = resolve(import.meta.dirname, "../..");
-    const files = globSync("**/*.svelte", { cwd: root });
-    expect(files.length).toBeGreaterThan(10);
-    expect(files).not.toContain("lib/components/ui/ConfirmDialog.svelte");
-    const offenders = files.filter((f) =>
-      /ConfirmDialog/.test(readFileSync(resolve(root, f), "utf8")),
-    );
-    expect(offenders).toEqual([]);
   });
 });
