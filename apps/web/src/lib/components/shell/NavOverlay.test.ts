@@ -47,6 +47,7 @@ describe("NavOverlay", () => {
     expect(sheet).toHaveAttribute("data-side", "left");
     expect(screen.getByRole("link", { name: /Physics/ })).toBeInTheDocument();
     expect(screen.getByRole("link", { name: "Settings" })).toBeInTheDocument();
+    expect(document.querySelector("[aria-current='page']")).toBeNull();
   });
 
   it("renders the More sheet with Home and Library on top when narrow", async () => {
@@ -61,8 +62,8 @@ describe("NavOverlay", () => {
     expect(
       home.compareDocumentPosition(settings) & Node.DOCUMENT_POSITION_FOLLOWING,
     ).toBeTruthy();
-    // Reading an article sits under Library.
-    expect(library).toHaveAttribute("aria-current", "page");
+    // The reader belongs to no section, so nothing reads as current.
+    expect(document.querySelector("[aria-current='page']")).toBeNull();
   });
 
   it("closes when a link is followed (narrow)", async () => {

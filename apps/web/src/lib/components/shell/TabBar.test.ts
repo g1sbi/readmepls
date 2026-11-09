@@ -30,11 +30,10 @@ describe("TabBar", () => {
     expect(tabs).toEqual(["Home", "Library", "More"]);
   });
 
-  it("marks Library current on a reader route", () => {
+  it("marks no tab current on a reader route", () => {
     mount("/read/x");
-    expect(screen.getByRole("link", { name: "Library" })).toHaveAttribute(
+    expect(screen.getByRole("link", { name: "Library" })).not.toHaveAttribute(
       "aria-current",
-      "page",
     );
     expect(screen.getByRole("link", { name: "Home" })).not.toHaveAttribute(
       "aria-current",

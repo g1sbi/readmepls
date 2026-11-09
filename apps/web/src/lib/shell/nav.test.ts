@@ -12,7 +12,8 @@ describe("activeKey", () => {
   it.each([
     ["/", "home"],
     ["/library", "library"],
-    ["/read/abc", "library"],
+    ["/read/abc", null],
+    ["/read", null],
     ["/collections", "collections"],
     ["/collections/physics", "collections"],
     ["/settings", "settings"],

@@ -21,7 +21,8 @@ export function activeKey(
 ): NavKey | "collections" | "settings" | null {
   pathname = pathOf(pathname);
   if (pathname === "/") return "home";
-  if (under(pathname, "/library") || under(pathname, "/read")) return "library";
+  // The reader is not "in" any section -- it's reached from all of them.
+  if (under(pathname, "/library")) return "library";
   if (under(pathname, "/collections")) return "collections";
   if (under(pathname, "/settings")) return "settings";
   return null;
