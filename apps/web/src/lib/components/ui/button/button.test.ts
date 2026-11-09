@@ -50,7 +50,9 @@ describe("Button", () => {
 
   it("underlines the link variant with the marker", () => {
     const cls = buttonVariants({ variant: "link" });
-    expect(cls).toContain("underline");
+    // word-bounded: a bare toContain("underline") also matches no-underline
+    expect(cls).toMatch(/(^|\s)underline(\s|$)/);
+    expect(cls).not.toMatch(/(^|\s)no-underline(\s|$)/);
     expect(cls).toContain("decoration-marker");
     expect(cls).toContain("text-foreground");
   });
