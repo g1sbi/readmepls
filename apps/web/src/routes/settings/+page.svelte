@@ -6,7 +6,10 @@
   import { browserPb } from "$lib/pb.js";
   import { signOut } from "$lib/auth/sign-out.js";
   import type { ThemePref } from "$lib/theme/theme.js";
+  import { page } from "$app/stores";
   import ThemeControl from "$lib/components/ThemeControl.svelte";
+  import GetExtensionButton from "$lib/components/GetExtensionButton.svelte";
+  import { showsExtensionPitch } from "$lib/stores/extension.svelte.js";
   import { Button } from "$lib/components/ui/button";
   import { ChevronRight } from "@lucide/svelte";
 
@@ -36,6 +39,14 @@
       Export and connections
       <ChevronRight class="size-4" aria-hidden="true" />
     </a>
+    {#if showsExtensionPitch($page.data.selfHosted === true)}
+      <div
+        class="flex min-h-11 flex-wrap items-center justify-between gap-3 rounded-xl bg-card px-4 py-3 ring-1 ring-hairline"
+      >
+        Browser extension
+        <GetExtensionButton />
+      </div>
+    {/if}
   </section>
 
   <section class="flex flex-col gap-3" aria-labelledby="settings-account">

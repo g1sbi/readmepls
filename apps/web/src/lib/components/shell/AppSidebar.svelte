@@ -7,6 +7,7 @@
     activeCollectionSlug,
   } from "$lib/shell/nav.js";
   import type { CollectionSummary } from "$lib/collections/types.js";
+  import GetExtensionButton from "$lib/components/GetExtensionButton.svelte";
   import NewCollection from "./NewCollection.svelte";
   import SidebarCollections from "./SidebarCollections.svelte";
   import { sidebarRow } from "./sidebar-row.js";
@@ -67,7 +68,8 @@
     />
   </div>
 
-  <div class="border-t border-hairline px-3 py-3">
+  <div class="flex flex-col gap-2 border-t border-hairline px-3 py-3">
+    <GetExtensionButton class="self-start" />
     <a
       href={resolve("/settings")}
       aria-current={active === "settings" ? "page" : undefined}

@@ -18,3 +18,8 @@ export function initExtensionDetection(): void {
 export function resetExtensionDetection(): void {
   installed = false;
 }
+
+/** Whether to pitch the extension: SaaS only, and only until it's detected. */
+export function showsExtensionPitch(selfHosted: boolean): boolean {
+  return !selfHosted && !installed;
+}

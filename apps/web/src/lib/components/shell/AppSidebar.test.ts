@@ -248,4 +248,13 @@ describe("AppSidebar", () => {
       expect(ul).toHaveClass("m-0", "list-none", "p-0");
     }
   });
+
+  it("offers the browser extension just above Settings", () => {
+    mount();
+    const ext = screen.getByRole("button", { name: /get the extension/i });
+    const settings = screen.getByRole("link", { name: "Settings" });
+    expect(
+      ext.compareDocumentPosition(settings) & Node.DOCUMENT_POSITION_FOLLOWING,
+    ).toBeTruthy();
+  });
 });

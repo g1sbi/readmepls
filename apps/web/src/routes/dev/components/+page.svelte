@@ -39,7 +39,7 @@
 
 <svelte:head><title>Components · dev</title></svelte:head>
 
-<main class="bg-background text-foreground mx-auto max-w-[1800px] p-4">
+<div class="bg-background text-foreground mx-auto max-w-[1800px] p-4">
   <header class="mb-6 flex flex-wrap items-center justify-between gap-3">
     <div>
       <h1 class="text-2xl font-semibold">Components</h1>
@@ -65,4 +65,4 @@
       </div>
     </section>
   {/each}
-</main>
+</div>

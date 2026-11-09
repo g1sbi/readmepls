@@ -46,6 +46,17 @@ describe("/settings", () => {
     expect(screen.getByText("me@example.com")).toBeInTheDocument();
   });
 
+  it("offers the browser extension inside Connectors", () => {
+    render(Page, { context });
+    const section = screen
+      .getByRole("heading", { name: "Connectors" })
+      .closest("section")!;
+    expect(section).toHaveTextContent("Browser extension");
+    expect(section).toContainElement(
+      screen.getByRole("button", { name: /get the extension/i }),
+    );
+  });
+
   it("Sign out calls signOut", async () => {
     render(Page, { context });
     await fireEvent.click(screen.getByRole("button", { name: "Sign out" }));

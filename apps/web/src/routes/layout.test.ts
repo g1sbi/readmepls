@@ -77,6 +77,12 @@ describe("root layout shell", () => {
       screen.getByText("page body"),
     );
     expect(document.querySelector(".topbar")).toBeNull();
+    // Phones: content clears the fixed tab bar; md+ has no tab bar.
+    expect(screen.getByRole("main")).toHaveClass(
+      "pb-[calc(5rem+env(safe-area-inset-bottom))]",
+      "md:pb-0",
+    );
+    expect(document.querySelector(".progress")).toBeNull();
   });
 
   it("the reader shows neither the sidebar nor the tab bar", () => {
@@ -84,10 +90,11 @@ describe("root layout shell", () => {
     expect(screen.queryByRole("navigation", { name: "Main" })).toBeNull();
     expect(screen.queryByRole("navigation", { name: "Tabs" })).toBeNull();
     expect(screen.getByText("page body")).toBeInTheDocument();
+    expect(document.querySelector(".progress")).not.toBeNull();
   });
 
-  it("login shows only the page", () => {
-    mount("/login");
+  it.each(["/login", "/verify"])("%s shows only the page", (path) => {
+    mount(path);
     expect(screen.queryByRole("navigation", { name: "Main" })).toBeNull();
     expect(screen.queryByRole("navigation", { name: "Tabs" })).toBeNull();
     expect(screen.getByText("page body")).toBeInTheDocument();

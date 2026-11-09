@@ -10,9 +10,11 @@
 <Button
   href={`/collections/${slug}`}
   variant="outline"
-  class="min-h-11 justify-start gap-2 px-3"
+  class="max-w-full min-w-0 min-h-11 justify-start gap-2 px-3"
 >
   <FolderOpen class="icon-sm" aria-hidden="true" />
-  <span class="truncate">{name}</span>
-  <Badge variant="secondary" aria-label={`${count} articles`}>{count}</Badge>
+  <span class="min-w-0 truncate">{name}</span>
+  <Badge variant="secondary" class="shrink-0" aria-label={`${count} articles`}
+    >{count}</Badge
+  >
 </Button>
