@@ -179,6 +179,15 @@ describe("tokens.css (Marker)", () => {
     expect(base).toMatch(/border:\s*0 solid var\(--color-border\)/);
   });
 
+  it("links inherit their color in @layer base, keeping their underline", () => {
+    const appCss = readFileSync(join(__dirname, "..", "..", "app.css"), "utf8");
+    const base = appCss.match(/@layer base \{([\s\S]*?)\n\}\n/)?.[1] ?? "";
+    // no browser-default blue on a link a feature forgets to style
+    expect(base).toMatch(/(?:^|\n)\s*a\s*\{\s*color:\s*inherit;\s*\}/);
+    // underlines stay a component decision (reader prose keeps its own)
+    expect(base).not.toMatch(/(?:^|\n)\s*a\s*\{[^}]*text-decoration/);
+  });
+
   it("declares color-scheme per mode so native controls follow the theme", () => {
     expect(css).toMatch(
       /:root,\s*\[data-theme="light"\] \{[^}]*color-scheme:\s*light;/,

@@ -16,7 +16,7 @@
 {#if showsExtensionPitch($page.data.selfHosted === true)}
   <Button
     type="button"
-    variant="marker"
+    variant="secondary"
     size="sm"
     class={className}
     onclick={() => (open = true)}

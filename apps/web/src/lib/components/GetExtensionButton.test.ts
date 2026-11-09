@@ -33,6 +33,15 @@ describe("GetExtensionButton", () => {
     ).toBeInTheDocument();
   });
 
+  // Marker yellow is reserved for the one featured call-to-action.
+  it("uses the neutral secondary button, not the marker", () => {
+    initExtensionDetection();
+    render(GetExtensionButton);
+    const btn = screen.getByRole("button", { name: /get the extension/i });
+    expect(btn).toHaveClass("bg-secondary");
+    expect(btn).not.toHaveClass("bg-marker");
+  });
+
   it("opens the pitch dialog when clicked", async () => {
     initExtensionDetection();
     render(GetExtensionButton);

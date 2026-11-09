@@ -62,6 +62,12 @@ body {
   button {
     cursor: pointer;
   }
+
+  /* No browser-default blue on a link a feature forgets to style. Underlines
+     stay a component decision; the reader's unlayered prose rules win. */
+  a {
+    color: inherit;
+  }
 }
 
 /* Icon sizing utilities (Track 2 slice 2). Applied via the lucide component's
