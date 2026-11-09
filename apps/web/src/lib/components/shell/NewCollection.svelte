@@ -66,6 +66,9 @@
       void submit();
     } else if (e.key === "Escape") {
       e.preventDefault();
+      // Escape belongs to the field here: don't let the enclosing sheet's
+      // document-level escape layer close it too.
+      e.stopPropagation();
       cancel();
     }
   }

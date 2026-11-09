@@ -61,6 +61,22 @@ describe("MoreSheet", () => {
     expect(group).toHaveClass("border-b");
   });
 
+  it("Escape in the new-collection field cancels it without closing the sheet", async () => {
+    const { onClose } = mount();
+    await fireEvent.click(
+      screen.getByRole("button", { name: "New collection" }),
+    );
+    const input = screen.getByLabelText("New collection name");
+    // A document-level listener stands in for bits-ui's escape layer.
+    const reachedDocument = vi.fn();
+    document.addEventListener("keydown", reachedDocument);
+    await fireEvent.keyDown(input, { key: "Escape" });
+    document.removeEventListener("keydown", reachedDocument);
+    expect(screen.queryByLabelText("New collection name")).toBeNull();
+    expect(reachedDocument).not.toHaveBeenCalled();
+    expect(onClose).not.toHaveBeenCalled();
+  });
+
   it("leaves Home and Library to the tab bar by default", () => {
     mount();
     expect(screen.queryByRole("link", { name: "Home" })).toBeNull();
