@@ -66,6 +66,7 @@ const defaultArticle = () => ({
 const articleGetOne = vi.fn().mockResolvedValue(defaultArticle());
 const articleUpdate = vi.fn().mockResolvedValue({});
 const articleDelete = vi.fn().mockResolvedValue(undefined);
+const usersUpdate = vi.fn().mockResolvedValue({});
 
 vi.mock("$lib/pb.js", () => ({
   browserPb: () => ({
@@ -83,7 +84,7 @@ vi.mock("$lib/pb.js", () => ({
       if (name === "users") {
         return {
           getOne: vi.fn().mockResolvedValue({ id: "u1", reader_prefs: null }),
-          update: vi.fn().mockResolvedValue({}),
+          update: usersUpdate,
         };
       }
       // highlights, article_tags, collections — all empty
@@ -672,5 +673,26 @@ describe("reader page — mobile control chrome", () => {
     // Scoped to the nav — content_html's real <h2>First Chapter</h2> also
     // renders in the article body itself, so an unscoped query would match twice.
     expect(within(nav).getByText("First Chapter")).toBeTruthy();
+  });
+
+  it("never overwrites the account theme with stale reader prefs", async () => {
+    // Theme context as the layout provides it; the user flips to dark via the
+    // TopBar AFTER the reader loaded its (light) prefs.
+    const themeCtx = { current: "light", mode: "light", set: vi.fn() };
+    render(ReaderPage, { context: new Map([["theme", themeCtx]]) });
+    await waitFor(() =>
+      expect(screen.getByText("Test Article")).toBeInTheDocument(),
+    );
+    themeCtx.current = "dark";
+
+    await fireEvent.click(await screen.findByText("text"));
+    await fireEvent.click(
+      await screen.findByRole("button", { name: "increase text size" }),
+    );
+
+    await waitFor(() => expect(usersUpdate).toHaveBeenCalled());
+    const payload = usersUpdate.mock.calls.at(-1)![1];
+    expect(payload.reader_prefs.size).toBe(19);
+    expect(payload.reader_prefs.theme).toBe("dark");
   });
 });

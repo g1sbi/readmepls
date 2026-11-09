@@ -245,7 +245,17 @@
     clearTimeout(saveTimer);
     saveTimer = setTimeout(() => {
       const uid = pb.authStore.model?.id;
-      if (uid) pb.collection("users").update(uid, { reader_prefs: next });
+      // The reader never owns `theme`: the layout does. Merge over the current
+      // account prefs and the live theme so a TopBar change made after this
+      // page loaded isn't overwritten with the stale copy in `next`.
+      if (uid)
+        pb.collection("users").update(uid, {
+          reader_prefs: {
+            ...pb.authStore.model?.reader_prefs,
+            ...next,
+            theme: themeCtx?.current ?? next.theme,
+          },
+        });
     }, 500);
   }
 
