@@ -61,3 +61,15 @@
     color: var(--color-text-on-marker);
   }
 }
+
+/* No motion: render already drawn, with or without JS or hover. */
+@media (prefers-reduced-motion: reduce) {
+  .marker-swipe {
+    background-size: 100% 42%;
+  }
+
+  .marker-inverse {
+    background-size: 100% 100%;
+    color: var(--color-text-on-marker);
+  }
+}
