@@ -1,0 +1,63 @@
+/* Highlighter-swipe motif. Colors come from tokens.css only. */
+.marker {
+  background-image: linear-gradient(
+    var(--color-marker-soft),
+    var(--color-marker-soft)
+  );
+  background-repeat: no-repeat;
+  background-position: 0 100%;
+  background-size: 100% 42%;
+  padding-inline: 0.08em;
+  -webkit-box-decoration-break: clone;
+  box-decoration-break: clone;
+}
+
+.marker-swipe {
+  background-image: linear-gradient(
+    var(--color-marker-soft),
+    var(--color-marker-soft)
+  );
+  background-repeat: no-repeat;
+  background-position: 0 100%;
+  background-size: 0% 42%;
+  padding-inline: 0.08em;
+  -webkit-box-decoration-break: clone;
+  box-decoration-break: clone;
+  transition: background-size var(--dur-marker) var(--ease-out);
+}
+
+.marker-swipe.is-drawn {
+  background-size: 100% 42%;
+}
+
+@media (hover: hover) and (pointer: fine) {
+  .marker-swipe:hover {
+    background-size: 100% 42%;
+  }
+}
+
+/* For ink surfaces: full-height band, text flips to ink-on-marker once drawn. */
+.marker-inverse {
+  background-image: linear-gradient(var(--color-marker), var(--color-marker));
+  background-repeat: no-repeat;
+  background-position: 0 100%;
+  background-size: 0% 100%;
+  padding-inline: 0.08em;
+  -webkit-box-decoration-break: clone;
+  box-decoration-break: clone;
+  transition:
+    background-size var(--dur-marker) var(--ease-out),
+    color var(--dur-marker) var(--ease-out);
+}
+
+.marker-inverse.is-drawn {
+  background-size: 100% 100%;
+  color: var(--color-text-on-marker);
+}
+
+@media (hover: hover) and (pointer: fine) {
+  .marker-inverse:hover {
+    background-size: 100% 100%;
+    color: var(--color-text-on-marker);
+  }
+}

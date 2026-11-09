@@ -1,6 +1,7 @@
 <script lang="ts">
   import "$lib/styles/fonts.css";
   import "$lib/styles/tokens.css";
+  import "$lib/styles/marker.css";
   import "../app.css";
   import "$lib/styles/shadcn-bridge.css";
   import { onMount, setContext } from "svelte";
