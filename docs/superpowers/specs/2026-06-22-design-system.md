@@ -1,91 +1,126 @@
 # readmepls — design system
 
-Derived from `assets/_banner.html`. The canonical, machine-readable source of
-truth is `apps/web/src/lib/styles/tokens.css`. This doc explains the _why_ and
-the rules that keep components retheme-able by the Phase 3 design phase.
+The canonical, machine-readable source of truth is
+`apps/web/src/lib/styles/tokens.css`. This doc explains the _why_ and the rules
+that keep components retheme-able. The design language is **Marker**; it
+replaces the earlier warm-paper concept (see
+`2026-11-09-design-foundation-design.md` for the decisions behind it).
 
 ## Concept
 
-**warm-paper stationery.** A well-loved-paperback feel: warm paper substrate,
-warm ink for type, exactly **one hot accent** (terracotta), and tactile analog
-motifs — dog-ear folds, faint grain, soft _brown_ shadows, generous rounding.
-Friendly, lowercase voice. Reading is the hero; chrome stays quiet.
+**Marker.** A calm, near-monochrome product: a cool neutral gray page,
+off-white cards held by a hairline, ink black for what is active or inverted,
+and exactly **one accent**, a highlighter yellow, used the way a marker is
+used on a page: sparingly, to point at what matters. The yellow is also the
+brand motif. Reading is the hero; chrome stays quiet.
 
-Anti-goals: cold grays, neon, purple-on-white gradients, hard 90° corners,
-neutral gray drop shadows, SHOUTING UI copy.
+Anti-goals: a second accent hue, hover-only affordances, decorative motion,
+components that were never designed in their focus, disabled, loading, empty
+and error states, copying the reference sites.
 
 ## Color
 
-One substrate, one ink, one accent.
+One neutral ramp, one ink, one accent.
 
-- **paper** (`--paper-*`) — warm off-white → tan. The page. The light bg is the
-  banner's radial gradient (`--color-bg-gradient`).
-- **ink** (`--ink-*`) — warm near-black `#211E17` → muted taupe `#AC9F86`. All
-  text. Three text roles: `--color-text` / `-muted` / `-subtle`.
-- **terracotta** (`--terracotta-*`, base `#C24A38`) — THE accent. Primary
-  actions, links, focus ring, selection, brand "pls". Used sparingly: if a
-  screen looks busy with terracotta, it's overused.
-- **status** — `sage` / `amber` / `clay` / `dusk`, all muted to sit on paper.
-- **markers** — soft highlight tints for Phase 4 (`--marker-butter/rose/sky/mint`).
+- **Surfaces** — `--color-bg` (page), `--color-surface` (cards),
+  `--color-surface-raised`, `--color-surface-sunken` (chips, wells).
+- **Ink** — `--color-text` is `#020203`; `-muted` and `-subtle` are the two
+  quieter text roles. Ink is also the primary action (`--color-accent`).
+- **Inverse pair** — `--color-inverse` / `--color-text-inverse` for the active
+  nav pill, selected chip and featured tile. Swaps polarity in dark.
+- **Marker** (`--marker-400`, `--color-marker`, base `#ffce00`) — THE accent.
+  Same in light and dark. `--color-text-on-marker` is ink; never put light text
+  on it. If a screen looks busy with yellow, it is overused.
+- **Hairlines** — `--color-hairline` (a translucent ink ring, not a heavy
+  border) is the default outline; `--color-border-strong` for emphasis.
+- **Status** — `--color-success/warning/danger/info`.
+- **Highlight colors** — the stored keys `terracotta`, `amber`, `sage` are kept
+  so no data migrates, but are recolored: `--hl-terracotta` is marker yellow,
+  `--hl-amber` rose, `--hl-sage` mint.
 
-Components consume **semantic** tokens (`--color-bg`, `--color-accent`, …) never
-primitives. Themes (`light` default, `dark` = warm-dark not cold-gray, `sepia` =
-reading page) remap semantics only.
+Components consume **semantic** tokens (`--color-bg`, `--color-accent`, …),
+never primitives. Two themes remap semantics only: `light` (`:root`) and
+`dark` (`[data-theme="dark"]`, near-black surfaces, off-white text, the same
+marker). There is no third theme.
+
+**Theme preference** is `light | dark | system` (default `system`).
+`data-theme` only ever takes `light` or `dark`: `system` resolves to one of
+them from `prefers-color-scheme`. A boot script in `app.html` sets it before
+first paint to avoid a flash. This is the only appearance setting in the app.
 
 ## Type
 
-Two families, clear division of labor:
+- **Ronzino** (`--font-ui`, `--font-reading`; SIL OFL, self-hosted, regular,
+  medium, bold plus obliques) for both UI chrome and article reading. Headings
+  are large with tight negative tracking at display sizes
+  (`--tracking-display`); labels are small and quiet; numerals are tabular
+  wherever they are compared (stats, counts, progress). Reading sizes are in
+  `rem` so the OS text-size setting still scales them.
+- **IBM Plex Mono** (`--font-mono`) for code only.
 
-- **Fredoka** (`--font-display`) — brand, headings, all UI chrome, controls,
-  numerals. Rounded and friendly; the icon's personality. Wants negative
-  tracking at display sizes (`--tracking-display`), positive + uppercase when
-  tiny (the banner eyebrow, `--tracking-eyebrow`).
-- **Newsreader** (`--font-reading`) — long-form **article body only**, via the
-  `--reading-*` knobs. An editorial serif with optical sizing — comfortable for
-  the one screen where the user reads thousands of words. Fredoka is a display
-  face and would fatigue at article length, so it never sets body copy.
-- **IBM Plex Mono** (`--font-mono`) — code inside articles, metadata, token
-  values. Its slab terminals echo Newsreader's serifs, so code sits _with_ the
-  reading column rather than clashing — warmer and more on-brand than the cold
-  geometric coder monos. Embedded weights: 400 (code) + 600 (emphasis).
+Font faces are declared in `apps/web/src/lib/styles/fonts.css`.
 
-UI scale is a fixed modular ramp (`--text-*`). Reading is governed by runtime
-prefs (`--reading-size/leading/measure/font`) the typography panel writes to.
+## Shape, depth
 
-Fonts are self-hosted (no external CDN): woff2 in `apps/web/static/fonts/`,
-`@font-face` in `apps/web/src/lib/styles/fonts.css`, loaded by the root
-`+layout.svelte`. Latin subset only for now. tokens.css declares the family
-_stacks_; fonts.css loads the _files_.
+- **Pills** for controls: nav items, chips, buttons, icon buttons
+  (`--radius-pill`).
+- **Cards** about 14-16px (`--radius-md` / `--radius-lg`); **sheets** have a
+  26px top radius (`--radius-xl`).
+- **Hairline outlines** rather than shadows to separate surfaces. Shadows are
+  neutral black (`--shadow-color`) and used only for lift (menus, sheets); dark
+  mode doubles the alpha.
+- No grain, no folded corners, no tinted shadows.
 
-## Shape, depth, texture
+### The marker motif
 
-- **Radii are generous** (`--radius-*`, up to `40px`), echoing the 64px icon and
-  40px dog-ear. Default cards `--radius-lg`/`xl`. No sharp corners on surfaces.
-- **Shadows are warm** — tinted `rgb(54 44 22)`, never neutral gray. Scale
-  `sm → xl`; `xl` is the banner icon's lift.
-- **Grain** (`--texture-grain`) — the banner's feTurbulence overlay, applied at
-  ~0.04 opacity / `multiply` as a page-level layer for paper tactility.
-- **Dog-ear fold** — signature decorative motif (a 135° clipped corner in
-  `--color-fold`) for cards, empty states, the brand mark.
+A highlighter swipe: a yellow band across the lower ~40% of a text box, drawn
+left to right. Used on the wordmark's "pls", under the active tab label, and on
+key words of featured titles. Implemented in
+`apps/web/src/lib/styles/marker.css` (`.marker`, `.marker-swipe`,
+`.marker-inverse`, `.is-drawn`) and driven by the `markerInView` action
+(`apps/web/src/lib/actions/marker-in-view.ts`): it draws on hover on fine
+pointers, once on scroll-into-view on touch, and is pre-drawn under reduced
+motion. On an inverted ink surface the swipe fills the full line height and
+flips the text to ink so it stays legible.
 
 ## Motion
 
-Soft and settled. `--ease-paper` for entrances, `--ease-out` for hovers.
-`--dur-fast/base/slow`. High-impact moments (one staggered page-load reveal)
-over scattered micro-jitter. All durations collapse to 0 under
-`prefers-reduced-motion`.
+A small named set, all in `tokens.css`:
+
+- **Easings** — `--ease-out` `cubic-bezier(0.075, 0.82, 0.165, 1)` (snappy
+  expo-out, the default), `--ease-in` for exits, `--ease-bounce` (via
+  `--motion-bounce`) for presses and primary buttons.
+- **Durations** — `--dur-fast`, `--dur-base`, `--dur-slow`, `--dur-marker`.
+- **Enter/exit** — `tw-animate-css` is the one shared library of enter and
+  exit animations (fade, slide, scale); components use it rather than inventing
+  their own.
+- **Signature moments** — the marker swipe; cards lifting on hover (pointer
+  devices only); presses scaling down slightly.
+
+All durations are zero under `prefers-reduced-motion`, and the marker then
+appears already drawn. Motion is never the only way to see a state.
 
 ## Voice
 
-Lowercase, playful, plainspoken, a little polite. The banner sets it:
-"save any link. actually read it. pls." Buttons say `save it` not `Submit`.
-Empty states are warm, never scolding. Never use ALL CAPS except the tracked
-eyebrow label.
+Sentence case, plain, friendly, a little polite: "Library", "Start reading",
+"Save a link". This replaces the earlier all-lowercase voice. Empty states are
+warm, never scolding. No ALL CAPS except a small tracked eyebrow label.
+
+Note: much existing UI copy is still lowercase. This section describes the
+target; copy migrates as each page is restyled in the later plans of the
+design-foundation work.
 
 ## Rules for components
 
 1. Reference semantic + reader tokens only — **never** a hardcoded hex, font
    name, px radius, or gray shadow. A literal color in a component is a bug.
-2. Shared primitives live in `$lib/components/ui/`; features compose them.
-3. New theme = add a `[data-theme]` block in `tokens.css`. Components don't change.
+2. Shared primitives live in `$lib/components/ui/`; features compose them. One
+   component per primitive.
+3. A theme change edits `tokens.css` (`:root` / `[data-theme]` blocks).
+   Components don't change.
 4. Focus is always visible: `--color-ring`, never `outline: none` alone.
+5. No hover-only affordances: every hover behavior has a touch and keyboard
+   equivalent (a visible control, or long-press).
+6. Mobile first at 360px, tap targets at least 44px, safe-area insets respected.
+7. Motion comes from the named easings and durations, and respects reduced
+   motion.

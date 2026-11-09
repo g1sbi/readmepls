@@ -51,16 +51,22 @@ design phase does not add features.
 
 ## Design language
 
-- **Source of truth:** `assets/_banner.html` — palette (warm paper tones, ink
-  `#211E17`, terracotta accent `#C24A38`), Fredoka display font, paper/dog-ear/grain
-  motifs, lowercase playful voice.
+- **Source of truth:** `apps/web/src/lib/styles/tokens.css` plus the
+  design-system doc `docs/superpowers/specs/2026-06-22-design-system.md`.
+  The language is **Marker**: neutral gray/near-black surfaces, ink `#020203`,
+  ONE accent (highlighter yellow `#ffce00`), Ronzino for UI and reading (IBM
+  Plex Mono for code), the marker-swipe motif, sentence-case voice. It replaces
+  the old warm-paper/terracotta/Fredoka look (`assets/_banner.html` is no
+  longer the source).
 - **Tokens live in one file** (`apps/web/src/lib/styles/tokens.css`): colors, fonts,
   radii, shadows. **Never hardcode a color or font name in a component** — reference
   a token. This keeps the design phase able to retheme without touching components.
 - **shadcn ↔ tokens bridge** (`apps/web/src/lib/styles/shadcn-bridge.css`): maps
   shadcn alias vars (`--primary`, `--secondary`, …) **onto** `tokens.css` `--color-*`
   once in `:root` — never a second palette. Dark is `@custom-variant dark
-([data-theme="dark"] &)`, NOT shadcn's `.dark`. **Preflight is deliberately
+([data-theme="dark"] &)`, NOT shadcn's `.dark`. `data-theme` only takes
+  `light|dark`; the user pref is `light|dark|system` (default `system`), resolved
+  before paint by the boot script in `app.html`. **Preflight is deliberately
   excluded** (layered `@import "tailwindcss/theme.css"` + `utilities.css`, no
   `preflight.css`) — `app.css` owns the reset, and preflight would strip the
   reader's un-scoped `{@html}` article prose. Do not switch to a bare
