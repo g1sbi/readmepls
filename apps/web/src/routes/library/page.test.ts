@@ -150,7 +150,9 @@ describe("library page", () => {
   });
 
   it("shows an error instead of throwing when creating a collection fails", async () => {
-    collectionCreate.mockRejectedValueOnce(new Error("boom"));
+    const error = vi.spyOn(console, "error").mockImplementation(() => {});
+    const boom = new Error("boom");
+    collectionCreate.mockRejectedValueOnce(boom);
     render(Library, { data } as never);
     await fireEvent.click(screen.getByRole("button", { name: /filters/i }));
     const drawer = within(screen.getByRole("dialog"));
@@ -166,6 +168,8 @@ describe("library page", () => {
         0,
       ),
     );
+    expect(error).toHaveBeenCalledWith("createCollection failed", boom);
+    error.mockRestore();
   });
 
   it("hides the pager when everything fits on one page", () => {
