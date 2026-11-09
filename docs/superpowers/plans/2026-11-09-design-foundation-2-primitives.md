@@ -115,20 +115,20 @@ the Marker tokens, motion, and marker motif it produced.
   - Pills use Tailwind's built-in `rounded-full`. Do not add a
     `--radius-full` alias.
 
-- [ ] **Step 1: Write the failing tests.**
+- [x] **Step 1: Write the failing tests.**
   - `tokens.test.ts` → `it("scopes light tokens to :root and [data-theme=light]")`:
     the light block's selector list contains both, and nested-light
     `color-scheme: light` is present.
   - `tailwind-bridge.test.ts` → `it("bridges Marker roles")`: each new
     alias maps to its token, e.g. `/--marker:\s*var\(--color-marker\)/`.
   - Same file → `it("pins the two app breakpoints")`.
-- [ ] **Step 2: Run them and confirm they fail.**
+- [x] **Step 2: Run them and confirm they fail.**
       `pnpm exec vitest run tokens.test tailwind-bridge`. Expected: FAIL.
-- [ ] **Step 3: Implement it** in `tokens.css` and `shadcn-bridge.css`.
-- [ ] **Step 4: Run them and confirm they pass.** Same command; expected:
+- [x] **Step 3: Implement it** in `tokens.css` and `shadcn-bridge.css`.
+- [x] **Step 4: Run them and confirm they pass.** Same command; expected:
       PASS. `tokens.test`'s block parser must still find the light block.
       Update its selector match if needed.
-- [ ] **Step 5: Commit**
+- [x] **Step 5: Commit**
       `feat(web): nestable light scope and Marker roles in the shadcn bridge`.
 
 ---
@@ -187,7 +187,7 @@ the Marker tokens, motion, and marker motif it produced.
   - `variant="accent"` → `variant="default"`;
   - `type`, `disabled`, and `onclick` pass through unchanged.
 
-- [ ] **Step 1: Write the failing test** `button.test.ts` (render with
+- [x] **Step 1: Write the failing test** `button.test.ts` (render with
       @testing-library/svelte):
   - `it("is a pill with a visible focus ring")`: the root's class contains
     `rounded-full` and `focus-visible:ring-2`.
@@ -202,19 +202,19 @@ the Marker tokens, motion, and marker motif it produced.
   - `it("no consumer imports the hand-rolled Button")`: glob
     `apps/web/src/**/*.svelte`; none matches
     `/ui\/Button\.svelte|from "\.\/Button\.svelte"/`.
-- [ ] **Step 2: Run it and confirm it fails.**
+- [x] **Step 2: Run it and confirm it fails.**
       `pnpm exec vitest run ui/button`. Expected: FAIL.
-- [ ] **Step 3: Implement it.**
+- [x] **Step 3: Implement it.**
   - Rewrite `buttonVariants`.
   - Migrate the 6 consumers using the migration map. Use
     `import { Button } from "$lib/components/ui/button"`.
   - Delete `ui/Button.svelte`.
   - Fix any consumer test that queried the old `data-variant`; query the
     role or name instead.
-- [ ] **Step 4: Run the tests and confirm they pass.**
+- [x] **Step 4: Run the tests and confirm they pass.**
       `pnpm exec vitest run ui/button CollectionsPanel ArticleCard LibraryCollections profile login verify`,
       then `pnpm typecheck`. Expected: PASS.
-- [ ] **Step 5: Commit**
+- [x] **Step 5: Commit**
       `refactor(web): one Button — Marker variants on shadcn, drop hand-rolled`.
 
 ---
@@ -244,20 +244,20 @@ the Marker tokens, motion, and marker motif it produced.
   - Old API → new: `value` (bindable), `placeholder`, `type`, `oninput`,
     and `aria-label` all pass through as attributes.
 
-- [ ] **Step 1: Write the failing test** `input.test.ts`:
+- [x] **Step 1: Write the failing test** `input.test.ts`:
   - `it("is a 44px pill with a focus ring")`;
   - `it("binds value")`: type into it and assert the bound value updates,
     via a tiny harness.
   - `it("no consumer imports the hand-rolled Input")`: the same glob guard
     as in Task 2.
-- [ ] **Step 2: Run it and confirm it fails.**
+- [x] **Step 2: Run it and confirm it fails.**
       `pnpm exec vitest run ui/input`. Expected: FAIL.
-- [ ] **Step 3: Implement it.** Restyle the components, migrate the 3
+- [x] **Step 3: Implement it.** Restyle the components, migrate the 3
       consumers, and delete `ui/Input.svelte`.
-- [ ] **Step 4: Run the tests and confirm they pass.**
+- [x] **Step 4: Run the tests and confirm they pass.**
       `pnpm exec vitest run ui/input CollectionsPanel LibraryCollections login CaptureBar`,
       then `pnpm typecheck`. Expected: PASS.
-- [ ] **Step 5: Commit**
+- [x] **Step 5: Commit**
       `refactor(web): one Input — Marker pill on shadcn, drop hand-rolled`.
 
 ---
@@ -291,22 +291,22 @@ the Marker tokens, motion, and marker motif it produced.
   (`relative after:absolute after:-inset-1 after:content-['']`). The old
   `trailing` snippet becomes children content.
 
-- [ ] **Step 1: Write the failing test** `badge.test.ts`:
+- [x] **Step 1: Write the failing test** `badge.test.ts`:
   - `it("chip shows selection via data-selected")`;
   - `it("tag is quiet: secondary tone, xs text")`;
   - `it("no consumer imports Tag or Chip")`: the glob guard over
     `ui/Tag.svelte` and `ui/Chip.svelte`.
-- [ ] **Step 2: Run it and confirm it fails.**
+- [x] **Step 2: Run it and confirm it fails.**
       `pnpm exec vitest run ui/badge`. Expected: FAIL.
-- [ ] **Step 3: Implement it.**
+- [x] **Step 3: Implement it.**
   - Add the variants.
   - Migrate the 5 consumers, wrapping interactive chips' buttons with the
     hit-area class.
   - Delete the two files.
-- [ ] **Step 4: Run the tests and confirm they pass.**
+- [x] **Step 4: Run the tests and confirm they pass.**
       `pnpm exec vitest run ui/badge ArticleCard ActiveFilters FilterDrawer SourceFilter TagEditor`.
       Expected: PASS.
-- [ ] **Step 5: Commit**
+- [x] **Step 5: Commit**
       `refactor(web): tags and chips are Badge variants`.
 
 ---
@@ -329,23 +329,23 @@ the Marker tokens, motion, and marker motif it produced.
   - **Spinner:** `role="status"`, an accessible name from its `label` prop
     (default `"Loading"`), and `motion-reduce:animate-none`.
 
-- [ ] **Step 1: Write the failing test** `feedback.test.ts`:
+- [x] **Step 1: Write the failing test** `feedback.test.ts`:
   - `it("Skeleton stops pulsing under reduced motion")` (class contains
     `motion-reduce:animate-none`);
   - `it("Spinner announces its label")`
     (`getByRole("status", { name: "Processing" })`);
   - the glob guard for the two old files.
-- [ ] **Step 2: Run it and confirm it fails.**
+- [x] **Step 2: Run it and confirm it fails.**
       `pnpm exec vitest run ui/feedback`. Expected: FAIL.
-- [ ] **Step 3: Implement it.**
+- [x] **Step 3: Implement it.**
   - Run `pnpm dlx shadcn-svelte@latest add skeleton spinner` in
     `apps/web`. If the registry has no spinner, hand-write
     `ui/spinner/spinner.svelte` in shadcn file style around the lucide
     `LoaderCircle`.
   - Restyle, migrate the consumers, and delete the old files.
-- [ ] **Step 4: Run the tests and confirm they pass.**
+- [x] **Step 4: Run the tests and confirm they pass.**
       `pnpm exec vitest run ui/feedback ArticleCard read`. Expected: PASS.
-- [ ] **Step 5: Commit**
+- [x] **Step 5: Commit**
       `refactor(web): shadcn Skeleton and Spinner`.
 
 ---
@@ -383,7 +383,7 @@ the Marker tokens, motion, and marker motif it produced.
   - Retarget the card's CSS from `.dropdown__trigger` to a
     `data-slot="dropdown-menu-trigger"` selector.
 
-- [ ] **Step 1: Write the failing test** `dropdown-menu.test.ts`:
+- [x] **Step 1: Write the failing test** `dropdown-menu.test.ts`:
   - `it("items are at least 44px tall")` (class contains `min-h-11`);
   - `it("destructive item is styled destructive")`;
   - `it("opens from the trigger and selects")`: click the trigger, click
@@ -394,16 +394,16 @@ the Marker tokens, motion, and marker motif it produced.
   `@media (hover: none)` rule that sets the trigger's opacity to 1.
   The glob guard covers the deleted files.
 
-- [ ] **Step 2: Run them and confirm they fail.**
+- [x] **Step 2: Run them and confirm they fail.**
       `pnpm exec vitest run dropdown-menu ArticleCard ArticleActions`.
       Expected: FAIL.
-- [ ] **Step 3: Implement it.**
+- [x] **Step 3: Implement it.**
   - Run `pnpm dlx shadcn-svelte@latest add dropdown-menu`.
   - Restyle it, migrate both consumers, retarget the CSS, and delete the
     old files and their tests.
-- [ ] **Step 4: Run them and confirm they pass.** Same command; expected:
+- [x] **Step 4: Run them and confirm they pass.** Same command; expected:
       PASS.
-- [ ] **Step 5: Commit**
+- [x] **Step 5: Commit**
       `refactor(web): shadcn DropdownMenu, drop hand-rolled menu`.
 
 ---
@@ -443,7 +443,7 @@ the Marker tokens, motion, and marker motif it produced.
 - `ConfirmAction` is the one approved composition. Feature code imports it
   and never `bits-ui`.
 
-- [ ] **Step 1: Write the failing test** `ConfirmAction.test.ts`:
+- [x] **Step 1: Write the failing test** `ConfirmAction.test.ts`:
   - `it("confirm calls onConfirm once")`;
   - `it("Escape cancels, never confirms")` (Review Focus 5);
   - `it("buttons are destructive + outline and at least 44px")`.
@@ -452,16 +452,16 @@ the Marker tokens, motion, and marker motif it produced.
   `it("plain dialogs show a visible Close button")` (Review Focus 2). The
   glob guard covers `ui/ConfirmDialog.svelte`.
 
-- [ ] **Step 2: Run them and confirm they fail.**
+- [x] **Step 2: Run them and confirm they fail.**
       `pnpm exec vitest run ConfirmAction ui/dialog`. Expected: FAIL.
-- [ ] **Step 3: Implement it.** Run
+- [x] **Step 3: Implement it.** Run
       `pnpm dlx shadcn-svelte@latest add alert-dialog`. Restyle the dialog,
       overlay, and command dialog. Create `ConfirmAction`, migrate the 2
       consumers, and delete the old file.
-- [ ] **Step 4: Run the tests and confirm they pass.**
+- [x] **Step 4: Run the tests and confirm they pass.**
       `pnpm exec vitest run ConfirmAction ui/dialog ArticleCard read SearchPalette GetExtensionDialog`.
       Expected: PASS.
-- [ ] **Step 5: Commit**
+- [x] **Step 5: Commit**
       `refactor(web): AlertDialog-based confirms; Marker dialog shell`.
 
 ---
@@ -495,22 +495,22 @@ the Marker tokens, motion, and marker motif it produced.
     plus `onOpenChange` (close → `onClose`), with `Sheet.Title` set to
     `title`.
 
-- [ ] **Step 1: Write the failing tests**:
+- [x] **Step 1: Write the failing tests**:
   - `it("sheet has a visible Close button and a title")`;
   - `it("bottom sheet respects the safe area")` (class contains
     `env(safe-area-inset-bottom)`);
   - `it("closing calls onClose")`;
   - the glob guard for `ui/Sheet.svelte`.
-- [ ] **Step 2: Run them and confirm they fail.**
+- [x] **Step 2: Run them and confirm they fail.**
       `pnpm exec vitest run ui/sheet BottomSheet`. Expected: FAIL.
-- [ ] **Step 3: Implement it.** Run
+- [x] **Step 3: Implement it.** Run
       `pnpm dlx shadcn-svelte@latest add sheet`. Restyle it, migrate
       FilterDrawer and TopBar (TopBar is rebuilt in plan 3; migrate
       minimally), and delete the old file.
-- [ ] **Step 4: Run the tests and confirm they pass.**
+- [x] **Step 4: Run the tests and confirm they pass.**
       `pnpm exec vitest run ui/sheet BottomSheet FilterDrawer topbar`.
       Expected: PASS.
-- [ ] **Step 5: Commit**
+- [x] **Step 5: Commit**
       `refactor(web): shadcn Sheet; Marker drawer with safe-area`.
 
 ---
@@ -540,20 +540,20 @@ DropdownMenu, MenuItem, ConfirmDialog, Sheet, Card` as a top-level
     `.svelte`, and no `.svelte` file outside `ui/` imports `bits-ui`. The
     per-task glob guards in Tasks 2–8 may be removed in favor of this one.
 
-- [ ] **Step 1: Write the failing tests**:
+- [x] **Step 1: Write the failing tests**:
   - `card.test.ts`: `it("lifts on hover only for fine pointers and not under reduced motion")`,
     asserting the class strings;
   - `no-hand-rolled.test.ts` as specified.
-- [ ] **Step 2: Run them and confirm they fail.**
+- [x] **Step 2: Run them and confirm they fail.**
       `pnpm exec vitest run ui/card no-hand-rolled`. Expected: FAIL (Card
       still exists).
-- [ ] **Step 3: Implement it.** Run
+- [x] **Step 3: Implement it.** Run
       `pnpm dlx shadcn-svelte@latest add card`. Restyle it, migrate
       ArticleCard, delete `ui/Card.svelte`, and update CLAUDE.md.
-- [ ] **Step 4: Run the full verification.**
+- [x] **Step 4: Run the full verification.**
       `pnpm test && pnpm typecheck && pnpm lint`, plus svelte-check ≤ 43.
       Expected: all green.
-- [ ] **Step 5: Commit**
+- [x] **Step 5: Commit**
       `refactor(web): shadcn Card; guard against hand-rolled primitives`.
 
 ---
@@ -596,22 +596,22 @@ DropdownMenu, MenuItem, ConfirmDialog, Sheet, Card` as a top-level
       SourcePill, CollectionFolder, and Collapsible.
     - It uses sentence-case labels and no real network: pass sample props.
 
-- [ ] **Step 1: Write the failing test** `page.test.ts`:
+- [x] **Step 1: Write the failing test** `page.test.ts`:
   - `it("404s outside dev")`: mock `dev=false` and expect `load` to throw
     with status 404;
   - `it("renders the three sections in both modes")`: mock `dev=true`,
     render the page, then find the headings "Controls", "Overlays", and
     "Cards & lists". Assert that a `[data-theme="dark"]` and a
     `[data-theme="light"]` frame exist (Review Focus 4).
-- [ ] **Step 2: Run it and confirm it fails.**
+- [x] **Step 2: Run it and confirm it fails.**
       `pnpm exec vitest run routes/dev`. Expected: FAIL.
-- [ ] **Step 3: Implement it.** Build the route, frames, and sections, and
+- [x] **Step 3: Implement it.** Build the route, frames, and sections, and
       add the `$app/environment` mock (`export const dev = true; export const browser = true;`)
       with a test-time override.
-- [ ] **Step 4: Run it and confirm it passes.** Same command; expected:
+- [x] **Step 4: Run it and confirm it passes.** Same command; expected:
       PASS. Then run `pnpm --filter @readmepls/web build` and confirm the
       build succeeds.
-- [ ] **Step 5: Commit**
+- [x] **Step 5: Commit**
       `feat(web): dev-only component sheet at /dev/components`.
 
 ---
@@ -626,14 +626,14 @@ DropdownMenu, MenuItem, ConfirmDialog, Sheet, Card` as a top-level
   light/dark) with ✓/n.a., plus a "vs Notion" line per primitive: what
   Notion does that we adopted or deliberately didn't.
 
-- [ ] **Step 1: Check the sheet and capture it.**
+- [x] **Step 1: Check the sheet and capture it.**
   - Start the dev server.
   - Screenshot `/dev/components` at 360px and 1280px.
   - Open each overlay in light and dark.
-- [ ] **Step 2: Write `component-notes.md`** from what the sheet shows.
-- [ ] **Step 3: Get the owner's review.**
+- [x] **Step 2: Write `component-notes.md`** from what the sheet shows.
+- [x] **Step 3: Get the owner's review.**
   - Share the screenshots and notes with the owner, and record the
     approval or the change list as a comment on #10.
   - Each requested change becomes a fix dispatch against the owning task,
     before plan 3.
-- [ ] **Step 4: Commit** `docs: component sheet notes for gate 2`.
+- [x] **Step 4: Commit** `docs: component sheet notes for gate 2`.
