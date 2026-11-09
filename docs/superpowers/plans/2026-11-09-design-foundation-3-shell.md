@@ -1,6 +1,6 @@
 # Design Foundation, Plan 3 of 5: App Shell Implementation Plan
 
-> **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.
+> **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [x]`) syntax for tracking.
 
 **Goal:** Replace the top bar and bottom nav with the Marker shell:
 
@@ -123,7 +123,7 @@ approved phone mockup is
 - Produces, in the root layout data: `collections: { id: string; name: string; slug: string; count: number }[]`
   (from `fetchCollections(locals.pb)`). Signed out, it is `[]`.
 
-- [ ] **Step 1: Write the failing tests.** In `nav.test.ts`:
+- [x] **Step 1: Write the failing tests.** In `nav.test.ts`:
   - each `activeKey` mapping above, including `"/collections/physics"`
     → `"collections"` and `"/read/abc"` → `"library"`;
   - `shellFor("/login")`, `"/verify?token=x"` (pathname only) and
@@ -136,12 +136,12 @@ approved phone mockup is
     `fetchCollections`;
   - `it("returns no collections when signed out")`.
 
-- [ ] **Step 2: Run them and confirm they fail.**
+- [x] **Step 2: Run them and confirm they fail.**
       `pnpm exec vitest run shell/nav layout.server`. Expected: FAIL.
-- [ ] **Step 3: Implement it.**
-- [ ] **Step 4: Run them and confirm they pass.** Same command; expected:
+- [x] **Step 3: Implement it.**
+- [x] **Step 4: Run them and confirm they pass.** Same command; expected:
       PASS.
-- [ ] **Step 5: Commit**
+- [x] **Step 5: Commit**
       `feat(web): shell nav model and collections in the root load`.
 
 ---
@@ -183,7 +183,7 @@ approved phone mockup is
       a "Sign out" Button `variant="outline"` that calls `signOut`.
   - The page header comes in Task 6. For now, render `<h1>Settings</h1>`.
 
-- [ ] **Step 1: Write the failing tests.**
+- [x] **Step 1: Write the failing tests.**
   - `ThemeControl`: renders the three options, `aria-pressed` follows
     `value`, and clicking emits the pref.
   - `/settings`: the three section headings exist; choosing "Dark" calls
@@ -191,14 +191,14 @@ approved phone mockup is
     link has `href` `/settings/connectors`.
   - `/profile` server load: it throws a redirect to `/settings`.
   - `signOut`: it clears the store, then navigates to `/login`.
-- [ ] **Step 2: Run them and confirm they fail.**
+- [x] **Step 2: Run them and confirm they fail.**
       `pnpm exec vitest run ThemeControl routes/settings routes/profile sign-out`.
       Expected: FAIL.
-- [ ] **Step 3: Implement it.** `TopBar` still exists until Task 6; make it
+- [x] **Step 3: Implement it.** `TopBar` still exists until Task 6; make it
       import `ThemeControl` so there is no duplicate markup.
-- [ ] **Step 4: Run them and confirm they pass.** Same command; expected:
+- [x] **Step 4: Run them and confirm they pass.** Same command; expected:
       PASS.
-- [ ] **Step 5: Commit**
+- [x] **Step 5: Commit**
       `feat(web): settings hub with appearance, connectors and account`.
 
 ---
@@ -248,7 +248,7 @@ approved phone mockup is
   - Hover on fine pointers uses `bg-accent` and a nudge of
     `translate-x-0.5` with `ease-out`, and `motion-reduce:transform-none`.
 
-- [ ] **Step 1: Write the failing tests.**
+- [x] **Step 1: Write the failing tests.**
   - `actions.test.ts`:
     - creating `"Long reads"` posts the slug `long-reads`;
     - a 400 → `{ok:false,error:"duplicate"}`;
@@ -263,14 +263,14 @@ approved phone mockup is
     - "New collection" → typing a name → Enter calls `createCollection`,
       then `onCreated`;
     - the duplicate error text renders.
-- [ ] **Step 2: Run them and confirm they fail.**
+- [x] **Step 2: Run them and confirm they fail.**
       `pnpm exec vitest run AppSidebar collections/actions`. Expected: FAIL.
-- [ ] **Step 3: Implement it.** Move the library page onto
+- [x] **Step 3: Implement it.** Move the library page onto
       `createCollection` and keep its tests green.
-- [ ] **Step 4: Run them and confirm they pass.**
+- [x] **Step 4: Run them and confirm they pass.**
       `pnpm exec vitest run AppSidebar collections/actions routes/library`.
       Expected: PASS.
-- [ ] **Step 5: Commit**
+- [x] **Step 5: Commit**
       `feat(web): Marker sidebar with collections`.
 
 ---
@@ -307,7 +307,7 @@ pathname: string, collections: CollectionSummary[], onCreated: () => void`. - It
     per Review Focus 5). - Then "Collections" with "+ New collection" and `SidebarCollections`
     in a scroll region (`data-more-scroll`, `max-h-[50dvh] overflow-y-auto`). - Tapping any link closes the sheet.
 
-- [ ] **Step 1: Write the failing tests.**
+- [x] **Step 1: Write the failing tests.**
   - `TabBar`:
     - it has exactly three tabs labelled Home, Library, More;
     - Library is current on `/read/x`;
@@ -319,12 +319,12 @@ pathname: string, collections: CollectionSummary[], onCreated: () => void`. - It
       30 collections;
     - clicking a collection link calls `onClose`;
     - "New collection" creates.
-- [ ] **Step 2: Run them and confirm they fail.**
+- [x] **Step 2: Run them and confirm they fail.**
       `pnpm exec vitest run TabBar MoreSheet`. Expected: FAIL.
-- [ ] **Step 3: Implement it.**
-- [ ] **Step 4: Run them and confirm they pass.** Same command; expected:
+- [x] **Step 3: Implement it.**
+- [x] **Step 4: Run them and confirm they pass.** Same command; expected:
       PASS.
-- [ ] **Step 5: Commit**
+- [x] **Step 5: Commit**
       `feat(web): phone tab bar and More sheet`.
 
 ---
@@ -396,7 +396,7 @@ page. One component drives both, so there is no duplicated logic.
     - It wraps at 360px without overflow: the title truncates with an
       ellipsis and the buttons never shrink.
 
-- [ ] **Step 1: Write the failing tests.**
+- [x] **Step 1: Write the failing tests.**
   - `submit.test.ts`: the four outcomes, plus `"  "` → `"empty"` with no
     fetch call.
   - `CaptureForm.test.ts`:
@@ -418,14 +418,14 @@ page. One component drives both, so there is no duplicated logic.
     - both buttons are size-11.
   - Home page test: the inline capture field is present (labelled "Save
     a link"), and the header's capture button is also present.
-- [ ] **Step 2: Run them and confirm they fail.**
+- [x] **Step 2: Run them and confirm they fail.**
       `pnpm exec vitest run capture CaptureSheet PageHeader routes/page`.
       Expected: FAIL.
-- [ ] **Step 3: Implement it.** Delete `CaptureBar` (its tests move to
+- [x] **Step 3: Implement it.** Delete `CaptureBar` (its tests move to
       `CaptureForm`) and update the home page.
-- [ ] **Step 4: Run the tests and confirm they pass.** Same command;
+- [x] **Step 4: Run the tests and confirm they pass.** Same command;
       expected: PASS.
-- [ ] **Step 5: Commit**
+- [x] **Step 5: Commit**
       `feat(web): shared capture form — home field and header sheet`.
 
 ---
@@ -470,7 +470,7 @@ page. One component drives both, so there is no duplicated logic.
   - `onCreated` (sidebar and More) calls `invalidateAll()`.
   - The theme context and reading-progress context are unchanged.
 
-- [ ] **Step 1: Write the failing tests** in `layout.test.ts`. Render the
+- [x] **Step 1: Write the failing tests** in `layout.test.ts`. Render the
       layout with a mocked `$page` for:
   - `/library`: a `nav[aria-label="Main"]` and the tab bar exist; no
     `TopBar` remains.
@@ -481,16 +481,16 @@ page. One component drives both, so there is no duplicated logic.
   Each migrated page test asserts its heading via
   `getByRole("heading", { level: 1, name })`.
 
-- [ ] **Step 2: Run them and confirm they fail.**
+- [x] **Step 2: Run them and confirm they fail.**
       `pnpm exec vitest run routes/layout routes/page routes/library routes/collections routes/settings`.
       Expected: FAIL.
-- [ ] **Step 3: Implement it.** Remove each page's own top-of-page title
+- [x] **Step 3: Implement it.** Remove each page's own top-of-page title
       styles that `PageHeader` replaces. Leave the rest of each page's CSS for
       plan 5.
-- [ ] **Step 4: Run the full verification.**
+- [x] **Step 4: Run the full verification.**
       `pnpm test && pnpm typecheck && pnpm lint`, plus svelte-check ≤ 43.
       Expected: green.
-- [ ] **Step 5: Commit** `feat(web): Marker app shell replaces the top bar`.
+- [x] **Step 5: Commit** `feat(web): Marker app shell replaces the top bar`.
 
 ---
 
@@ -534,7 +534,7 @@ page. One component drives both, so there is no duplicated logic.
     - Narrow: `MoreSheet` plus Home and Library rows at its top.
     - Navigating closes it.
 
-- [ ] **Step 1: Write the failing tests.**
+- [x] **Step 1: Write the failing tests.**
   - `back-target.test.ts`:
     - `"/collections/physics"` → itself;
     - `"/"` → `"/"`;
@@ -552,20 +552,20 @@ page. One component drives both, so there is no duplicated logic.
   - Reader page test: no app `nav[aria-label="Main"]` is rendered, and the
     header Back link defaults to `/library`.
 
-- [ ] **Step 2: Run them and confirm they fail.**
+- [x] **Step 2: Run them and confirm they fail.**
       `pnpm exec vitest run back-target ReaderHeader NavOverlay routes/read`.
       Expected: FAIL.
-- [ ] **Step 3: Implement it.**
-- [ ] **Step 4: Run them and confirm they pass.** Same command, then
+- [x] **Step 3: Implement it.**
+- [x] **Step 4: Run them and confirm they pass.** Same command, then
       `pnpm test`. Expected: PASS.
-- [ ] **Step 5: Commit**
+- [x] **Step 5: Commit**
       `feat(web): focused reader header with back-to-origin and nav overlay`.
 
 ---
 
 ### Task 8: Gate 3 — owner review of the shell in the real app (controller-run)
 
-- [ ] **Step 1: Set up and capture.**
+- [x] **Step 1: Set up and capture.**
   - Start the dev server against the throwaway PocketBase (test user and
     sample article).
   - Screenshot `/`, `/library`, `/collections`, `/settings`, and
@@ -573,7 +573,7 @@ page. One component drives both, so there is no duplicated logic.
   - Also capture the More sheet, the capture sheet (phone) and dialog
     (desktop), the reader nav overlay, and the tab bar hidden after scroll.
   - Check for no horizontal overflow at 390px.
-- [ ] **Step 2: Get the owner's review.**
+- [x] **Step 2: Get the owner's review.**
   - Present the screenshots to the owner on the companion page and record
     the approval or the change list on #10.
   - Changes become fix dispatches against the owning task before plan 4.
