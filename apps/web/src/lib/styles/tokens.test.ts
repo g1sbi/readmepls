@@ -167,6 +167,18 @@ describe("tokens.css (Marker)", () => {
     expect(base).toMatch(/button \{\s*cursor:\s*pointer/);
   });
 
+  it("defaults every border to the border token in @layer base", () => {
+    const appCss = readFileSync(join(__dirname, "..", "..", "app.css"), "utf8");
+    const base = appCss.match(/@layer base \{([\s\S]*?)\n\}\n/)?.[1] ?? "";
+    // generated shadcn `border`/`border-t` classes set width only; without
+    // preflight they would otherwise draw in currentColor (ink)
+    expect(base).toMatch(
+      /\*,\s*::before,\s*::after\s*\{\s*border-color:\s*var\(--color-border\);/,
+    );
+    // the control reset's shorthand must not put currentColor back
+    expect(base).toMatch(/border:\s*0 solid var\(--color-border\)/);
+  });
+
   it("declares color-scheme per mode so native controls follow the theme", () => {
     expect(css).toMatch(
       /:root,\s*\[data-theme="light"\] \{[^}]*color-scheme:\s*light;/,

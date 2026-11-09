@@ -37,4 +37,10 @@ describe("BottomSheet", () => {
     ])
       expect(cls).toContain(c);
   });
+
+  it("drawer content is outlined by its hairline ring only, no edge border", () => {
+    const cls = read("drawer/drawer-content.svelte");
+    expect(cls).toContain("ring-hairline");
+    expect(cls).not.toMatch(/:border-[tblr]\b/);
+  });
 });

@@ -30,6 +30,15 @@ body {
    UA outset border, grey buttonface and monospace textarea leak through the
    primitives. In @layer base so Tailwind utilities (a later layer) win. */
 @layer base {
+  /* Generated shadcn `border`/`border-t` utilities set width only; without
+     preflight they would draw in currentColor (an ink line). Default every
+     border to the token. Unlayered feature styles still override. */
+  *,
+  ::before,
+  ::after {
+    border-color: var(--color-border);
+  }
+
   button,
   input,
   select,
@@ -45,7 +54,7 @@ body {
   input,
   select,
   textarea {
-    border: 0 solid;
+    border: 0 solid var(--color-border);
     background-color: transparent;
     border-radius: 0;
   }
