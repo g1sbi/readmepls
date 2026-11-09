@@ -1,5 +1,9 @@
 import type { LayoutServerLoad } from "./$types";
-import { resolveTier, type TierConfig } from "@readmepls/core";
+import {
+  fetchCollections,
+  resolveTier,
+  type TierConfig,
+} from "@readmepls/core";
 import type { Tier } from "@readmepls/types";
 
 export const load: LayoutServerLoad = async ({ locals }) => {
@@ -12,8 +16,9 @@ export const load: LayoutServerLoad = async ({ locals }) => {
   };
 
   const userRecord = locals.pb.authStore.model as { tier?: Tier } | null;
-  if (!userRecord) return { tier: null, selfHosted };
+  if (!userRecord) return { tier: null, selfHosted, collections: [] };
 
   const tier = resolveTier({ tier: userRecord.tier ?? "standard" }, config);
-  return { tier, selfHosted };
+  const collections = await fetchCollections(locals.pb);
+  return { tier, selfHosted, collections };
 };
