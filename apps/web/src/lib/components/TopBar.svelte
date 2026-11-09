@@ -1,7 +1,7 @@
 <script lang="ts">
   import { resolve } from "$app/paths";
   import { THEME_PREFS, type ThemePref } from "$lib/theme/theme.js";
-  import Sheet from "$lib/components/ui/Sheet.svelte";
+  import * as Sheet from "$lib/components/ui/sheet";
   import GetExtensionButton from "./GetExtensionButton.svelte";
   import { searchPalette } from "$lib/stores/search-palette.svelte.js";
   import { trackTopbarHeight } from "$lib/actions/track-topbar-height.js";
@@ -89,12 +89,17 @@
   </button>
 </header>
 
-<Sheet open={menuOpen} onClose={() => (menuOpen = false)} title="menu">
-  <div class="sheet-menu">
-    {@render themeControls()}
-    {@render signOutButton()}
-  </div>
-</Sheet>
+<Sheet.Root open={menuOpen} onOpenChange={(next) => (menuOpen = next)}>
+  <Sheet.Content side="right">
+    <Sheet.Header>
+      <Sheet.Title>menu</Sheet.Title>
+    </Sheet.Header>
+    <div class="sheet-menu px-4 pb-4">
+      {@render themeControls()}
+      {@render signOutButton()}
+    </div>
+  </Sheet.Content>
+</Sheet.Root>
 
 <style>
   .topbar {
