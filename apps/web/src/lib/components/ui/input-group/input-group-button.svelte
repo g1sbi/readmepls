@@ -5,8 +5,9 @@
     base: "gap-2 text-sm flex items-center shadow-none",
     variants: {
       size: {
-        sm: "cn-input-group-button-size-sm",
-        "icon-sm": "size-9 p-0 has-[>svg]:p-0",
+        // Sizing comes from Button (sm / icon-sm); no extra classes needed.
+        sm: "",
+        "icon-sm": "",
       },
     },
     defaultVariants: {

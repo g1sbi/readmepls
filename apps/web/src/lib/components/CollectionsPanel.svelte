@@ -1,6 +1,6 @@
 <script lang="ts">
   import { resolve } from "$app/paths";
-  import Input from "./ui/Input.svelte";
+  import { Input } from "$lib/components/ui/input";
   import { Button } from "$lib/components/ui/button";
   import { Folder, Pencil, Trash2, Check, X, Plus } from "@lucide/svelte";
 

@@ -3,7 +3,7 @@
   import { resolve } from "$app/paths";
   import { browserPb } from "$lib/pb.js";
   import { validateCredentials } from "$lib/auth/validate.js";
-  import Input from "$lib/components/ui/Input.svelte";
+  import { Input } from "$lib/components/ui/input";
   import { Button } from "$lib/components/ui/button";
   import type { PageData } from "./$types";
 
