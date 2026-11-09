@@ -1,5 +1,6 @@
 <script lang="ts">
   import { MediaQuery } from "svelte/reactivity";
+  import { WIDE_QUERY } from "$lib/shell/nav.js";
   import { invalidateAll } from "$app/navigation";
   import * as Sheet from "$lib/components/ui/sheet/index.js";
   import type { CollectionSummary } from "$lib/collections/types.js";
@@ -20,7 +21,7 @@
   } = $props();
 
   // Same breakpoint the app shell swaps sidebar for tabs at.
-  const wide = new MediaQuery("(min-width: 48rem)");
+  const wide = new MediaQuery(WIDE_QUERY);
   const onLinkClick = $derived(closeOnLink(onClose));
 </script>
 

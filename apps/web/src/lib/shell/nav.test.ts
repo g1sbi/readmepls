@@ -1,5 +1,12 @@
 import { describe, it, expect } from "vitest";
-import { NAV_ITEMS, activeKey, shellFor, activeCollectionSlug } from "./nav";
+import {
+  NAV_ITEMS,
+  WIDE_QUERY,
+  activeKey,
+  shellFor,
+  activeCollectionSlug,
+  under,
+} from "./nav";
 
 describe("NAV_ITEMS", () => {
   it("lists Home and Library", () => {
@@ -54,5 +61,19 @@ describe("activeCollectionSlug", () => {
     expect(activeCollectionSlug("/collections/")).toBeNull();
     expect(activeCollectionSlug("/library")).toBeNull();
     expect(activeCollectionSlug("/collectionsx/a")).toBeNull();
+  });
+});
+
+describe("under", () => {
+  it("matches the base and its children only", () => {
+    expect(under("/read", "/read")).toBe(true);
+    expect(under("/read/a", "/read")).toBe(true);
+    expect(under("/readme", "/read")).toBe(false);
+  });
+});
+
+describe("WIDE_QUERY", () => {
+  it("is the md breakpoint", () => {
+    expect(WIDE_QUERY).toBe("(min-width: 48rem)");
   });
 });

@@ -1,7 +1,6 @@
-const FALLBACK = "/library";
+import { under } from "./nav.js";
 
-const under = (path: string, base: string) =>
-  path === base || path.startsWith(`${base}/`);
+const FALLBACK = "/library";
 
 /**
  * Where the reader's Back goes: the in-app page the user came from, else the

@@ -1,5 +1,6 @@
 <script lang="ts">
   import { MediaQuery } from "svelte/reactivity";
+  import { WIDE_QUERY } from "$lib/shell/nav.js";
   import * as Dialog from "$lib/components/ui/dialog/index.js";
   import BottomSheet from "$lib/components/ui/BottomSheet.svelte";
   import CaptureForm from "$lib/components/capture/CaptureForm.svelte";
@@ -8,7 +9,7 @@
 
   // Same breakpoint as the shell: a centered dialog from md up, a bottom sheet
   // on phones where the thumb can reach it.
-  const wide = new MediaQuery("(min-width: 48rem)");
+  const wide = new MediaQuery(WIDE_QUERY);
 </script>
 
 {#if wide.current}

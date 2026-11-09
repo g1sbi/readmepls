@@ -13,7 +13,11 @@ export const NAV_ITEMS: readonly NavItem[] = [
 
 const pathOf = (pathname: string) => pathname.split(/[?#]/)[0] ?? "";
 
-const under = (pathname: string, base: string) =>
+/** The shell's one breakpoint (Tailwind `md`): sidebar above, tabs below. */
+export const WIDE_QUERY = "(min-width: 48rem)";
+
+/** `pathname` is `base` itself or a path beneath it (not `/readme` for `/read`). */
+export const under = (pathname: string, base: string) =>
   pathname === base || pathname.startsWith(`${base}/`);
 
 export function activeKey(
