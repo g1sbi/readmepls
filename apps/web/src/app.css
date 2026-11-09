@@ -20,6 +20,8 @@ body {
   /* Bind the themed text color so otherwise-unstyled text (e.g. card titles)
      follows light/dark/sepia instead of falling back to the UA default. */
   color: var(--color-text);
+  /* UI font by default so unstyled text never falls back to the UA serif. */
+  font-family: var(--font-ui);
   min-height: 100dvh;
 }
 

@@ -142,4 +142,12 @@ describe("tokens.css (Marker)", () => {
     expect(light.get("--font-ui")).toMatch(/^"Ronzino"/);
     expect(light.get("--font-reading")).toMatch(/^"Ronzino"/);
   });
+
+  it("defaults body text to the UI font", () => {
+    const appCss = readFileSync(join(__dirname, "..", "..", "app.css"), "utf8");
+    const bodies = [...appCss.matchAll(/(?:^|\n)body \{([^}]*)\}/g)];
+    expect(
+      bodies.some((m) => /font-family:\s*var\(--font-ui\)/.test(m[1])),
+    ).toBe(true);
+  });
 });

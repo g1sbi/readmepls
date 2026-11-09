@@ -3,8 +3,7 @@ import { existsSync, readFileSync } from "node:fs";
 import { resolve } from "node:path";
 
 const css = () => readFileSync(resolve(__dirname, "fonts.css"), "utf8");
-const html = () =>
-  readFileSync(resolve(__dirname, "../../app.html"), "utf8");
+const html = () => readFileSync(resolve(__dirname, "../../app.html"), "utf8");
 
 describe("fonts.css", () => {
   it("declares Ronzino in 3 weights × normal/italic", () => {

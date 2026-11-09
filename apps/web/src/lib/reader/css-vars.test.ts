@@ -11,7 +11,7 @@ describe("readerCssVars", () => {
     expect(css).toContain("--reading-leading: 1.7");
     expect(css).toContain("--reading-measure: 80ch");
   });
-  it("maps serif to the reading face and sans to the reading-sans token", () => {
+  it("maps both serif and sans to var(--font-reading) (both are Ronzino)", () => {
     expect(readerCssVars(withReaderDefaults({ font: "serif" }))).toContain(
       "--reading-font: var(--font-reading)",
     );
