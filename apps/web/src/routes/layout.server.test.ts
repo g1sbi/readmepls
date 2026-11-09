@@ -1,4 +1,4 @@
-import { describe, it, expect, vi, afterEach } from "vitest";
+import { describe, it, expect, vi, afterEach, beforeEach } from "vitest";
 import { load } from "./+layout.server.js";
 
 const fetchCollections = vi.hoisted(() => vi.fn());
@@ -6,6 +6,12 @@ vi.mock("@readmepls/core", async (orig) => ({
   ...(await orig<typeof import("@readmepls/core")>()),
   fetchCollections,
 }));
+
+// Default to hosted SaaS so a developer's SELF_HOSTED=true doesn't leak in;
+// tests that need self-hosted stub it themselves.
+beforeEach(() => {
+  vi.stubEnv("SELF_HOSTED", "false");
+});
 
 afterEach(() => {
   vi.unstubAllEnvs();
