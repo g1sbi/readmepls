@@ -3,12 +3,15 @@ import { render, screen, waitFor } from "@testing-library/svelte";
 
 // Home page constructs a PocketBase client and subscribes on mount; stub it so
 // the component renders without touching the network.
-const { getList } = vi.hoisted(() => ({ getList: vi.fn() }));
+const { getList, subscribe } = vi.hoisted(() => ({
+  getList: vi.fn(),
+  subscribe: vi.fn(),
+}));
 vi.mock("$lib/pb.js", () => ({
   browserPb: () => ({
     collection: () => ({
       getList,
-      subscribe: vi.fn().mockResolvedValue(() => {}),
+      subscribe,
     }),
   }),
 }));
@@ -20,6 +23,7 @@ describe("home page hero", () => {
   // PageHeader's capture sheet reads a MediaQuery, which needs matchMedia.
   beforeEach(() => {
     getList.mockReset().mockResolvedValue({ items: [] });
+    subscribe.mockReset().mockResolvedValue(() => {});
     vi.stubGlobal("matchMedia", (q: string) => ({
       matches: true,
       media: q,
@@ -113,6 +117,31 @@ describe("home page hero", () => {
     getList.mockRejectedValueOnce(boom);
     captureSaved.notify();
     await waitFor(() => expect(error).toHaveBeenCalledWith(boom));
+    error.mockRestore();
+  });
+
+  it("still subscribes after a failed first load, and recovers on the next event", async () => {
+    const error = vi.spyOn(console, "error").mockImplementation(() => {});
+    const boom = new Error("offline");
+    getList.mockRejectedValueOnce(boom).mockResolvedValueOnce({
+      items: [
+        {
+          id: "a",
+          url: "https://example.com/a",
+          status: "unread",
+          expand: {
+            content: { id: "c-a", title: "back online", extract_status: "ok" },
+          },
+        },
+      ],
+    });
+    render(Page);
+    await waitFor(() => expect(error).toHaveBeenCalledWith(boom));
+    await waitFor(() => expect(subscribe).toHaveBeenCalled());
+    // A realtime event re-runs the load.
+    const onEvent = subscribe.mock.calls[0]![1] as () => void;
+    onEvent();
+    expect(await screen.findByText("back online")).toBeInTheDocument();
     error.mockRestore();
   });
 });

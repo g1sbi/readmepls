@@ -45,7 +45,9 @@
   }
 
   onMount(async () => {
-    await load();
+    // A failed first load still subscribes, so the next realtime event can
+    // recover from a transient error.
+    await load().catch(console.error);
     unsub = await pb
       .collection("articles")
       .subscribe("*", () => load().catch(console.error), {
