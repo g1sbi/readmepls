@@ -1,0 +1,187 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Marker palette review</title>
+<style>
+  @font-face { font-family: Ronzino; font-weight: 400; src: url(https://cdn.jsdelivr.net/gh/collletttivo/ronzino@main/fonts/Ronzino-Regular.woff2) format("woff2"); }
+  @font-face { font-family: Ronzino; font-weight: 400; font-style: italic; src: url(https://cdn.jsdelivr.net/gh/collletttivo/ronzino@main/fonts/Ronzino-Oblique.woff2) format("woff2"); }
+  @font-face { font-family: Ronzino; font-weight: 500; src: url(https://cdn.jsdelivr.net/gh/collletttivo/ronzino@main/fonts/Ronzino-Medium.woff2) format("woff2"); }
+  @font-face { font-family: Ronzino; font-weight: 700; src: url(https://cdn.jsdelivr.net/gh/collletttivo/ronzino@main/fonts/Ronzino-Bold.woff2) format("woff2"); }
+
+  /* Proposed Marker tokens — plan 1, Task 1 table */
+  .light {
+    --color-bg:#e4e4e2; --color-surface:#f7f7f6; --color-surface-sunken:#d6d6d4; --color-surface-raised:#fbfbfa;
+    --color-text:#020203; --color-text-muted:#55585c; --color-text-subtle:#6e7378;
+    --color-hairline:rgb(2 2 3 / .12); --color-inverse:#020203; --color-text-inverse:#f7f7f6;
+    --color-accent:#020203; --color-accent-hover:#2a2b2e; --color-text-on-accent:#f7f7f6; --color-accent-wash:#dcdcda;
+    --color-marker:#ffce00; --color-marker-soft:rgb(255 206 0 / .55); --color-text-on-marker:#020203;
+    --color-success:#1f8a4c; --color-warning:#9a6412; --color-danger:#d92d20; --color-info:#2f6fde;
+    --hl-terracotta:rgb(255 206 0 / .45); --hl-amber:rgb(255 107 157 / .30); --hl-sage:rgb(52 199 123 / .30);
+    --shadow:0 14px 30px rgb(0 0 0 / .08);
+  }
+  .dark {
+    --color-bg:#0e0f11; --color-surface:#17181b; --color-surface-sunken:#26282c; --color-surface-raised:#1e1f23;
+    --color-text:#ededec; --color-text-muted:#a3a6ab; --color-text-subtle:#8a8e94;
+    --color-hairline:rgb(237 237 236 / .10); --color-inverse:#ededec; --color-text-inverse:#0e0f11;
+    --color-accent:#ededec; --color-accent-hover:#ffffff; --color-text-on-accent:#0e0f11; --color-accent-wash:#222327;
+    --color-marker:#ffce00; --color-marker-soft:rgb(255 206 0 / .38); --color-text-on-marker:#020203;
+    --color-success:#3fbf73; --color-warning:#e0a23a; --color-danger:#ff6b5e; --color-info:#6ea0ff;
+    --hl-terracotta:rgb(255 206 0 / .32); --hl-amber:rgb(255 107 157 / .32); --hl-sage:rgb(52 199 123 / .30);
+    --shadow:0 14px 30px rgb(0 0 0 / .45);
+  }
+
+  * { box-sizing: border-box; }
+  body { margin: 0; font-family: Ronzino, system-ui, sans-serif; background: #c9c9c7; color: #020203; -webkit-font-smoothing: antialiased; }
+  header.page { padding: 28px 16px 8px; max-width: 1180px; margin: 0 auto; }
+  header.page h1 { font-size: 30px; letter-spacing: -0.04em; font-weight: 500; margin: 0 0 6px; }
+  header.page p { margin: 0; color: #3a3c40; max-width: 70ch; line-height: 1.45; }
+  .modes { display: grid; gap: 16px; padding: 16px; max-width: 1180px; margin: 0 auto; }
+  @media (min-width: 1100px) { .modes { grid-template-columns: 1fr 1fr; } }
+
+  .mode { --ease: cubic-bezier(0.075, 0.82, 0.165, 1); --bounce: cubic-bezier(.175,.885,.325,1.275);
+    background: var(--color-bg); color: var(--color-text); border-radius: 20px; padding: 16px; letter-spacing: -0.012em; }
+  .mode > h2 { margin: 0 0 12px; font-size: 13px; font-weight: 500; color: var(--color-text-muted); letter-spacing: 0; }
+
+  .app { display: grid; grid-template-columns: 150px 1fr; gap: 6px; }
+  .side { display: flex; flex-direction: column; gap: 2px; }
+  .brand { font-weight: 700; font-size: 17px; letter-spacing: -0.03em; padding: 2px 10px 14px; }
+  .mk { background-image: linear-gradient(var(--color-marker-soft), var(--color-marker-soft)); background-repeat: no-repeat; background-size: 100% 42%; background-position: 0 88%; padding: 0 .08em; }
+  .nav { font-size: 13.5px; color: var(--color-text-muted); padding: 8px 10px; border-radius: 999px; transition: background-color .25s var(--ease), color .25s var(--ease), transform .25s var(--ease); }
+  .nav:hover { background: var(--color-accent-wash); color: var(--color-text); transform: translateX(2px); }
+  .nav.on { background: var(--color-inverse); color: var(--color-text-inverse); }
+  .sec { font-size: 11px; color: var(--color-text-subtle); padding: 16px 10px 4px; }
+  .nav .n { float: right; color: var(--color-text-subtle); font-size: 12px; font-variant-numeric: tabular-nums; }
+
+  .main { display: flex; flex-direction: column; gap: 12px; min-width: 0; }
+  .hello { font-size: 24px; font-weight: 500; letter-spacing: -0.035em; line-height: 1.15; }
+  .hello small { display: block; font-size: 13px; color: var(--color-text-muted); font-weight: 400; letter-spacing: 0; margin-top: 6px; }
+  .grid { display: grid; grid-template-columns: 1.35fr 1fr; gap: 10px; }
+  .tile { background: var(--color-surface); border-radius: 16px; padding: 14px; box-shadow: 0 0 0 1px var(--color-hairline); }
+  .lbl { font-size: 11.5px; color: var(--color-text-muted); margin-bottom: 10px; display: flex; justify-content: space-between; }
+
+  .feat { background: var(--color-inverse); color: var(--color-text-inverse); box-shadow: none; display: flex; flex-direction: column; justify-content: space-between; min-height: 250px; transition: transform .5s var(--ease), box-shadow .5s var(--ease); }
+  .feat:hover { transform: translateY(-3px); box-shadow: var(--shadow); }
+  .feat .lbl { color: inherit; opacity: .65; }
+  .feat h3 { font-size: 34px; line-height: .98; letter-spacing: -0.05em; font-weight: 500; margin: 0; }
+  .feat .sw { background-image: linear-gradient(var(--color-marker), var(--color-marker)); background-repeat: no-repeat; background-position: 0 50%; background-size: 0% 100%; transition: background-size .6s var(--ease), color .3s var(--ease); padding: 0 .06em; }
+  .feat:hover .sw { background-size: 100% 100%; color: var(--color-text-on-marker); }
+  .feat p { font-size: 13px; line-height: 1.45; opacity: .75; margin: 10px 0 0; }
+  .cta { display: inline-flex; margin-top: 12px; font-size: 12.5px; padding: 8px 14px; border-radius: 999px; background: var(--color-marker); color: var(--color-text-on-marker); width: fit-content; transition: transform .35s var(--bounce); }
+  .cta:hover { transform: scale(1.05); }
+
+  .col { display: flex; flex-direction: column; gap: 10px; }
+  .big { font-size: 32px; font-weight: 500; letter-spacing: -0.04em; line-height: 1; font-variant-numeric: tabular-nums; }
+  .big small { font-size: 14px; color: var(--color-text-muted); font-weight: 400; letter-spacing: 0; }
+  .dots { display: flex; gap: 4px; margin-top: 12px; }
+  .dots b { flex: 1; height: 8px; border-radius: 99px; background: var(--color-surface-sunken); }
+  .dots b.y { background: var(--color-inverse); }
+  .dots b.now { background: var(--color-marker); }
+  .row { display: flex; align-items: center; gap: 10px; padding: 7px 0; border-top: 1px solid var(--color-hairline); font-size: 13px; }
+  .row:first-of-type { border-top: 0; }
+  .row .t { flex: 1; min-width: 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .fav { width: 16px; height: 16px; border-radius: 50%; background: var(--color-surface-sunken); flex: none; }
+  .pbar { width: 46px; height: 4px; border-radius: 99px; background: var(--color-surface-sunken); overflow: hidden; }
+  .pbar div { height: 100%; background: var(--color-inverse); }
+
+  .controls { display: flex; flex-wrap: wrap; gap: 6px; align-items: center; }
+  .chip { font-size: 12.5px; padding: 7px 13px; border-radius: 999px; background: var(--color-surface-sunken); color: var(--color-text); }
+  .chip.on { background: var(--color-inverse); color: var(--color-text-inverse); }
+  .btn { font: inherit; font-size: 13px; padding: 9px 16px; border-radius: 999px; border: 0; background: var(--color-accent); color: var(--color-text-on-accent); }
+  .btn.ghost { background: transparent; color: var(--color-text); box-shadow: 0 0 0 1px var(--color-hairline); }
+  .btn:focus-visible, .btn.focus { outline: 2px solid var(--color-text); outline-offset: 2px; }
+  .states { display: flex; gap: 12px; font-size: 12.5px; flex-wrap: wrap; }
+  .states span::before { content: ""; display: inline-block; width: 8px; height: 8px; border-radius: 50%; background: currentColor; margin-right: 6px; }
+
+  .reading { font-size: 16px; line-height: 1.65; color: var(--color-text); margin: 0; }
+  .reading .hl1 { background: var(--hl-terracotta); }
+  .reading .hl2 { background: var(--hl-amber); }
+  .reading .hl3 { background: var(--hl-sage); }
+  .reading em { font-style: italic; }
+  .reading a { color: inherit; text-decoration: underline; text-decoration-color: var(--color-marker); text-decoration-thickness: 2px; text-underline-offset: 3px; }
+
+  .swatches { display: grid; grid-template-columns: repeat(auto-fill, minmax(118px, 1fr)); gap: 6px; }
+  .swatches div { border-radius: 10px; padding: 8px; font-size: 11px; line-height: 1.3; min-height: 54px; box-shadow: 0 0 0 1px var(--color-hairline); }
+
+  @media (max-width: 640px) {
+    .app { grid-template-columns: 1fr; }
+    .side { flex-direction: row; flex-wrap: wrap; }
+    .side .sec, .brand { display: none; }
+    .grid { grid-template-columns: 1fr; }
+  }
+</style>
+</head>
+<body>
+<header class="page">
+  <h1>Marker: light &amp; dark</h1>
+  <p>Proposed palette for review (plan 1, Task 1). Every text colour has been checked for readable contrast. Hover the featured tile, the nav, and the button to see the motion. Below each screen: controls, status colours, a reading paragraph with the three highlight colours, and every swatch.</p>
+</header>
+
+<template id="screen">
+  <div class="app">
+    <div class="side">
+      <div class="brand">readme<span class="mk">pls</span></div>
+      <div class="nav on">Home</div><div class="nav">Library</div><div class="nav">Goals</div>
+      <div class="sec">Collections</div>
+      <div class="nav">Physics<span class="n">14</span></div><div class="nav">Long reads<span class="n">9</span></div>
+    </div>
+    <div class="main">
+      <div class="hello">Morning. Two reads from your weekly goal.<small>3 new since yesterday · 128 saved</small></div>
+      <div class="grid">
+        <div class="tile feat">
+          <div class="lbl"><span>Picked for today</span><span>12 min</span></div>
+          <div><h3>The <span class="sw">Navier–Stokes</span> equations</h3>
+            <p>Saved 3 weeks ago, never opened. Partial differential equations describing the motion of viscous fluids.</p></div>
+          <span class="cta">Start reading →</span>
+        </div>
+        <div class="col">
+          <div class="tile"><div class="lbl"><span>This week</span><span>goal: read 5</span></div>
+            <div class="big">3<small> / 5 read</small></div>
+            <div class="dots"><b class="y"></b><b class="y"></b><b class="y"></b><b class="now"></b><b></b></div></div>
+          <div class="tile"><div class="lbl"><span>Continue reading</span><span>2</span></div>
+            <div class="row"><span class="fav"></span><span class="t">How to Do Great Work</span><span class="pbar"><div style="width:62%"></div></span></div>
+            <div class="row"><span class="fav"></span><span class="t">The Bitter Lesson</span><span class="pbar"><div style="width:20%"></div></span></div></div>
+        </div>
+      </div>
+      <div class="tile">
+        <div class="lbl"><span>Controls</span><span>focus ring shown on the second button</span></div>
+        <div class="controls"><span class="chip on">All</span><span class="chip">Unread</span><span class="chip">Started</span>
+          <button class="btn">Save link</button><button class="btn ghost focus">Cancel</button></div>
+        <div class="states" style="margin-top:12px"><span style="color:var(--color-success)">Saved</span><span style="color:var(--color-warning)">Partial extraction</span><span style="color:var(--color-danger)">Extraction failed</span><span style="color:var(--color-info)">Syncing</span></div>
+      </div>
+      <div class="tile">
+        <div class="lbl"><span>Reading</span><span>Ronzino 16/1.65</span></div>
+        <p class="reading">The Navier–Stokes equations are <span class="hl1">partial differential equations which describe the motion of viscous fluid substances</span>. They were named after <em>Claude-Louis Navier</em> and <span class="hl2">George Gabriel Stokes</span>, and <span class="hl3">mathematically express momentum balance</span> for Newtonian fluids, as <a href="#">Wikipedia</a> explains.</p>
+      </div>
+      <div class="swatches" data-swatches></div>
+    </div>
+  </div>
+</template>
+
+<div class="modes">
+  <section class="mode light"><h2>Light</h2><div data-fill></div></section>
+  <section class="mode dark"><h2>Dark</h2><div data-fill></div></section>
+</div>
+
+<script>
+  const names = ["bg","surface","surface-sunken","surface-raised","text","text-muted","text-subtle","inverse","accent-wash","marker","success","warning","danger","info"];
+  document.querySelectorAll("[data-fill]").forEach(el => {
+    el.appendChild(document.getElementById("screen").content.cloneNode(true));
+    const mode = el.closest(".mode");
+    const cs = getComputedStyle(mode);
+    const box = el.querySelector("[data-swatches]");
+    for (const n of names) {
+      const v = cs.getPropertyValue("--color-" + n).trim();
+      const d = document.createElement("div");
+      d.style.background = v;
+      d.innerHTML = n + "<br>" + v;
+      box.appendChild(d);
+      // label colour by the swatch's own luminance so every label stays legible
+      const [r, g, b] = getComputedStyle(d).backgroundColor.match(/\d+(\.\d+)?/g).map(Number);
+      d.style.color = (0.299 * r + 0.587 * g + 0.114 * b) > 140 ? "#020203" : "#f7f7f6";
+    }
+  });
+</script>
+</body>
+</html>
