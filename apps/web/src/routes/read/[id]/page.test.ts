@@ -740,6 +740,18 @@ describe("reader page — focused chrome", () => {
     );
   });
 
+  it("keeps the origin's query string for Back", async () => {
+    render(ReaderPage);
+    const cb = vi.mocked(afterNavigate).mock.calls.at(-1)![0];
+    cb({ from: { url: new URL("http://localhost/library?tag=x") } } as never);
+    await waitFor(() =>
+      expect(screen.getByRole("link", { name: "Back" })).toHaveAttribute(
+        "href",
+        "/library?tag=x",
+      ),
+    );
+  });
+
   it("opens the navigation overlay from the header menu", async () => {
     render(ReaderPage);
     await fireEvent.click(

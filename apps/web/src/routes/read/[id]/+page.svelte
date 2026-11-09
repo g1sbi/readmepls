@@ -71,7 +71,7 @@
   afterNavigate(({ from }) => {
     if (originCaptured) return;
     originCaptured = true;
-    backHref = readerBackTarget(from?.url.pathname ?? null);
+    backHref = readerBackTarget(from?.url ?? null);
   });
   let navOpen = $state(false);
   const navCollections = $derived<CollectionSummary[]>(
