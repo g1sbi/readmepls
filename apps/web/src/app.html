@@ -37,6 +37,26 @@
       type="font/woff2"
       crossorigin
     />
+    <!-- Theme before first paint (mirrors lib/theme/theme.ts); never throws. -->
+    <script data-theme-boot>
+      (function () {
+        var mode = "light";
+        try {
+          var ls = localStorage;
+          if (ls.getItem("theme-v") !== "2") {
+            if (ls.getItem("theme") !== "dark") ls.removeItem("theme");
+            ls.setItem("theme-v", "2");
+          }
+          var pref = ls.getItem("theme");
+          if (pref === "light" || pref === "dark") mode = pref;
+          else
+            mode = matchMedia("(prefers-color-scheme: dark)").matches
+              ? "dark"
+              : "light";
+        } catch (e) {}
+        document.documentElement.dataset.theme = mode;
+      })();
+    </script>
     %sveltekit.head%
   </head>
   <body data-sveltekit-preload-data="hover">

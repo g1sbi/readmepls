@@ -32,14 +32,26 @@ describe("TopBar", () => {
     const dialog = screen.getByRole("dialog", { name: /menu/i });
 
     await fireEvent.click(
-      within(dialog).getByRole("button", { name: /dark/i }),
+      within(dialog).getByRole("button", { name: /^dark$/i }),
     );
     expect(onTheme).toHaveBeenCalledWith("dark");
+    await fireEvent.click(
+      within(dialog).getByRole("button", { name: /^match system$/i }),
+    );
+    expect(onTheme).toHaveBeenCalledWith("system");
 
     await fireEvent.click(
       within(dialog).getByRole("button", { name: /sign out/i }),
     );
     expect(onSignOut).toHaveBeenCalled();
+  });
+
+  it("marks the active theme pref with aria-pressed", () => {
+    render(TopBar, { theme: "system", onTheme: () => {}, onSignOut: () => {} });
+    const [light] = screen.getAllByRole("button", { name: /^light$/i });
+    const [sys] = screen.getAllByRole("button", { name: /^match system$/i });
+    expect(light).toHaveAttribute("aria-pressed", "false");
+    expect(sys).toHaveAttribute("aria-pressed", "true");
   });
 
   it("opens the search palette from the header search trigger", async () => {

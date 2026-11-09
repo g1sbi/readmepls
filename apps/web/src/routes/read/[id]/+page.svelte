@@ -17,7 +17,7 @@
     type ReaderPrefs,
     type HighlightColor,
   } from "@readmepls/types";
-  import type { Theme } from "$lib/theme/theme.js";
+  import type { Mode, ThemePref } from "$lib/theme/theme.js";
   import type { ArticleRecord } from "$lib/article/record.js";
   import type { RecordModel } from "pocketbase";
   import { ClientResponseError } from "pocketbase";
@@ -48,7 +48,7 @@
   // Global theme context provided by +layout.svelte. May be undefined when
   // the reader is rendered in isolation (e.g. unit tests without the layout).
   const themeCtx = getContext<
-    { current: Theme; set: (t: Theme) => void } | undefined
+    { current: ThemePref; mode: Mode; set: (t: ThemePref) => void } | undefined
   >("theme");
   // The progress strip itself renders in +layout.svelte, outside .page --
   // .page's transform-keyframed animation makes it a stacking context, which
@@ -251,7 +251,9 @@
 
   // Derive the active theme: prefer the live global context (keeps article in
   // sync when TopBar changes theme) and fall back to local prefs for isolation.
-  const activeTheme = $derived(themeCtx ? themeCtx.current : prefs.theme);
+  const activeTheme = $derived<Mode>(
+    themeCtx ? themeCtx.mode : prefs.theme === "dark" ? "dark" : "light",
+  );
   const source = $derived(sourceView(pb, content));
   const originalUrl = $derived(
     article?.url ? httpUrlOrNull(article.url) : null,

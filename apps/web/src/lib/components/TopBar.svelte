@@ -1,6 +1,6 @@
 <script lang="ts">
   import { resolve } from "$app/paths";
-  import { THEMES, type Theme } from "$lib/theme/theme.js";
+  import { THEME_PREFS, type ThemePref } from "$lib/theme/theme.js";
   import Sheet from "$lib/components/ui/Sheet.svelte";
   import GetExtensionButton from "./GetExtensionButton.svelte";
   import { searchPalette } from "$lib/stores/search-palette.svelte.js";
@@ -10,34 +10,41 @@
     Library,
     Sun,
     Moon,
-    Coffee,
+    Monitor,
     LogOut,
     Menu,
   } from "@lucide/svelte";
 
-  // Theme → icon map; theme text label stays the accessible name.
-  const themeIcon = { light: Sun, dark: Moon, sepia: Coffee } as const;
+  // Pref → icon + visible label; the label is also the accessible name.
+  const themeOption = {
+    light: { icon: Sun, label: "Light" },
+    dark: { icon: Moon, label: "Dark" },
+    system: { icon: Monitor, label: "Match system" },
+  } as const;
 
   let {
     theme,
     onTheme,
     onSignOut,
-  }: { theme: Theme; onTheme: (t: Theme) => void; onSignOut: () => void } =
-    $props();
+  }: {
+    theme: ThemePref;
+    onTheme: (t: ThemePref) => void;
+    onSignOut: () => void;
+  } = $props();
   let menuOpen = $state(false);
 </script>
 
 {#snippet themeControls()}
   <div class="themes" role="group" aria-label="theme">
-    {#each THEMES as t (t)}
-      {@const Icon = themeIcon[t]}
+    {#each THEME_PREFS as t (t)}
+      {@const Icon = themeOption[t].icon}
       <button
         type="button"
         aria-pressed={theme === t}
         data-active={theme === t}
         onclick={() => onTheme(t)}
         ><Icon class="icon-sm" aria-hidden="true" /><span class="label"
-          >{t}</span
+          >{themeOption[t].label}</span
         ></button
       >
     {/each}

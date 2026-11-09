@@ -11,10 +11,13 @@
   import { page } from "$app/stores";
   import { browserPb } from "$lib/pb.js";
   import {
-    resolveTheme,
+    resolveThemePref,
+    resolveMode,
+    migrateStoredTheme,
     applyTheme,
-    readStoredTheme,
-    type Theme,
+    watchSystemMode,
+    type ThemePref,
+    type Mode,
   } from "$lib/theme/theme.js";
   import { releaseTransformContainingBlock } from "$lib/actions/release-transform-containing-block.js";
   import TopBar from "$lib/components/TopBar.svelte";
@@ -26,7 +29,9 @@
 
   let { children } = $props();
   const pb = browserPb();
-  let theme = $state<Theme>("light");
+  let theme = $state<ThemePref>("system");
+  let mode = $state<Mode>("light");
+  let unwatchSystem: (() => void) | undefined;
   let readProgress = $state(0);
 
   // Expose the global theme model to descendants so the reader page can keep
@@ -35,7 +40,10 @@
     get current() {
       return theme;
     },
-    set: (t: Theme) => setTheme(t),
+    get mode() {
+      return mode;
+    },
+    set: (t: ThemePref) => setTheme(t),
   });
 
   // The reading-progress strip must render as a sibling of .page, not a
@@ -72,16 +80,49 @@
   // room than card-grid pages, which stay at --width-page so cards don't stretch.
   const isReader = $derived($page.url.pathname.startsWith("/read/"));
 
+  function systemPrefersDark(): boolean {
+    try {
+      return matchMedia("(prefers-color-scheme: dark)").matches;
+    } catch {
+      return false;
+    }
+  }
+
+  // Apply a pref, and follow the OS live only while it is "system".
+  function activate(pref: ThemePref) {
+    theme = pref;
+    mode = resolveMode(pref, systemPrefersDark());
+    try {
+      applyTheme(pref, mode);
+    } catch {
+      document.documentElement.dataset.theme = mode;
+    }
+    unwatchSystem?.();
+    unwatchSystem = undefined;
+    if (pref === "system") {
+      unwatchSystem = watchSystemMode((dark) => {
+        mode = resolveMode("system", dark);
+        document.documentElement.dataset.theme = mode;
+      });
+    }
+  }
+
   onMount(() => {
-    const prefTheme = pb.authStore.model?.reader_prefs?.theme ?? null;
-    theme = resolveTheme(readStoredTheme(), prefTheme);
-    applyTheme(theme);
+    let stored: string | null = null;
+    try {
+      migrateStoredTheme(localStorage);
+      stored = localStorage.getItem("theme");
+    } catch {
+      // storage blocked (private mode) -- fall through to account/system
+    }
+    const accountPref = pb.authStore.model?.reader_prefs?.theme ?? null;
+    activate(resolveThemePref(stored, accountPref));
     initExtensionDetection();
+    return () => unwatchSystem?.();
   });
 
-  function setTheme(t: Theme) {
-    theme = t;
-    applyTheme(t);
+  function setTheme(t: ThemePref) {
+    activate(t);
     const uid = pb.authStore.model?.id;
     if (uid) {
       const prev = pb.authStore.model?.reader_prefs ?? {};
