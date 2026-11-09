@@ -18,6 +18,11 @@ describe("activeKey", () => {
     ["/settings", "settings"],
     ["/settings/billing", "settings"],
     ["/nope", null],
+    ["/library/", "library"],
+    ["/library?x=1", "library"],
+    ["/libraryx", null],
+    ["/readme", null],
+    ["/settingsx", null],
   ])("%s -> %s", (p, k) => expect(activeKey(p)).toBe(k));
 });
 
@@ -30,5 +35,7 @@ describe("shellFor", () => {
     ["/dev/components", "app"],
     ["/", "app"],
     ["/library", "app"],
+    ["/readme", "app"],
+    ["/verifying", "app"],
   ])("%s -> %s", (p, k) => expect(shellFor(p)).toBe(k));
 });

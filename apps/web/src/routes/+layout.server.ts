@@ -19,6 +19,10 @@ export const load: LayoutServerLoad = async ({ locals }) => {
   if (!userRecord) return { tier: null, selfHosted, collections: [] };
 
   const tier = resolveTier({ tier: userRecord.tier ?? "standard" }, config);
-  const collections = await fetchCollections(locals.pb);
+  // Runs on every route: a PocketBase hiccup must not take down the whole app.
+  const collections = await fetchCollections(locals.pb).catch((err) => {
+    console.error("root layout: fetchCollections failed", err);
+    return [];
+  });
   return { tier, selfHosted, collections };
 };

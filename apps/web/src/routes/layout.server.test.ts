@@ -63,4 +63,13 @@ describe("root layout load", () => {
     expect(data.collections).toEqual([]);
     expect(fetchCollections).not.toHaveBeenCalled();
   });
+
+  it("still resolves with no collections when fetchCollections rejects", async () => {
+    const spy = vi.spyOn(console, "error").mockImplementation(() => {});
+    fetchCollections.mockRejectedValue(new Error("pb down"));
+    const data = await load({ locals: locals("u1", { tier: "pro" }) } as never);
+    expect(data).toEqual({ tier: "pro", selfHosted: false, collections: [] });
+    expect(spy).toHaveBeenCalled();
+    spy.mockRestore();
+  });
 });
