@@ -109,6 +109,12 @@ design phase does not add features.
   `docs/superpowers/specs/`. Leave in place: living reference docs (the design
   spec, the design-system doc) and plans that are explicitly parked or not yet
   started.
+- **Track feedback and multi-part work as GitHub issues.** Each feedback item
+  gets its own issue labeled `feedback` (`bug`/`enhancement` as fitting);
+  multi-part projects get an `epic` issue that their sub-issues reference.
+  Check `gh issue list --label feedback` before starting work, reference the
+  issue in the spec/plan, and close it from the commit that ships it
+  (`Closes #N` in the body).
 - **Small commits, Conventional Commits.** `feat:`, `fix:`, `docs:`, `test:`,
   `refactor:`, `chore:`. One logical change per commit.
 - **Versioning is release-please on a pre-1.0 (`0.x.y`) line.** Config
