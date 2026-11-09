@@ -12,13 +12,18 @@
  *   3. Themes      — [data-theme="dark"] remaps semantics only. Components never change.
  *   4. Reader      — long-form typography knobs the prefs UI writes to.
  *
+ * Scoping: layers 1 and 4 (and the mode-invariant semantics) live on :root
+ * ONLY. The light semantic block is shared by :root and [data-theme="light"],
+ * and declares exactly the variables the dark block does — so a nested theme
+ * scope swaps colours and nothing else. Re-declaring a :root knob there would
+ * reset anything set on an ancestor (e.g. the reader's size/leading/measure
+ * prefs on .reader-shell above <article data-theme>).
+ *
  * RULE: components reference semantic / reader tokens only. A retone edits
  * layers 1–3, touching no component.
  * ========================================================================== */
 
-:root,
-[data-theme="light"] {
-  color-scheme: light;
+:root {
   /* ---- 1. PRIMITIVES — palette ----------------------------------------- */
   /* the one accent hue: highlighter yellow. Same in light and dark. */
   --marker-400: #ffce00;
@@ -87,13 +92,6 @@
   --radius-2xl: 32px;
   --radius-pill: 999px;
 
-  /* ---- 1. PRIMITIVES — shadow (neutral black; dark doubles the alpha) --- */
-  --shadow-color: 0 0 0;
-  --shadow-sm: 0 1px 2px rgb(var(--shadow-color) / 0.08);
-  --shadow-md: 0 4px 12px rgb(var(--shadow-color) / 0.1);
-  --shadow-lg: 0 12px 28px rgb(var(--shadow-color) / 0.14);
-  --shadow-xl: 0 26px 44px rgb(var(--shadow-color) / 0.22);
-
   /* snappy expo-out: the default easing */
   --ease-out: cubic-bezier(0.075, 0.82, 0.165, 1);
   /* exits */
@@ -122,9 +120,31 @@
   --z-modal: 1100;
   --z-toast: 1200;
 
+  /* mode-invariant semantics: the marker and focus geometry never change */
+  --color-marker: var(--marker-400);
+  --color-text-on-marker: #020203;
+  --focus-ring-width: 2px;
+  --focus-ring-offset: 2px;
+
   /* ========================================================================
-   * 2. SEMANTIC — light (default). Components reference ONLY these.
+   * 4. READER — long-form knobs. The prefs UI writes these at runtime;
+   * the reader column reads them. Defaults below = comfortable default.
+   * Colours (--reading-text/-bg) are per mode, in the semantic block.
    * ====================================================================== */
+  --reading-font: var(--font-reading);
+  --reading-size: 1.1875rem; /* ~19px */
+  --reading-leading: 1.7;
+  --reading-measure: 68ch; /* max line length */
+}
+
+/* ==========================================================================
+ * 2. SEMANTIC — light (default). Components reference ONLY these.
+ * Mirrors the dark block variable-for-variable (tokens.test enforces it).
+ * ========================================================================== */
+
+:root,
+[data-theme="light"] {
+  color-scheme: light;
 
   /* surfaces */
   --color-bg: #e4e4e2;
@@ -148,16 +168,12 @@
   --color-accent: #020203;
   --color-accent-hover: #2a2b2e;
   --color-accent-wash: #dcdcda; /* neutral hover wash */
-  --color-marker: var(--marker-400);
   --color-marker-soft: rgb(255 206 0 / 0.55);
-  --color-text-on-marker: #020203;
 
   /* borders & focus */
   --color-border: var(--color-hairline);
   --color-border-strong: color-mix(in srgb, #020203 22%, transparent);
   --color-ring: #020203;
-  --focus-ring-width: 2px;
-  --focus-ring-offset: 2px;
   --color-selection: var(--color-marker-soft);
 
   /* status */
@@ -172,14 +188,13 @@
   --hl-amber: rgb(255 107 157 / 0.3);
   --hl-sage: rgb(52 199 123 / 0.3);
 
-  /* ========================================================================
-   * 4. READER — long-form knobs. The prefs UI writes these at runtime;
-   * the reader column reads them. Defaults below = comfortable default.
-   * ====================================================================== */
-  --reading-font: var(--font-reading);
-  --reading-size: 1.1875rem; /* ~19px */
-  --reading-leading: 1.7;
-  --reading-measure: 68ch; /* max line length */
+  /* shadow tint (neutral black; dark doubles the alpha) */
+  --shadow-color: 0 0 0;
+  --shadow-sm: 0 1px 2px rgb(var(--shadow-color) / 0.08);
+  --shadow-md: 0 4px 12px rgb(var(--shadow-color) / 0.1);
+  --shadow-lg: 0 12px 28px rgb(var(--shadow-color) / 0.14);
+  --shadow-xl: 0 26px 44px rgb(var(--shadow-color) / 0.22);
+
   --reading-text: var(--color-text);
   --reading-bg: var(--color-surface);
 }

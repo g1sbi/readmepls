@@ -40,6 +40,9 @@ function contrast(a: string, b: string): number {
 }
 
 const LIGHT_SELECTOR = ':root,\n[data-theme="light"]';
+/** Mode-invariant layer: primitives, scales, reader knobs. `:root` only. */
+const root = block(css, ":root");
+/** Light semantic layer: `:root` plus any nested `[data-theme="light"]`. */
 const light = block(css, LIGHT_SELECTOR);
 const dark = block(css, '[data-theme="dark"]');
 
@@ -78,9 +81,9 @@ const SEMANTIC = [
 ];
 const MAY_INHERIT = new Set(["--color-marker", "--color-text-on-marker"]);
 
-/** Resolve a token to a hex, following var() aliases (dark falls back to light). */
+/** Resolve a token to a hex, following var() aliases (falls back to light, then :root). */
 function hex(mode: Map<string, string>, name: string): string {
-  const v = mode.get(name) ?? light.get(name);
+  const v = mode.get(name) ?? light.get(name) ?? root.get(name);
   if (v === undefined) throw new Error(`${name} undefined`);
   const ref = v.match(/^var\((--[\w-]+)\)$/);
   return ref ? hex(mode, ref[1] ?? "") : v;
@@ -89,7 +92,7 @@ function hex(mode: Map<string, string>, name: string): string {
 describe("tokens.css (Marker)", () => {
   it("defines every semantic token in light and dark", () => {
     for (const t of SEMANTIC) {
-      expect(light.has(t), `light ${t}`).toBe(true);
+      expect(light.has(t) || root.has(t), `light ${t}`).toBe(true);
       if (!MAY_INHERIT.has(t)) expect(dark.has(t), `dark ${t}`).toBe(true);
     }
   });
@@ -140,8 +143,8 @@ describe("tokens.css (Marker)", () => {
   });
 
   it("sets Ronzino for UI and reading", () => {
-    expect(light.get("--font-ui")).toMatch(/^"Ronzino"/);
-    expect(light.get("--font-reading")).toMatch(/^"Ronzino"/);
+    expect(root.get("--font-ui")).toMatch(/^"Ronzino"/);
+    expect(root.get("--font-reading")).toMatch(/^"Ronzino"/);
   });
 
   it("defaults body text to the UI font", () => {
@@ -175,6 +178,27 @@ describe("tokens.css (Marker)", () => {
     expect(css).toContain(`${LIGHT_SELECTOR} {`);
     expect(light.has("--color-bg")).toBe(true);
     expect(css).toMatch(/\[data-theme="light"\] \{[^}]*color-scheme:\s*light;/);
+  });
+
+  it("light and dark scopes declare the same set of variables", () => {
+    expect([...light.keys()].sort()).toEqual([...dark.keys()].sort());
+  });
+
+  it("keeps reader knobs and layout primitives out of the light scope", () => {
+    for (const t of [
+      "--reading-font",
+      "--reading-size",
+      "--reading-leading",
+      "--reading-measure",
+      "--topbar-h",
+      "--font-ui",
+      "--space-4",
+      "--radius-md",
+      "--dur-base",
+    ]) {
+      expect(light.has(t), `light ${t}`).toBe(false);
+      expect(root.has(t), `:root ${t}`).toBe(true);
+    }
   });
 
   it("orders the light block before the dark block in the cascade", () => {
