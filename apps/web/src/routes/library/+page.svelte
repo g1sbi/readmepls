@@ -10,10 +10,10 @@
     slugify,
     type SourceFacet,
   } from "@readmepls/core";
-  import { ClientResponseError } from "pocketbase";
   import { applyPatch } from "$lib/library/url-state.js";
   import { searchPalette } from "$lib/stores/search-palette.svelte.js";
   import { browserPb } from "$lib/pb.js";
+  import { createCollection as createCollectionAction } from "$lib/collections/actions.js";
   import { deleteArticle } from "$lib/article/delete.js";
   import type { ArticleRecord } from "$lib/article/record.js";
   import ArticleCard from "$lib/components/ArticleCard.svelte";
@@ -78,20 +78,11 @@
   // "collections" fieldset above). Mutates then invalidates so `data.facets.collections`
   // refreshes via the server load instead of a manual re-fetch.
   async function createCollection(name: string) {
-    const uid = pb.authStore.model?.id;
-    if (!uid) return;
-    const slug = slugify(name);
     collectionError = "";
-    try {
-      await pb
-        .collection("collections")
-        .create({ user: uid, name, slug, parent: "", order: 0 });
-      await invalidateAll();
-    } catch (err) {
-      if (!(err instanceof ClientResponseError)) throw err;
-      // Duplicate (user, slug) unique index → 400
+    const res = await createCollectionAction(pb, name);
+    if (res.ok) await invalidateAll();
+    else if (res.error === "duplicate")
       collectionError = "a collection with that name already exists";
-    }
   }
   async function renameCollection(id: string, name: string) {
     await pb
