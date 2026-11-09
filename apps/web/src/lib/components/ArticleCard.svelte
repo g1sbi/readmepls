@@ -5,8 +5,7 @@
   import { Spinner } from "./ui/spinner";
   import SourcePill from "./ui/SourcePill.svelte";
   import ConfirmDialog from "./ui/ConfirmDialog.svelte";
-  import DropdownMenu from "./ui/DropdownMenu.svelte";
-  import MenuItem from "./ui/MenuItem.svelte";
+  import * as DropdownMenu from "$lib/components/ui/dropdown-menu";
   import {
     RotateCw,
     Trash2,
@@ -134,54 +133,69 @@
 
   {#if hasMenu}
     <div class="card-menu">
-      <DropdownMenu label="article actions">
-        {#snippet trigger()}<MoreHorizontal
-            class="icon-sm"
-            aria-hidden="true"
-          />{/snippet}
-        <MenuItem
-          onSelect={() => {
-            const u = httpUrlOrNull(article.url);
-            if (u) window.open(u, "_blank", "noopener,noreferrer");
-          }}
-        >
-          <ExternalLink class="icon-sm" aria-hidden="true" /> open original
-        </MenuItem>
-        <div class="menu-sep"></div>
-        {#if onAddToCollection}
-          <div class="menu-label">add to collection</div>
-          {#if collections && collections.length > 0}
-            {#each collections as c (c.id)}
-              <MenuItem onSelect={() => onAddToCollection?.(article.id, c.id)}>
-                <FolderPlus class="icon-sm" aria-hidden="true" />
-                {c.name}
-              </MenuItem>
-            {/each}
-          {:else}
-            <div class="menu-empty">no collections yet</div>
+      <DropdownMenu.Root>
+        <DropdownMenu.Trigger>
+          {#snippet child({ props })}
+            <Button
+              {...props}
+              variant="ghost"
+              size="icon-sm"
+              aria-label="article actions"
+              ><MoreHorizontal class="icon-sm" aria-hidden="true" /></Button
+            >
+          {/snippet}
+        </DropdownMenu.Trigger>
+        <DropdownMenu.Content align="end">
+          <DropdownMenu.Item
+            onSelect={() => {
+              const u = httpUrlOrNull(article.url);
+              if (u) window.open(u, "_blank", "noopener,noreferrer");
+            }}
+          >
+            <ExternalLink class="icon-sm" aria-hidden="true" /> open original
+          </DropdownMenu.Item>
+          <DropdownMenu.Separator />
+          {#if onAddToCollection}
+            <DropdownMenu.Label>add to collection</DropdownMenu.Label>
+            {#if collections && collections.length > 0}
+              {#each collections as c (c.id)}
+                <DropdownMenu.Item
+                  onSelect={() => onAddToCollection?.(article.id, c.id)}
+                >
+                  <FolderPlus class="icon-sm" aria-hidden="true" />
+                  {c.name}
+                </DropdownMenu.Item>
+              {/each}
+            {:else}
+              <div class="px-3 py-2 text-sm text-muted-foreground">
+                no collections yet
+              </div>
+            {/if}
           {/if}
-        {/if}
-        {#if onArchive || onUnarchive}
-          {#if onAddToCollection}<div class="menu-sep"></div>{/if}
-          {#if isArchived}
-            <MenuItem onSelect={() => onUnarchive?.(article.id)}>
-              <ArchiveRestore class="icon-sm" aria-hidden="true" /> unarchive
-            </MenuItem>
-          {:else}
-            <MenuItem onSelect={() => onArchive?.(article.id)}>
-              <Archive class="icon-sm" aria-hidden="true" /> archive
-            </MenuItem>
+          {#if onArchive || onUnarchive}
+            {#if onAddToCollection}<DropdownMenu.Separator />{/if}
+            {#if isArchived}
+              <DropdownMenu.Item onSelect={() => onUnarchive?.(article.id)}>
+                <ArchiveRestore class="icon-sm" aria-hidden="true" /> unarchive
+              </DropdownMenu.Item>
+            {:else}
+              <DropdownMenu.Item onSelect={() => onArchive?.(article.id)}>
+                <Archive class="icon-sm" aria-hidden="true" /> archive
+              </DropdownMenu.Item>
+            {/if}
           {/if}
-        {/if}
-        {#if onDelete}
-          {#if onAddToCollection || onArchive || onUnarchive}<div
-              class="menu-sep"
-            ></div>{/if}
-          <MenuItem variant="danger" onSelect={() => (confirming = true)}>
-            <Trash2 class="icon-sm" aria-hidden="true" /> delete
-          </MenuItem>
-        {/if}
-      </DropdownMenu>
+          {#if onDelete}
+            {#if onAddToCollection || onArchive || onUnarchive}<DropdownMenu.Separator
+              />{/if}
+            <DropdownMenu.Item
+              variant="destructive"
+              onSelect={() => (confirming = true)}
+            >
+              <Trash2 class="icon-sm" aria-hidden="true" /> delete
+            </DropdownMenu.Item>
+          {/if}
+        </DropdownMenu.Content>
+      </DropdownMenu.Root>
     </div>
     {#if onDelete}
       <ConfirmDialog
@@ -226,39 +240,27 @@
     z-index: 3;
     align-self: flex-end;
   }
-  .card-menu :global(.dropdown__trigger) {
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    background: none;
-    border: none;
-    cursor: pointer;
-    color: var(--color-text-muted);
-    padding: var(--space-1) var(--space-2);
-    border-radius: var(--radius-sm);
+  /* Hidden until the card is hovered/focused on fine pointers; the Button
+     owns the rest of its look. */
+  .card-menu :global([data-slot="dropdown-menu-trigger"]) {
     opacity: 0;
     transition: opacity var(--dur-fast) var(--ease-out);
   }
-  :global(.card):hover .card-menu :global(.dropdown__trigger),
-  :global(.card):focus-within .card-menu :global(.dropdown__trigger),
-  .card-menu :global(.dropdown__trigger[data-state="open"]) {
-    opacity: 1;
-  }
-  .card-menu :global(.dropdown__trigger):hover {
-    color: var(--color-accent);
-  }
-  .card-menu :global(.dropdown__trigger):focus-visible {
-    outline: var(--focus-ring-width) solid var(--color-ring);
-    outline-offset: var(--focus-ring-offset);
+  :global(.card):hover .card-menu :global([data-slot="dropdown-menu-trigger"]),
+  :global(.card):focus-within
+    .card-menu
+    :global([data-slot="dropdown-menu-trigger"]),
+  .card-menu :global([data-slot="dropdown-menu-trigger"][data-state="open"]),
+  .card-menu :global([data-slot="dropdown-menu-trigger"]:focus-visible) {
     opacity: 1;
   }
   @media (hover: none) {
-    .card-menu :global(.dropdown__trigger) {
+    .card-menu :global([data-slot="dropdown-menu-trigger"]) {
       opacity: 1;
     }
   }
   @media (prefers-reduced-motion: reduce) {
-    .card-menu :global(.dropdown__trigger) {
+    .card-menu :global([data-slot="dropdown-menu-trigger"]) {
       transition: none;
     }
   }

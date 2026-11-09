@@ -1,6 +1,8 @@
 import { describe, it, expect, vi, beforeEach } from "vitest";
 import { render, screen, fireEvent, waitFor } from "@testing-library/svelte";
 import { page } from "$app/stores";
+import { readFileSync } from "node:fs";
+import { resolve } from "node:path";
 import ArticleCard from "./ArticleCard.svelte";
 
 const article = (content: unknown, extra: Record<string, unknown> = {}) => ({
@@ -258,5 +260,15 @@ describe("ArticleCard", () => {
       article: article(null, { progress: 0.5 }),
     });
     expect(container.querySelector(".progress-bar")).not.toBeInTheDocument();
+  });
+
+  it("menu trigger is visible on touch", () => {
+    const src = readFileSync(
+      resolve(import.meta.dirname, "ArticleCard.svelte"),
+      "utf8",
+    );
+    expect(src).toMatch(
+      /@media \(hover: none\)\s*\{[^}]*dropdown-menu-trigger[^}]*opacity:\s*1/,
+    );
   });
 });

@@ -9,10 +9,10 @@
     "check": "svelte-check --tsconfig ./tsconfig.json"
   },
   "dependencies": {
-    "@lucide/svelte": "^1.24.0",
+    "@lucide/svelte": "^1.70.0",
     "@readmepls/core": "workspace:*",
     "@readmepls/types": "workspace:*",
-    "bits-ui": "^2.18.1",
+    "bits-ui": "^2.20.6",
     "clsx": "^2.1.1",
     "jszip": "^3.10.1",
     "pocketbase": "^0.21.0",

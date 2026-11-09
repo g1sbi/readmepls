@@ -1,6 +1,6 @@
 <script lang="ts">
-  import DropdownMenu from "$lib/components/ui/DropdownMenu.svelte";
-  import MenuItem from "$lib/components/ui/MenuItem.svelte";
+  import * as DropdownMenu from "$lib/components/ui/dropdown-menu";
+  import { Button } from "$lib/components/ui/button";
   import { Archive, Trash2, FolderPlus } from "@lucide/svelte";
 
   let {
@@ -17,20 +17,33 @@
 </script>
 
 <div class="article-actions" role="group" aria-label="article actions">
-  <DropdownMenu label="add to collection" align="start">
-    {#snippet trigger()}<FolderPlus
-        class="icon-md"
-        aria-hidden="true"
-      />{/snippet}
-    <div class="menu-label">add to collection</div>
-    {#if collections.length > 0}
-      {#each collections as c (c.id)}
-        <MenuItem onSelect={() => onAddToCollection(c.id)}>{c.name}</MenuItem>
-      {/each}
-    {:else}
-      <div class="menu-empty">no collections yet</div>
-    {/if}
-  </DropdownMenu>
+  <DropdownMenu.Root>
+    <DropdownMenu.Trigger>
+      {#snippet child({ props })}
+        <Button
+          {...props}
+          variant="outline"
+          size="icon"
+          aria-label="add to collection"
+          ><FolderPlus class="icon-md" aria-hidden="true" /></Button
+        >
+      {/snippet}
+    </DropdownMenu.Trigger>
+    <DropdownMenu.Content align="start">
+      <DropdownMenu.Label>add to collection</DropdownMenu.Label>
+      {#if collections.length > 0}
+        {#each collections as c (c.id)}
+          <DropdownMenu.Item onSelect={() => onAddToCollection(c.id)}
+            >{c.name}</DropdownMenu.Item
+          >
+        {/each}
+      {:else}
+        <div class="px-3 py-2 text-sm text-muted-foreground">
+          no collections yet
+        </div>
+      {/if}
+    </DropdownMenu.Content>
+  </DropdownMenu.Root>
   <button class="action-icon" onclick={onArchive} aria-label="archive article"
     ><Archive class="icon-md" aria-hidden="true" /></button
   >
@@ -44,7 +57,6 @@
     display: flex;
     gap: var(--space-2);
   }
-  .article-actions :global(.dropdown__trigger),
   .action-icon {
     display: inline-flex;
     align-items: center;
@@ -60,23 +72,19 @@
       box-shadow var(--dur-fast) var(--ease-out);
   }
   /* 44px touch targets — all three render together in the mobile "more" sheet. */
-  .article-actions :global(.dropdown__trigger),
   .action-icon {
     width: 44px;
     height: 44px;
   }
-  .article-actions :global(.dropdown__trigger):hover,
   .action-icon:hover {
     color: var(--color-accent);
     box-shadow: var(--shadow-sm);
   }
-  .article-actions :global(.dropdown__trigger):focus-visible,
   .action-icon:focus-visible {
     outline: var(--focus-ring-width) solid var(--color-ring);
     outline-offset: var(--focus-ring-offset);
   }
   @media (prefers-reduced-motion: reduce) {
-    .article-actions :global(.dropdown__trigger),
     .action-icon {
       transition: none;
     }
