@@ -78,12 +78,13 @@
       aria-label="paste a link to save"
       class="text-base md:text-base"
     />
-    <InputGroup.Addon align="inline-end">
+    <!-- 56px bar, 44px button: the root's 6px (pr-1.5) is the only right
+         inset, matching the 6px above and below, so the button sits concentric. -->
+    <InputGroup.Addon align="inline-end" class="pr-0 has-[>button]:mr-0">
       <InputGroup.Button
         type="submit"
         variant="default"
-        size="icon-sm"
-        class="size-11 rounded-full"
+        size="icon"
         aria-label="save link"
         aria-busy={busy}
         disabled={busy}

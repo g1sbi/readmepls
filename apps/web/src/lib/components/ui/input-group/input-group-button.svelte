@@ -1,23 +1,12 @@
 <script lang="ts" module>
-  import { tv, type VariantProps } from "tailwind-variants";
+  import type { ButtonSize } from "$lib/components/ui/button/index.js";
 
-  const inputGroupButtonVariants = tv({
-    base: "gap-2 text-sm flex items-center shadow-none",
-    variants: {
-      size: {
-        // Sizing comes from Button (sm / icon-sm); no extra classes needed.
-        sm: "",
-        "icon-sm": "",
-      },
-    },
-    defaultVariants: {
-      size: "sm",
-    },
-  });
-
-  export type InputGroupButtonSize = VariantProps<
-    typeof inputGroupButtonVariants
-  >["size"];
+  /** The Button sizes that fit inside an InputGroup. sm / icon-sm carry
+   *  Button's ::after hit area (44px tap target); icon is a full 44px. */
+  export type InputGroupButtonSize = Extract<
+    ButtonSize,
+    "sm" | "icon-sm" | "icon"
+  >;
 </script>
 
 <script lang="ts">
@@ -38,12 +27,14 @@
   } = $props();
 </script>
 
+<!-- Sizing is Button's own size variant; only layout tweaks are added here. -->
 <Button
   bind:ref
   {type}
+  {size}
   data-size={size}
   {variant}
-  class={cn(inputGroupButtonVariants({ size }), className)}
+  class={cn("flex items-center gap-2 text-sm shadow-none", className)}
   {...restProps}
 >
   {@render children?.()}

@@ -21,6 +21,19 @@ describe("CaptureBar", () => {
     ).toBeInTheDocument();
   });
 
+  it("sizes the send button as a 44px icon, concentric in the 56px bar", () => {
+    render(CaptureBar, {});
+    const btn = screen.getByRole("button", { name: /save link/i });
+    const cls = btn.className.split(/\s+/);
+    expect(cls).toContain("size-11");
+    expect(cls).not.toContain("size-9");
+    // the root's pr-1.5 (6px) is the only right inset: (56 - 44) / 2 = 6
+    const addon = btn.parentElement!.className.split(/\s+/);
+    expect(addon).toContain("pr-0");
+    expect(addon).toContain("has-[>button]:mr-0");
+    expect(addon).not.toContain("pr-4");
+  });
+
   it("posts the url to /api/capture and clears on success", async () => {
     const fetchMock = vi
       .fn()
