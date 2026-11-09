@@ -502,7 +502,11 @@
       <div class="reader-main">
         <!-- data-theme uses the live global context so TopBar changes retone the article (FIX 1) -->
         <!-- Svelte emits an a11y warning for onmouseup on a non-interactive <article>; accepted for text-selection in the reader. -->
-        <article data-theme={activeTheme} class="reader" onmouseup={onMouseUp}>
+        <article
+          data-theme={activeTheme}
+          class="reader prose-reader"
+          onmouseup={onMouseUp}
+        >
           <h1>{content.title}</h1>
           {#if source || originalUrl}
             <div class="reader-source">
@@ -640,45 +644,14 @@
     margin: 0 0 var(--space-2);
   }
 
+  /* The article's box only; reading.css (.prose-reader) owns the type. */
   .reader {
     background: var(--reading-bg);
-    color: var(--reading-text);
-    font-family: var(--reading-font);
-    font-size: var(--reading-size);
-    line-height: var(--reading-leading);
     /* calc accounts for padding so content width = measure exactly (box-sizing: border-box from Task 1) */
     max-width: calc(var(--reading-measure) + 2 * 1.5rem);
     margin: 0 auto;
     padding: 1.5rem;
     border-radius: var(--radius-lg);
-  }
-  .reader :global(h1) {
-    font-family: var(--font-reading);
-    line-height: 1.15;
-  }
-  .reader :global(a) {
-    color: var(--color-accent);
-  }
-  .reader :global(pre),
-  .reader :global(code) {
-    font-family: var(--font-mono);
-  }
-  .reader :global(pre) {
-    background: var(--color-surface-sunken);
-    padding: 1rem;
-    border-radius: var(--radius-md);
-    overflow-x: auto;
-  }
-  .reader :global(blockquote) {
-    border-left: 3px solid var(--color-accent);
-    margin: 1rem 0;
-    padding-left: 1rem;
-    color: var(--color-text-muted);
-  }
-  .reader :global(img) {
-    max-width: 100%;
-    height: auto;
-    border-radius: var(--radius-md);
   }
 
   /* single-column by default: rail (controls+actions) above article, highlights below */
@@ -706,14 +679,14 @@
       overscroll-behavior: contain;
     }
   }
-  /* Mobile: run the article card nearly edge-to-edge. It sits inside .page's
-     1.25rem inset; pull it out by 1rem so reading uses the full width, leaving
-     just a 0.25rem hint of the paper border. Trim the inner padding too. */
-  @media (max-width: 640px) {
+  /* Phone: run the article edge-to-edge. It sits inside .page's 1.25rem
+     inset (= --reading-gutter on phone); pulling it out by the gutter lets
+     reading.css bleed pre/table/figure/math exactly to the screen edge. */
+  @media (max-width: 39.99rem) {
     .reader {
-      margin-inline: calc(-1 * var(--space-4));
-      padding: var(--space-4) var(--space-3);
-      border-radius: var(--radius-md);
+      margin-inline: calc(-1 * var(--reading-gutter));
+      padding: var(--space-4) var(--reading-gutter);
+      border-radius: 0;
     }
   }
   .delete-error {
@@ -732,6 +705,8 @@
     color: var(--color-text-muted);
   }
   .reader-source :global(.open-original) {
+    /* chrome, not prose: opt out of the reading link stroke */
+    background: none;
     font-family: var(--font-ui);
     font-size: var(--text-sm);
     height: auto;

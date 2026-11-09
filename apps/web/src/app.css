@@ -1,3 +1,6 @@
+/* Reading typography for .prose-reader (tokens come from tokens.css). */
+@import "./lib/styles/reading.css";
+
 /* Global reset. Imported once in +layout.svelte. Keep minimal — visual
    tokens live in tokens.css; this only normalizes the box model and the
    document edges so the paper background reaches the viewport. */

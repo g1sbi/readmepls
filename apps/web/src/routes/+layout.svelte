@@ -215,15 +215,17 @@
       transform: none;
     }
   }
-  /* z-index above the reader's sticky header (20) -- both sit at top:0, and
-     the reading-progress strip is meant to overlay the chrome. */
+  /* z-index above the reader's sticky header (20): the reading-progress
+     strip is meant to overlay the chrome. 2px ink; marker yellow is kept for
+     the current chapter. The safe-area inset keeps it visible on phones when
+     the header tucks away. */
   .progress {
     position: fixed;
-    top: 0;
+    top: env(safe-area-inset-top);
     left: 0;
-    height: 3px;
+    height: 2px;
     width: calc(var(--p) * 100%);
-    background: var(--color-accent);
+    background: var(--color-text);
     z-index: 21;
     transition: width var(--dur-fast) var(--ease-out);
   }

@@ -10,14 +10,14 @@
  *   1. Primitives  — the marker hue + scales. Never reference in components.
  *   2. Semantic    — role-based vars (--color-bg, --color-accent, …). USE THESE.
  *   3. Themes      — [data-theme="dark"] remaps semantics only. Components never change.
- *   4. Reader      — long-form typography knobs the prefs UI writes to.
+ *   4. Reader      — long-form typography, stepped per breakpoint.
  *
  * Scoping: layers 1 and 4 (and the mode-invariant semantics) live on :root
  * ONLY. The light semantic block is shared by :root and [data-theme="light"],
  * and declares exactly the variables the dark block does — so a nested theme
  * scope swaps colours and nothing else. Re-declaring a :root knob there would
  * reset anything set on an ancestor (e.g. the reader's size/leading/measure
- * prefs on .reader-shell above <article data-theme>).
+ * on an element above <article data-theme>).
  *
  * RULE: components reference semantic / reader tokens only. A retone edits
  * layers 1–3, touching no component.
@@ -127,14 +127,51 @@
   --focus-ring-offset: 2px;
 
   /* ========================================================================
-   * 4. READER — long-form knobs. The prefs UI writes these at runtime;
-   * the reader column reads them. Defaults below = comfortable default.
-   * Colours (--reading-text/-bg) are per mode, in the semantic block.
+   * 4. READER — long-form type, read by reading.css (.prose-reader).
+   * Phone (<40rem) here; tablet and desktop step up in the media blocks
+   * below. Per-mode tuning (--reading-text/-bg/-math, -tracking,
+   * -leading-adjust) lives in the semantic blocks.
    * ====================================================================== */
   --reading-font: var(--font-reading);
-  --reading-size: 1.1875rem; /* ~19px */
-  --reading-leading: 1.7;
-  --reading-measure: 68ch; /* max line length */
+  --reading-size: 1.0625rem; /* 17px */
+  --reading-leading: 1.6;
+  --reading-measure: 100%; /* full width; ~40–44ch at 390px */
+  --reading-gutter: 1.25rem;
+  --reading-h1: 2.125rem;
+  --reading-h2: 1.4375rem;
+  --reading-h3: 1.1875rem;
+  --reading-h4: 1rem;
+
+  /* dark reading text: a touch softer than the UI's #ededec */
+  --reading-ink-dark: #dcdcda;
+}
+
+/* tablet 40–63.99rem */
+@media (min-width: 40rem) {
+  :root {
+    --reading-size: 1.125rem; /* 18px */
+    --reading-leading: 1.62;
+    --reading-measure: 36rem; /* ~60ch */
+    --reading-gutter: 2.5rem;
+    --reading-h1: 2.5rem;
+    --reading-h2: 1.625rem;
+    --reading-h3: 1.25rem;
+    --reading-h4: 1.0625rem;
+  }
+}
+
+/* desktop ≥64rem */
+@media (min-width: 64rem) {
+  :root {
+    --reading-size: 1.1875rem; /* 19px */
+    --reading-leading: 1.64;
+    --reading-measure: 38rem; /* ~65ch */
+    --reading-gutter: 3rem;
+    --reading-h1: 2.875rem;
+    --reading-h2: 1.75rem;
+    --reading-h3: 1.3125rem;
+    --reading-h4: 1.0625rem;
+  }
 }
 
 /* ==========================================================================
@@ -197,6 +234,11 @@
 
   --reading-text: var(--color-text);
   --reading-bg: var(--color-surface);
+  --reading-math: var(--color-text);
+  --reading-tracking: 0;
+  --reading-leading-adjust: 0;
+  /* prose selection: a neutral ink wash, so it never reads as a yellow highlight */
+  --color-prose-selection: rgb(2 2 3 / 0.16);
 }
 
 /* ==========================================================================
@@ -245,8 +287,14 @@
   --shadow-lg: 0 12px 28px rgb(var(--shadow-color) / 0.28);
   --shadow-xl: 0 26px 44px rgb(var(--shadow-color) / 0.44);
 
-  --reading-text: var(--color-text);
+  /* light-on-dark reads heavier and tighter: soften the text, open the
+     leading and tracking (Ronzino has no cut below 400) */
+  --reading-text: var(--reading-ink-dark);
   --reading-bg: var(--color-surface);
+  --reading-math: #ecece9;
+  --reading-tracking: 0.006em;
+  --reading-leading-adjust: 0.05;
+  --color-prose-selection: rgb(255 255 255 / 0.16);
 }
 
 /* respect users who don't want motion */

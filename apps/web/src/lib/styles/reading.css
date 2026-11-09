@@ -1,0 +1,403 @@
+/* ============================================================================
+ * Reading typography (Marker). Styles every article element under
+ * .prose-reader. Values come from the approved renders
+ * (docs/superpowers/mockups/2026-11-09-design-foundation/reader/notes.md);
+ * sizes, leading, measure and per-mode tuning are tokens in tokens.css.
+ *
+ * Worker HTML has no wrapper elements, so wide blocks (pre, table, display
+ * math) are made to scroll on the element itself, never on the page.
+ * No colours here: everything resolves through tokens.
+ * ========================================================================== */
+
+.prose-reader {
+  font-family: var(--reading-font);
+  font-size: var(--reading-size);
+  line-height: calc(var(--reading-leading) + var(--reading-leading-adjust));
+  letter-spacing: var(--reading-tracking);
+  font-weight: var(--weight-regular);
+  color: var(--reading-text);
+  hanging-punctuation: first;
+  text-rendering: optimizeLegibility;
+  font-kerning: normal;
+  overflow-wrap: break-word;
+}
+
+/* dark: grayscale smoothing is the "lighter" weight (no cut below 400) */
+[data-theme="dark"] .prose-reader,
+.prose-reader[data-theme="dark"] {
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+/* a neutral wash, so a selection never looks like a yellow highlight */
+.prose-reader ::selection,
+.prose-reader::selection {
+  background: var(--color-prose-selection);
+}
+
+.prose-reader > :first-child {
+  margin-top: 0;
+}
+
+/* ---- headings: Ronzino Medium, h4 is body size in Bold ------------------ */
+.prose-reader h1,
+.prose-reader h2,
+.prose-reader h3,
+.prose-reader h4 {
+  color: var(--color-text);
+  font-family: var(--reading-font);
+  font-weight: var(--weight-medium);
+  text-wrap: balance;
+  scroll-margin-top: 5rem;
+}
+.prose-reader h1 {
+  font-size: var(--reading-h1);
+  line-height: 1.04;
+  letter-spacing: -0.045em;
+  margin: 0 0 var(--space-4);
+}
+.prose-reader h2 {
+  font-size: var(--reading-h2);
+  line-height: 1.16;
+  letter-spacing: -0.03em;
+  margin: 2.2em 0 0.55em;
+}
+.prose-reader h3 {
+  font-size: var(--reading-h3);
+  line-height: 1.25;
+  letter-spacing: -0.02em;
+  margin: 1.8em 0 0.45em;
+}
+.prose-reader h4 {
+  font-size: var(--reading-h4);
+  line-height: 1.35;
+  letter-spacing: -0.005em;
+  font-weight: var(--weight-bold);
+  margin: 1.6em 0 0.35em;
+}
+.prose-reader h2 + h3 {
+  margin-top: 0.9em;
+}
+
+/* ---- text ------------------------------------------------------------- */
+.prose-reader p {
+  margin: 0 0 1em;
+}
+.prose-reader strong,
+.prose-reader b {
+  font-weight: var(--weight-bold);
+  color: var(--color-text);
+}
+.prose-reader em,
+.prose-reader i {
+  font-style: italic;
+}
+
+/* links: a thin marker stroke under the word; grows into the swipe on hover */
+.prose-reader a {
+  color: inherit;
+  text-decoration: none;
+  background-image: linear-gradient(var(--color-marker), var(--color-marker));
+  background-repeat: no-repeat;
+  background-position: 0 100%;
+  background-size: 100% 0.16em;
+  padding-bottom: 0.04em;
+  -webkit-box-decoration-break: clone;
+  box-decoration-break: clone;
+  transition: background-size var(--dur-base) var(--ease-out);
+}
+.prose-reader a:hover,
+.prose-reader a:focus-visible {
+  background-size: 100% 42%;
+}
+.prose-reader a:focus-visible {
+  outline: var(--focus-ring-width) solid var(--color-ring);
+  outline-offset: 2px;
+  border-radius: 3px;
+}
+
+/* ---- highlights: a band over the lower 70% of the line ------------------ */
+.prose-reader mark[data-hl-id] {
+  color: inherit;
+  background-color: transparent;
+  background-image: linear-gradient(transparent 30%, var(--hlc) 30%);
+  -webkit-box-decoration-break: clone;
+  box-decoration-break: clone;
+  padding-inline: 0.06em;
+  margin-inline: -0.06em;
+  cursor: pointer;
+}
+/* stored keys stay terracotta|amber|sage (named Yellow, Rose, Mint) */
+.prose-reader mark[data-hl-color="terracotta"] {
+  --hlc: var(--hl-terracotta);
+}
+.prose-reader mark[data-hl-color="amber"] {
+  --hlc: var(--hl-amber);
+}
+.prose-reader mark[data-hl-color="sage"] {
+  --hlc: var(--hl-sage);
+}
+
+/* ---- lists ------------------------------------------------------------ */
+.prose-reader ul,
+.prose-reader ol {
+  margin: 0 0 1em;
+  padding-left: 1.5em;
+}
+.prose-reader li {
+  margin: 0.3em 0;
+  padding-left: 0.2em;
+}
+.prose-reader li > ul,
+.prose-reader li > ol {
+  margin: 0.3em 0 0.4em;
+}
+.prose-reader ol {
+  list-style: decimal;
+}
+.prose-reader ol > li::marker {
+  font-variant-numeric: tabular-nums;
+  color: var(--color-text-muted);
+  font-weight: var(--weight-medium);
+  font-size: 0.9em;
+}
+.prose-reader ul > li::marker {
+  content: "–  ";
+  color: var(--color-text-subtle);
+}
+.prose-reader ul ul > li::marker {
+  content: "·  ";
+  font-weight: var(--weight-bold);
+}
+
+/* ---- blockquote: a 2px ink rule --------------------------------------- */
+.prose-reader blockquote {
+  margin: 1.6em 0;
+  padding: 0.1em 0 0.1em 1.15em;
+  border-left: 2px solid var(--color-text);
+  font-size: 1.04em;
+  line-height: 1.55;
+  color: var(--color-text);
+}
+.prose-reader blockquote p:last-child {
+  margin-bottom: 0;
+}
+
+/* ---- code ------------------------------------------------------------- */
+.prose-reader code {
+  font-family: var(--font-mono);
+  font-size: 0.84em;
+  letter-spacing: 0;
+  padding: 0.12em 0.36em;
+  border-radius: var(--radius-xs);
+  background: color-mix(in srgb, var(--color-text) 7%, transparent);
+}
+.prose-reader pre {
+  margin: 1.6em 0;
+  padding: 1.1em 1.25em;
+  border-radius: var(--radius-md);
+  background: color-mix(in srgb, var(--color-text) 5%, var(--reading-bg));
+  box-shadow: inset 0 0 0 1px var(--color-hairline);
+  overflow-x: auto;
+  overscroll-behavior-x: contain;
+  -webkit-overflow-scrolling: touch;
+  font-family: var(--font-mono);
+  font-size: 0.8125rem;
+  line-height: 1.65;
+  tab-size: 4;
+  letter-spacing: 0;
+  scrollbar-width: thin;
+  scrollbar-color: var(--color-border-strong) transparent;
+}
+.prose-reader pre code {
+  background: none;
+  padding: 0;
+  font-size: inherit;
+  border-radius: 0;
+  white-space: pre;
+}
+
+/* ---- figures ---------------------------------------------------------- */
+.prose-reader figure {
+  margin: 2em 0;
+}
+.prose-reader img {
+  display: block;
+  max-width: 100%;
+  height: auto;
+  border-radius: var(--radius-md);
+}
+/* white figures shouldn't glare in dark */
+[data-theme="dark"] .prose-reader img,
+.prose-reader[data-theme="dark"] img {
+  filter: brightness(0.88) contrast(1.05);
+}
+.prose-reader figcaption {
+  font-family: var(--font-ui);
+  font-size: 0.8125rem;
+  line-height: 1.5;
+  color: var(--color-text-muted);
+  margin-top: 0.75em;
+  max-width: 34rem;
+  letter-spacing: 0;
+}
+
+/* ---- tables scroll inside themselves, never the page ------------------ */
+.prose-reader table {
+  display: block;
+  max-width: 100%;
+  overflow-x: auto;
+  overscroll-behavior-x: contain;
+  border-collapse: collapse;
+  margin: 1.6em 0;
+  font-family: var(--font-ui);
+  font-size: 0.875rem;
+  line-height: 1.4;
+  letter-spacing: 0;
+  font-variant-numeric: tabular-nums;
+  scrollbar-width: thin;
+  scrollbar-color: var(--color-border-strong) transparent;
+}
+.prose-reader th,
+.prose-reader td {
+  text-align: left;
+  padding: 0.65em 1em 0.65em 0;
+  border-bottom: 1px solid var(--color-hairline);
+  white-space: nowrap;
+  vertical-align: baseline;
+}
+.prose-reader th {
+  font-weight: var(--weight-medium);
+  color: var(--color-text-muted);
+  font-size: 0.8125rem;
+  border-bottom-color: var(--color-border-strong);
+}
+.prose-reader td:first-child {
+  font-weight: var(--weight-medium);
+}
+.prose-reader td sup,
+.prose-reader th sup {
+  font-size: 0.7em;
+  line-height: 0;
+}
+
+/* ---- hr: one short, slanted stroke of marker -------------------------- */
+.prose-reader hr {
+  border: 0;
+  height: 0.4em;
+  width: 2.75em;
+  margin: 2.6em auto;
+  background: var(--color-marker);
+  border-radius: 0.2em;
+  transform: skewX(-12deg);
+}
+
+/* ---- footnotes -------------------------------------------------------- */
+.prose-reader sup:has(> a[href^="#"]) {
+  line-height: 0;
+  font-size: 0.7em;
+  vertical-align: 0.5em;
+  margin-left: 0.12em;
+}
+/* refs: small ink-wash pills with a 44px invisible hit area */
+.prose-reader sup > a[href^="#"] {
+  position: relative;
+  font-family: var(--font-ui);
+  font-weight: var(--weight-medium);
+  font-variant-numeric: tabular-nums;
+  padding: 0.1em 0.45em;
+  border-radius: var(--radius-pill);
+  background: color-mix(in srgb, var(--color-text) 8%, transparent);
+}
+.prose-reader sup > a[href^="#"]::after {
+  content: "";
+  position: absolute;
+  inset: -14px -10px;
+}
+.prose-reader sup > a[href^="#"]:hover,
+.prose-reader sup > a[href^="#"]:focus-visible {
+  background: var(--color-marker);
+  color: var(--color-text-on-marker);
+}
+.prose-reader :is(.footnotes, ol.references, section[role="doc-endnotes"]) {
+  font-size: 0.875em;
+  line-height: 1.55;
+  color: var(--color-text-muted);
+}
+.prose-reader
+  :is(.footnotes, ol.references, section[role="doc-endnotes"])
+  :is(h2, h3) {
+  font-size: var(--reading-h4);
+  font-weight: var(--weight-bold);
+  letter-spacing: 0;
+  margin-top: 0;
+  color: var(--color-text);
+}
+.prose-reader :is(.footnotes, section[role="doc-endnotes"]) ol,
+.prose-reader ol.references {
+  padding-left: 1.4em;
+}
+.prose-reader :is(.footnotes, ol.references, section[role="doc-endnotes"]) li {
+  margin: 0.5em 0;
+}
+/* the ↩ backref: quiet, no marker stroke */
+.prose-reader
+  :is(.footnotes, ol.references, section[role="doc-endnotes"])
+  a:is(
+    [role="doc-backlink"],
+    [href^="#fnref"],
+    [data-footnote-backref],
+    .footnote-backref
+  ) {
+  background: none;
+  color: var(--color-text-subtle);
+  padding: 0 0.25em;
+  font-family: var(--font-ui);
+}
+
+/* ---- math (MathML, rendered by the browser; we style the box) --------- */
+.prose-reader math {
+  font-family: "STIX Two Math", "Cambria Math", "Latin Modern Math", math;
+  font-size: 1.08em;
+  letter-spacing: 0;
+  color: var(--reading-math);
+}
+.prose-reader math[display="block"] {
+  display: block math;
+  margin: 1.5em 0;
+  padding: 0.75em 0;
+  font-size: 1.22em;
+  overflow-x: auto;
+  overflow-y: hidden;
+  overscroll-behavior-x: contain;
+}
+
+/* ---- phone: wide blocks bleed to the screen edge and scroll inside ---- */
+@media (max-width: 39.99rem) {
+  .prose-reader pre,
+  .prose-reader table,
+  .prose-reader figure img,
+  .prose-reader math[display="block"] {
+    margin-inline: calc(-1 * var(--reading-gutter));
+    max-width: none;
+    width: calc(100% + 2 * var(--reading-gutter));
+    border-radius: 0;
+  }
+  .prose-reader pre,
+  .prose-reader table {
+    padding-inline: var(--reading-gutter);
+  }
+  .prose-reader th:last-child,
+  .prose-reader td:last-child {
+    padding-right: var(--reading-gutter);
+  }
+  .prose-reader pre {
+    box-shadow:
+      inset 0 1px 0 var(--color-hairline),
+      inset 0 -1px 0 var(--color-hairline);
+    font-size: 0.78125rem;
+  }
+  .prose-reader figure figcaption {
+    max-width: none;
+  }
+}

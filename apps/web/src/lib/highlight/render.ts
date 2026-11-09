@@ -1,7 +1,8 @@
 import type { HighlightColor } from "@readmepls/types";
 
-/** Wrap a Range's contents in a colored <mark>. Safe for single-container ranges
- *  (text-quote anchoring yields a contiguous range within the article body). */
+/** Wrap a Range's contents in a <mark> keyed by color. Safe for single-container
+ *  ranges (text-quote anchoring yields a contiguous range within the article body).
+ *  The band itself is drawn by reading.css from `data-hl-color`. */
 export function markRange(
   range: Range,
   color: HighlightColor,
@@ -10,8 +11,6 @@ export function markRange(
   const mark = document.createElement("mark");
   mark.dataset.hlId = id;
   mark.dataset.hlColor = color;
-  mark.style.background = `var(--hl-${color})`;
-  mark.style.borderRadius = "var(--radius-xs)";
   try {
     range.surroundContents(mark);
   } catch {
