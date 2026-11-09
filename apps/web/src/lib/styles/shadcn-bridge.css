@@ -2,7 +2,7 @@
  * shadcn components reference alias vars (--background, --primary, …). We
  * point those at tokens.css's --color-* semantic layer ONCE, in :root.
  * Because custom properties re-resolve at use-site, the existing
- * [data-theme="dark"|"sepia"] remaps of --color-* are inherited with no
+ * [data-theme="dark"] remaps of --color-* are inherited with no
  * per-theme override here (confirmed in the effort analysis, §2). */
 @layer theme, base, components, utilities;
 @import "tailwindcss/theme.css" layer(theme);

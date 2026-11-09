@@ -20,7 +20,7 @@
 {/if}
 
 <style>
-  /* App primary-button treatment: solid terracotta, compact for the top bar. */
+  /* App primary-button treatment: solid marker yellow, compact for the top bar. */
   .get-ext {
     display: inline-flex;
     align-items: center;
