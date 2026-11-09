@@ -1,6 +1,6 @@
 <script lang="ts">
   import type { ReaderPrefs } from "@readmepls/types";
-  import { AArrowDown, AArrowUp, Type } from "@lucide/svelte";
+  import { AArrowDown, AArrowUp } from "@lucide/svelte";
 
   let {
     prefs,
@@ -25,13 +25,6 @@
     aria-label="increase text size"
   >
     <AArrowUp class="icon-sm" aria-hidden="true" />
-  </button>
-  <button
-    class="seg seg--text"
-    onclick={() => emit({ font: prefs.font === "serif" ? "sans" : "serif" })}
-  >
-    <Type class="icon-sm" aria-hidden="true" />
-    {prefs.font === "serif" ? "sans" : "serif"}
   </button>
 </div>
 
@@ -71,9 +64,6 @@
   .seg:focus-visible {
     outline: var(--focus-ring-width) solid var(--color-ring);
     outline-offset: -2px;
-  }
-  .seg--text {
-    min-width: 4.5rem;
   }
   @media (prefers-reduced-motion: reduce) {
     .seg {

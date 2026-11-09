@@ -32,13 +32,11 @@ describe("ReaderControls", () => {
     );
   });
 
-  it("toggles the font family", async () => {
-    const onChange = vi.fn();
-    render(ReaderControls, { prefs, onChange });
-    await fireEvent.click(screen.getByRole("button", { name: /serif|sans/i }));
-    expect(onChange).toHaveBeenCalledWith(
-      expect.objectContaining({ font: "serif" }),
-    );
+  it("does not offer a font toggle (serif/sans are the same face now)", () => {
+    render(ReaderControls, { prefs, onChange: vi.fn() });
+    expect(
+      screen.queryByRole("button", { name: /serif|sans/i }),
+    ).not.toBeInTheDocument();
   });
 
   it("labels the size steppers for assistive tech", () => {
@@ -51,10 +49,10 @@ describe("ReaderControls", () => {
     ).toBeInTheDocument();
   });
 
-  it("renders the three controls as one segmented group", () => {
+  it("renders the two controls as one segmented group", () => {
     const { container } = render(ReaderControls, { prefs, onChange: vi.fn() });
     const group = container.querySelector(".controls");
     expect(group).not.toBeNull();
-    expect(group!.querySelectorAll("button.seg")).toHaveLength(3);
+    expect(group!.querySelectorAll("button.seg")).toHaveLength(2);
   });
 });
