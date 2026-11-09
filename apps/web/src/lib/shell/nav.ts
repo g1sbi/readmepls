@@ -35,3 +35,16 @@ export function shellFor(pathname: string): ShellKind {
   if (under(path, "/read")) return "reader";
   return "app";
 }
+
+/** The `<slug>` of `/collections/<slug>`, decoded; null elsewhere. */
+export function activeCollectionSlug(pathname: string): string | null {
+  const path = pathOf(pathname);
+  if (!under(path, "/collections")) return null;
+  const seg = path.split("/")[2];
+  if (!seg) return null;
+  try {
+    return decodeURIComponent(seg);
+  } catch {
+    return seg;
+  }
+}

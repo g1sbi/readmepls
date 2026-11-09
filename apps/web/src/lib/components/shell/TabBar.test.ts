@@ -1,6 +1,18 @@
-import { describe, it, expect, vi } from "vitest";
+import { describe, it, expect, vi, afterEach } from "vitest";
 import { render, screen, fireEvent } from "@testing-library/svelte";
+import { tick } from "svelte";
 import TabBar from "./TabBar.svelte";
+
+afterEach(() => {
+  vi.unstubAllGlobals();
+  vi.restoreAllMocks();
+  Object.defineProperty(window, "scrollY", { value: 0, configurable: true });
+});
+
+const scrollTo = (y: number) => {
+  Object.defineProperty(window, "scrollY", { value: y, configurable: true });
+  window.dispatchEvent(new Event("scroll"));
+};
 
 const mount = (pathname: string, over: Record<string, unknown> = {}) => {
   const onMore = vi.fn();
@@ -59,5 +71,52 @@ describe("TabBar", () => {
     const root = screen.getByRole("navigation", { name: "Tabs" });
     expect(root).toHaveClass("md:hidden");
     expect(root.className).toContain("pb-[env(safe-area-inset-bottom)]");
+  });
+
+  describe("hide on scroll", () => {
+    // jsdom has no `inert` reflection, so Svelte may set an expando property.
+    const isInert = () =>
+      nav().hasAttribute("inert") ||
+      (nav() as HTMLElement & { inert?: boolean }).inert === true;
+    const nav = () => screen.getByRole("navigation", { name: "Tabs" });
+    const stubRaf = () =>
+      vi.stubGlobal("requestAnimationFrame", (cb: FrameRequestCallback) => {
+        cb(0);
+        return 0;
+      });
+
+    it("hides and goes inert on scroll down, returns on scroll up", async () => {
+      stubRaf();
+      mount("/");
+      expect(isInert()).toBe(false);
+      scrollTo(200);
+      await tick();
+      expect(nav()).toHaveClass("translate-y-full");
+      expect(isInert()).toBe(true);
+      scrollTo(100);
+      await tick();
+      expect(nav()).not.toHaveClass("translate-y-full");
+      expect(isInert()).toBe(false);
+    });
+
+    it("stays visible while More is open", async () => {
+      stubRaf();
+      mount("/", { moreOpen: true });
+      scrollTo(200);
+      await tick();
+      expect(nav()).not.toHaveClass("translate-y-full");
+      expect(isInert()).toBe(false);
+    });
+
+    it("removes its scroll listener on unmount", () => {
+      const remove = vi.spyOn(window, "removeEventListener");
+      const { unmount } = render(TabBar, {
+        pathname: "/",
+        onMore: () => {},
+        moreOpen: false,
+      } as never);
+      unmount();
+      expect(remove).toHaveBeenCalledWith("scroll", expect.any(Function));
+    });
   });
 });

@@ -2,7 +2,7 @@
   import { resolve } from "$app/paths";
   import { Settings } from "@lucide/svelte";
   import BottomSheet from "$lib/components/ui/BottomSheet.svelte";
-  import { activeKey } from "$lib/shell/nav.js";
+  import { activeKey, activeCollectionSlug } from "$lib/shell/nav.js";
   import type { CollectionSummary } from "$lib/collections/types.js";
   import NewCollection from "./NewCollection.svelte";
   import SidebarCollections from "./SidebarCollections.svelte";
@@ -23,19 +23,14 @@
   } = $props();
 
   const active = $derived(activeKey(pathname));
-  const activeSlug = $derived.by(() => {
-    if (active !== "collections") return null;
-    const seg = pathname.split(/[?#]/)[0]?.split("/")[2];
-    if (!seg) return null;
-    try {
-      return decodeURIComponent(seg);
-    } catch {
-      return seg;
-    }
-  });
+  const activeSlug = $derived(activeCollectionSlug(pathname));
+  let collectionsHeadingId = $state("");
 
-  // Any link tap navigates, so the sheet gets out of the way.
+  // A plain link tap navigates, so the sheet gets out of the way. Modified
+  // clicks (new tab/window) leave the page in place, so they leave it open.
   function closeOnLink(e: MouseEvent) {
+    if (e.ctrlKey || e.metaKey || e.shiftKey || e.altKey || e.button !== 0)
+      return;
     if ((e.target as Element).closest("a")) onClose();
   }
 </script>
@@ -52,13 +47,13 @@
       Settings
     </a>
 
-    <NewCollection headingId="more-collections-heading" {onCreated} />
+    <NewCollection bind:headingId={collectionsHeadingId} {onCreated} />
 
     <div data-more-scroll class="max-h-[50dvh] overflow-y-auto">
       <SidebarCollections
         {collections}
         {activeSlug}
-        labelledby="more-collections-heading"
+        labelledby={collectionsHeadingId}
       />
     </div>
   </div>

@@ -18,7 +18,9 @@
   );
   const icons = { home: House, library: Library } as const;
 
-  let visible = $state(true);
+  let scrollVisible = $state(true);
+  // The More sheet is open from this bar, so keep it shown meanwhile.
+  const visible = $derived(scrollVisible || moreOpen);
 
   onMount(() => {
     let prevY = window.scrollY;
@@ -28,7 +30,7 @@
       ticking = true;
       requestAnimationFrame(() => {
         const curY = window.scrollY;
-        visible = nextNavVisible(prevY, curY, visible);
+        scrollVisible = nextNavVisible(prevY, curY, scrollVisible);
         prevY = curY;
         ticking = false;
       });
@@ -43,6 +45,7 @@
 
 <nav
   aria-label="Tabs"
+  inert={!visible}
   class="fixed inset-x-0 bottom-0 z-30 flex items-stretch justify-around rounded-t-xl bg-card px-2 pt-1 pb-[env(safe-area-inset-bottom)] ring-1 ring-hairline transition-transform duration-200 ease-out motion-reduce:transition-none md:hidden {visible
     ? ''
     : 'translate-y-full'}"

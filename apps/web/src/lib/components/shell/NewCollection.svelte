@@ -9,8 +9,16 @@
 
   // The "Collections" heading, its + button and the inline create field.
   // Shared by the desktop sidebar and the phone More sheet.
-  let { headingId, onCreated }: { headingId: string; onCreated: () => void } =
-    $props();
+  // The heading id is generated here (unique per instance) and bound out so
+  // the caller's list can point aria-labelledby at it.
+  let {
+    headingId = $bindable(""),
+    onCreated,
+  }: { headingId?: string; onCreated: () => void } = $props();
+
+  const uid = $props.id();
+  headingId = `${uid}-heading`;
+  const errorId = `${uid}-error`;
 
   let creating = $state(false);
   let draft = $state("");
@@ -93,7 +101,7 @@
       bind:value={draft}
       aria-label="New collection name"
       aria-invalid={error ? true : undefined}
-      aria-describedby={error ? `${headingId}-error` : undefined}
+      aria-describedby={error ? errorId : undefined}
       placeholder="Name it, press enter"
       autocomplete="off"
       onkeydown={onKeydown}
@@ -101,11 +109,7 @@
       {@attach focusOnMount}
     />
     {#if error}
-      <p
-        id={`${headingId}-error`}
-        role="alert"
-        class="mt-1.5 px-4 text-xs text-destructive"
-      >
+      <p id={errorId} role="alert" class="mt-1.5 px-4 text-xs text-destructive">
         {error}
       </p>
     {/if}

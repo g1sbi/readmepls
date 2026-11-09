@@ -1,7 +1,11 @@
 <script lang="ts">
   import { resolve } from "$app/paths";
   import { House, Library, Settings } from "@lucide/svelte";
-  import { NAV_ITEMS, activeKey } from "$lib/shell/nav.js";
+  import {
+    NAV_ITEMS,
+    activeKey,
+    activeCollectionSlug,
+  } from "$lib/shell/nav.js";
   import type { CollectionSummary } from "$lib/collections/types.js";
   import NewCollection from "./NewCollection.svelte";
   import SidebarCollections from "./SidebarCollections.svelte";
@@ -18,20 +22,8 @@
   } = $props();
 
   const active = $derived(activeKey(pathname));
-  const activeSlug = $derived(
-    active === "collections"
-      ? decodeSegment(pathname.split(/[?#]/)[0]?.split("/")[2])
-      : null,
-  );
-
-  function decodeSegment(seg: string | undefined) {
-    if (!seg) return null;
-    try {
-      return decodeURIComponent(seg);
-    } catch {
-      return seg;
-    }
-  }
+  const activeSlug = $derived(activeCollectionSlug(pathname));
+  let collectionsHeadingId = $state("");
 
   const icons = { home: House, library: Library } as const;
 </script>
@@ -66,12 +58,12 @@
       {/each}
     </ul>
 
-    <NewCollection headingId="sidebar-collections-heading" {onCreated} />
+    <NewCollection bind:headingId={collectionsHeadingId} {onCreated} />
 
     <SidebarCollections
       {collections}
       {activeSlug}
-      labelledby="sidebar-collections-heading"
+      labelledby={collectionsHeadingId}
     />
   </div>
 

@@ -57,6 +57,34 @@ describe("MoreSheet", () => {
     expect(onClose).toHaveBeenCalled();
   });
 
+  it("stays open on modified clicks", async () => {
+    const { onClose } = mount();
+    const link = screen.getByRole("link", { name: /Coll 3\b/ });
+    await fireEvent.click(link, { ctrlKey: true });
+    await fireEvent.click(link, { metaKey: true });
+    await fireEvent.click(link, { shiftKey: true });
+    await fireEvent.click(link, { button: 1 });
+    expect(onClose).not.toHaveBeenCalled();
+  });
+
+  it("shares no DOM ids with the sidebar", async () => {
+    const { default: AppSidebar } = await import("./AppSidebar.svelte");
+    render(AppSidebar, {
+      pathname: "/",
+      collections: many,
+      onCreated: () => {},
+    } as never);
+    mount();
+    for (const b of screen.getAllByRole("button", { name: "New collection" }))
+      await fireEvent.click(b);
+    const ids = [...document.querySelectorAll("[id]")].map((e) => e.id);
+    expect(new Set(ids).size).toBe(ids.length);
+    const list = document.querySelector("[data-more-scroll] ul")!;
+    const lb = list.getAttribute("aria-labelledby")!;
+    expect(lb).toBeTruthy();
+    expect(document.getElementById(lb)).toHaveTextContent("Collections");
+  });
+
   it("closes when Settings is tapped", async () => {
     const { onClose } = mount();
     await fireEvent.click(screen.getByRole("link", { name: "Settings" }));
