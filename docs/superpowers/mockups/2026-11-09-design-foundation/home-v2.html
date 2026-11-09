@@ -1,105 +1,395 @@
-<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fontsource/uncut-sans@5/400.css">
-<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fontsource/uncut-sans@5/500.css">
-<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fontsource/uncut-sans@5/600.css">
+<link
+  rel="stylesheet"
+  href="https://cdn.jsdelivr.net/npm/@fontsource/uncut-sans@5/400.css"
+/>
+<link
+  rel="stylesheet"
+  href="https://cdn.jsdelivr.net/npm/@fontsource/uncut-sans@5/500.css"
+/>
+<link
+  rel="stylesheet"
+  href="https://cdn.jsdelivr.net/npm/@fontsource/uncut-sans@5/600.css"
+/>
 <style>
-  @font-face { font-family: Ronzino; font-weight: 400; src: url(/files/Ronzino-Regular.woff2) format("woff2"); }
-  @font-face { font-family: Ronzino; font-weight: 500; src: url(/files/Ronzino-Medium.woff2) format("woff2"); }
+  @font-face {
+    font-family: Ronzino;
+    font-weight: 400;
+    src: url(/files/Ronzino-Regular.woff2) format("woff2");
+  }
+  @font-face {
+    font-family: Ronzino;
+    font-weight: 500;
+    src: url(/files/Ronzino-Medium.woff2) format("woff2");
+  }
 
-  .h2 { --ease: cubic-bezier(0.075, 0.82, 0.165, 1); --bounce: cubic-bezier(.175,.885,.325,1.275);
-        --bg:#e4e4e2; --tile:#f7f7f6; --ink:#020203; --ink-inv:#f7f7f6; --muted:#5c5e62; --faint:#8a9094; --hair:rgba(2,2,3,.12);
-        --chip:#d6d6d4; --marker:#ffce00; --marker-soft:rgba(255,206,0,.55);
-        font-family: "Uncut Sans", sans-serif; font-feature-settings: "ss02","ss05","ss06"; letter-spacing: -0.015em; -webkit-font-smoothing: antialiased;
-        background: var(--bg); color: var(--ink); border-radius: 18px; display: grid; grid-template-columns: 168px 1fr; text-align: left; overflow: hidden; }
-  .h2.ron { font-family: Ronzino, sans-serif; font-feature-settings: normal; }
-  .h2 * { box-sizing: border-box; }
+  .h2 {
+    --ease: cubic-bezier(0.075, 0.82, 0.165, 1);
+    --bounce: cubic-bezier(0.175, 0.885, 0.325, 1.275);
+    --bg: #e4e4e2;
+    --tile: #f7f7f6;
+    --ink: #020203;
+    --ink-inv: #f7f7f6;
+    --muted: #5c5e62;
+    --faint: #8a9094;
+    --hair: rgba(2, 2, 3, 0.12);
+    --chip: #d6d6d4;
+    --marker: #ffce00;
+    --marker-soft: rgba(255, 206, 0, 0.55);
+    font-family: "Uncut Sans", sans-serif;
+    font-feature-settings: "ss02", "ss05", "ss06";
+    letter-spacing: -0.015em;
+    -webkit-font-smoothing: antialiased;
+    background: var(--bg);
+    color: var(--ink);
+    border-radius: 18px;
+    display: grid;
+    grid-template-columns: 168px 1fr;
+    text-align: left;
+    overflow: hidden;
+  }
+  .h2.ron {
+    font-family: Ronzino, sans-serif;
+    font-feature-settings: normal;
+  }
+  .h2 * {
+    box-sizing: border-box;
+  }
 
   /* our marker motif: a highlighter swipe that draws in on hover */
-  .h2 .mk { background-image: linear-gradient(var(--marker-soft), var(--marker-soft)); background-repeat: no-repeat; background-size: 100% 42%; background-position: 0 88%; padding: 0 .08em; transition: background-size .6s var(--ease); }
-  .h2 .swipe .mk { background-size: 0% 42%; }
-  .h2 .swipe:hover .mk { background-size: 100% 42%; }
+  .h2 .mk {
+    background-image: linear-gradient(var(--marker-soft), var(--marker-soft));
+    background-repeat: no-repeat;
+    background-size: 100% 42%;
+    background-position: 0 88%;
+    padding: 0 0.08em;
+    transition: background-size 0.6s var(--ease);
+  }
+  .h2 .swipe .mk {
+    background-size: 0% 42%;
+  }
+  .h2 .swipe:hover .mk {
+    background-size: 100% 42%;
+  }
 
-  .h2 .side { padding: 18px 10px; display: flex; flex-direction: column; gap: 2px; }
-  .h2 .brand { font-weight: 600; font-size: 17px; padding: 2px 10px 16px; letter-spacing: -0.03em; }
-  .h2 .nav { font-size: 13.5px; color: var(--muted); padding: 7px 10px; border-radius: 999px; transition: background-color .25s var(--ease), color .25s var(--ease), transform .25s var(--ease); cursor: default; }
-  .h2 .nav:hover { background: var(--chip); color: var(--ink); transform: translateX(2px); }
-  .h2 .nav.on { background: var(--ink); color: var(--ink-inv); }
-  .h2 .sec { font-size: 11px; color: var(--faint); padding: 16px 10px 4px; }
+  .h2 .side {
+    padding: 18px 10px;
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+  }
+  .h2 .brand {
+    font-weight: 600;
+    font-size: 17px;
+    padding: 2px 10px 16px;
+    letter-spacing: -0.03em;
+  }
+  .h2 .nav {
+    font-size: 13.5px;
+    color: var(--muted);
+    padding: 7px 10px;
+    border-radius: 999px;
+    transition:
+      background-color 0.25s var(--ease),
+      color 0.25s var(--ease),
+      transform 0.25s var(--ease);
+    cursor: default;
+  }
+  .h2 .nav:hover {
+    background: var(--chip);
+    color: var(--ink);
+    transform: translateX(2px);
+  }
+  .h2 .nav.on {
+    background: var(--ink);
+    color: var(--ink-inv);
+  }
+  .h2 .sec {
+    font-size: 11px;
+    color: var(--faint);
+    padding: 16px 10px 4px;
+  }
 
-  .h2 .main { padding: 18px 18px 18px 6px; display: flex; flex-direction: column; gap: 14px; min-width: 0; }
-  .h2 .hello { font-size: 26px; font-weight: 500; letter-spacing: -0.035em; line-height: 1.15; padding: 4px 2px 0; }
-  .h2 .hello small { display: block; font-size: 13px; color: var(--muted); font-weight: 400; letter-spacing: 0; margin-top: 6px; }
-  .h2 .grid { display: grid; grid-template-columns: 1.45fr 1fr; gap: 10px; }
-  .h2 .tile { background: var(--tile); border-radius: 14px; padding: 14px; box-shadow: 0 0 0 1px var(--hair); }
-  .h2 .lbl { font-size: 11.5px; color: var(--muted); margin-bottom: 10px; display: flex; justify-content: space-between; }
+  .h2 .main {
+    padding: 18px 18px 18px 6px;
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+    min-width: 0;
+  }
+  .h2 .hello {
+    font-size: 26px;
+    font-weight: 500;
+    letter-spacing: -0.035em;
+    line-height: 1.15;
+    padding: 4px 2px 0;
+  }
+  .h2 .hello small {
+    display: block;
+    font-size: 13px;
+    color: var(--muted);
+    font-weight: 400;
+    letter-spacing: 0;
+    margin-top: 6px;
+  }
+  .h2 .grid {
+    display: grid;
+    grid-template-columns: 1.45fr 1fr;
+    gap: 10px;
+  }
+  .h2 .tile {
+    background: var(--tile);
+    border-radius: 14px;
+    padding: 14px;
+    box-shadow: 0 0 0 1px var(--hair);
+  }
+  .h2 .lbl {
+    font-size: 11.5px;
+    color: var(--muted);
+    margin-bottom: 10px;
+    display: flex;
+    justify-content: space-between;
+  }
 
-  .h2 .feat { min-height: 260px; display: flex; flex-direction: column; justify-content: space-between; cursor: default; transition: transform .5s var(--ease), box-shadow .5s var(--ease); }
-  .h2 .feat:hover { transform: translateY(-3px); box-shadow: 0 0 0 1px var(--hair), 0 14px 30px rgba(0,0,0,.08); }
-  .h2 .feat.dark { background: var(--ink); color: var(--ink-inv); box-shadow: none; }
-  .h2 .feat.dark .lbl { color: #a3a6ab; }
-  .h2 .feat h3 { font-size: 38px; line-height: .98; letter-spacing: -0.05em; font-weight: 500; margin: 0; }
+  .h2 .feat {
+    min-height: 260px;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    cursor: default;
+    transition:
+      transform 0.5s var(--ease),
+      box-shadow 0.5s var(--ease);
+  }
+  .h2 .feat:hover {
+    transform: translateY(-3px);
+    box-shadow:
+      0 0 0 1px var(--hair),
+      0 14px 30px rgba(0, 0, 0, 0.08);
+  }
+  .h2 .feat.dark {
+    background: var(--ink);
+    color: var(--ink-inv);
+    box-shadow: none;
+  }
+  .h2 .feat.dark .lbl {
+    color: #a3a6ab;
+  }
+  .h2 .feat h3 {
+    font-size: 38px;
+    line-height: 0.98;
+    letter-spacing: -0.05em;
+    font-weight: 500;
+    margin: 0;
+  }
   /* on ink, the swipe fills the full line height and flips the text to ink so it stays legible */
-  .h2 .feat.dark .mk { color: inherit; background-image: linear-gradient(var(--marker), var(--marker)); background-position: 0 50%; transition: background-size .6s var(--ease), color .3s var(--ease); }
-  .h2 .feat.dark.swipe .mk { background-size: 0% 100%; }
-  .h2 .feat.dark.swipe:hover .mk { background-size: 100% 100%; color: var(--ink); }
-  .h2 .feat .ex { font-size: 13.5px; line-height: 1.45; color: inherit; opacity: .75; margin: 12px 0 0; max-width: 34ch; }
-  .h2 .quote { font-size: 23px; line-height: 1.2; letter-spacing: -0.03em; font-weight: 400; margin: 0; }
-  .h2 .by { font-size: 12.5px; color: var(--muted); margin-top: 12px; display: flex; align-items: center; gap: 8px; }
-  .h2 .fav { width: 16px; height: 16px; border-radius: 50%; background: var(--chip); flex: none; display: inline-block; }
-  .h2 .feat.dark .fav { background: #3a3c41; }
-  .h2 .cta { display: inline-flex; gap: 6px; align-items: center; margin-top: 14px; font-size: 12.5px; padding: 7px 14px; border-radius: 999px; background: var(--marker); color: var(--ink); width: fit-content; transition: transform .35s var(--bounce); }
-  .h2 .cta:hover { transform: scale(1.05); }
-  .h2 .feat.light .cta { background: var(--ink); color: var(--ink-inv); }
+  .h2 .feat.dark .mk {
+    color: inherit;
+    background-image: linear-gradient(var(--marker), var(--marker));
+    background-position: 0 50%;
+    transition:
+      background-size 0.6s var(--ease),
+      color 0.3s var(--ease);
+  }
+  .h2 .feat.dark.swipe .mk {
+    background-size: 0% 100%;
+  }
+  .h2 .feat.dark.swipe:hover .mk {
+    background-size: 100% 100%;
+    color: var(--ink);
+  }
+  .h2 .feat .ex {
+    font-size: 13.5px;
+    line-height: 1.45;
+    color: inherit;
+    opacity: 0.75;
+    margin: 12px 0 0;
+    max-width: 34ch;
+  }
+  .h2 .quote {
+    font-size: 23px;
+    line-height: 1.2;
+    letter-spacing: -0.03em;
+    font-weight: 400;
+    margin: 0;
+  }
+  .h2 .by {
+    font-size: 12.5px;
+    color: var(--muted);
+    margin-top: 12px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+  .h2 .fav {
+    width: 16px;
+    height: 16px;
+    border-radius: 50%;
+    background: var(--chip);
+    flex: none;
+    display: inline-block;
+  }
+  .h2 .feat.dark .fav {
+    background: #3a3c41;
+  }
+  .h2 .cta {
+    display: inline-flex;
+    gap: 6px;
+    align-items: center;
+    margin-top: 14px;
+    font-size: 12.5px;
+    padding: 7px 14px;
+    border-radius: 999px;
+    background: var(--marker);
+    color: var(--ink);
+    width: fit-content;
+    transition: transform 0.35s var(--bounce);
+  }
+  .h2 .cta:hover {
+    transform: scale(1.05);
+  }
+  .h2 .feat.light .cta {
+    background: var(--ink);
+    color: var(--ink-inv);
+  }
 
-  .h2 .col { display: flex; flex-direction: column; gap: 10px; }
-  .h2 .big { font-size: 34px; font-weight: 500; letter-spacing: -0.04em; line-height: 1; }
-  .h2 .big small { font-size: 14px; color: var(--muted); font-weight: 400; letter-spacing: 0; }
-  .h2 .dots { display: flex; gap: 4px; margin-top: 12px; }
-  .h2 .dots b { flex: 1; height: 8px; border-radius: 99px; background: var(--chip); }
-  .h2 .dots b.y { background: var(--ink); }
-  .h2 .dots b.now { background: var(--marker); }
-  .h2 .row { display: flex; align-items: center; gap: 10px; padding: 7px 0; border-top: 1px solid var(--hair); font-size: 13.5px; transition: padding .3s var(--ease); cursor: default; }
-  .h2 .row:hover { padding-left: 4px; }
-  .h2 .row:first-of-type { border-top: 0; }
-  .h2 .row .t { flex: 1; min-width: 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-  .h2 .pbar { width: 46px; height: 4px; border-radius: 99px; background: var(--chip); overflow: hidden; }
-  .h2 .pbar div { height: 100%; background: var(--ink); }
+  .h2 .col {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+  }
+  .h2 .big {
+    font-size: 34px;
+    font-weight: 500;
+    letter-spacing: -0.04em;
+    line-height: 1;
+  }
+  .h2 .big small {
+    font-size: 14px;
+    color: var(--muted);
+    font-weight: 400;
+    letter-spacing: 0;
+  }
+  .h2 .dots {
+    display: flex;
+    gap: 4px;
+    margin-top: 12px;
+  }
+  .h2 .dots b {
+    flex: 1;
+    height: 8px;
+    border-radius: 99px;
+    background: var(--chip);
+  }
+  .h2 .dots b.y {
+    background: var(--ink);
+  }
+  .h2 .dots b.now {
+    background: var(--marker);
+  }
+  .h2 .row {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 7px 0;
+    border-top: 1px solid var(--hair);
+    font-size: 13.5px;
+    transition: padding 0.3s var(--ease);
+    cursor: default;
+  }
+  .h2 .row:hover {
+    padding-left: 4px;
+  }
+  .h2 .row:first-of-type {
+    border-top: 0;
+  }
+  .h2 .row .t {
+    flex: 1;
+    min-width: 0;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+  .h2 .pbar {
+    width: 46px;
+    height: 4px;
+    border-radius: 99px;
+    background: var(--chip);
+    overflow: hidden;
+  }
+  .h2 .pbar div {
+    height: 100%;
+    background: var(--ink);
+  }
 </style>
 
 <h2>Home v2: our own take</h2>
-<p class="subtitle">One accent only: <b>highlighter yellow</b>, which becomes readmepls' own motif. It's what a reader does to text, so it marks what matters (today's pick, goal progress, the main action) and <b>draws itself in on hover</b> like a real marker swipe. Kept from the references: pills, hairlines, snappy easing, big type. Dropped: the floating-tile page, the colour-block hero, the live chip. The sidebar now sits flush on the page. Two options for the featured module. Hover the titles.</p>
+<p class="subtitle">
+  One accent only: <b>highlighter yellow</b>, which becomes readmepls' own
+  motif. It's what a reader does to text, so it marks what matters (today's
+  pick, goal progress, the main action) and <b>draws itself in on hover</b> like
+  a real marker swipe. Kept from the references: pills, hairlines, snappy
+  easing, big type. Dropped: the floating-tile page, the colour-block hero, the
+  live chip. The sidebar now sits flush on the page. Two options for the
+  featured module. Hover the titles.
+</p>
 
 <template id="h2side">
   <div class="side">
     <div class="brand">readme<span class="mk">pls</span></div>
-    <div class="nav on">Home</div><div class="nav">Library</div><div class="nav">Websites</div><div class="nav">Goals</div>
-    <div class="sec">Collections</div><div class="nav">Physics</div><div class="nav">Long reads</div>
+    <div class="nav on">Home</div>
+    <div class="nav">Library</div>
+    <div class="nav">Websites</div>
+    <div class="nav">Goals</div>
+    <div class="sec">Collections</div>
+    <div class="nav">Physics</div>
+    <div class="nav">Long reads</div>
   </div>
 </template>
 <template id="h2right">
   <div class="col">
-    <div class="tile"><div class="lbl"><span>This week</span><span>goal: read 5</span></div>
+    <div class="tile">
+      <div class="lbl"><span>This week</span><span>goal: read 5</span></div>
       <div class="big">3<small> / 5 read</small></div>
-      <div class="dots"><b class="y"></b><b class="y"></b><b class="y"></b><b class="now"></b><b></b></div>
+      <div class="dots">
+        <b class="y"></b><b class="y"></b><b class="y"></b><b class="now"></b
+        ><b></b>
+      </div>
     </div>
-    <div class="tile"><div class="lbl"><span>Continue reading</span><span>2</span></div>
-      <div class="row"><span class="fav"></span><span class="t">How to Do Great Work</span><span class="pbar"><div style="width:62%"></div></span></div>
-      <div class="row"><span class="fav"></span><span class="t">The Bitter Lesson</span><span class="pbar"><div style="width:20%"></div></span></div>
+    <div class="tile">
+      <div class="lbl"><span>Continue reading</span><span>2</span></div>
+      <div class="row">
+        <span class="fav"></span><span class="t">How to Do Great Work</span
+        ><span class="pbar"><div style="width: 62%"></div></span>
+      </div>
+      <div class="row">
+        <span class="fav"></span><span class="t">The Bitter Lesson</span
+        ><span class="pbar"><div style="width: 20%"></div></span>
+      </div>
     </div>
   </div>
 </template>
 
-<div class="cards" style="grid-template-columns: 1fr;">
+<div class="cards" style="grid-template-columns: 1fr">
   <div class="card" data-choice="ink-feature" onclick="toggleSelect(this)">
-    <div class="card-image" style="padding:14px;background:transparent">
+    <div class="card-image" style="padding: 14px; background: transparent">
       <div class="h2" data-side>
         <div class="main">
-          <div class="hello">Morning. Two reads from your weekly goal.<small>3 new since yesterday · 128 saved</small></div>
+          <div class="hello">
+            Morning. Two reads from your weekly goal.<small
+              >3 new since yesterday · 128 saved</small
+            >
+          </div>
           <div class="grid" data-right>
             <div class="tile feat dark swipe">
-              <div class="lbl"><span>Picked for today</span><span>12 min</span></div>
+              <div class="lbl">
+                <span>Picked for today</span><span>12 min</span>
+              </div>
               <div>
                 <h3>The <span class="mk">Navier–Stokes</span> equations</h3>
-                <p class="ex">Saved 3 weeks ago, never opened. Partial differential equations describing the motion of viscous fluids.</p>
+                <p class="ex">
+                  Saved 3 weeks ago, never opened. Partial differential
+                  equations describing the motion of viscous fluids.
+                </p>
                 <div class="by"><span class="fav"></span>wikipedia.org</div>
               </div>
               <span class="cta">Start reading →</span>
@@ -108,20 +398,39 @@
         </div>
       </div>
     </div>
-    <div class="card-body"><h3>A · Ink feature</h3><p>Inverted black tile with a big title, the key words marker-swiped on hover, a short "why this one" line, and a yellow call to action.</p></div>
+    <div class="card-body">
+      <h3>A · Ink feature</h3>
+      <p>
+        Inverted black tile with a big title, the key words marker-swiped on
+        hover, a short "why this one" line, and a yellow call to action.
+      </p>
+    </div>
   </div>
 
   <div class="card" data-choice="quote-feature" onclick="toggleSelect(this)">
-    <div class="card-image" style="padding:14px;background:transparent">
+    <div class="card-image" style="padding: 14px; background: transparent">
       <div class="h2" data-side>
         <div class="main">
-          <div class="hello">Morning. Two reads from your weekly goal.<small>3 new since yesterday · 128 saved</small></div>
+          <div class="hello">
+            Morning. Two reads from your weekly goal.<small
+              >3 new since yesterday · 128 saved</small
+            >
+          </div>
           <div class="grid" data-right>
             <div class="tile feat light swipe">
-              <div class="lbl"><span>Picked for today</span><span>12 min</span></div>
+              <div class="lbl">
+                <span>Picked for today</span><span>12 min</span>
+              </div>
               <div>
-                <p class="quote">"…describe <span class="mk">the motion of viscous fluid substances</span>, named after Navier and Stokes."</p>
-                <div class="by"><span class="fav"></span>Navier–Stokes equations · wikipedia.org</div>
+                <p class="quote">
+                  "…describe
+                  <span class="mk">the motion of viscous fluid substances</span
+                  >, named after Navier and Stokes."
+                </p>
+                <div class="by">
+                  <span class="fav"></span>Navier–Stokes equations ·
+                  wikipedia.org
+                </div>
               </div>
               <span class="cta">Start reading →</span>
             </div>
@@ -129,10 +438,27 @@
         </div>
       </div>
     </div>
-    <div class="card-body"><h3>B · Excerpt feature</h3><p>Light tile that opens with a line from the article itself, marked like a highlight, with the title as the caption. More editorial; changes character with every article.</p></div>
+    <div class="card-body">
+      <h3>B · Excerpt feature</h3>
+      <p>
+        Light tile that opens with a line from the article itself, marked like a
+        highlight, with the title as the caption. More editorial; changes
+        character with every article.
+      </p>
+    </div>
   </div>
 </div>
 <script>
-  document.querySelectorAll('[data-side]').forEach(el => el.prepend(document.getElementById('h2side').content.cloneNode(true)));
-  document.querySelectorAll('[data-right]').forEach(el => el.appendChild(document.getElementById('h2right').content.cloneNode(true)));
+  document
+    .querySelectorAll("[data-side]")
+    .forEach((el) =>
+      el.prepend(document.getElementById("h2side").content.cloneNode(true)),
+    );
+  document
+    .querySelectorAll("[data-right]")
+    .forEach((el) =>
+      el.appendChild(
+        document.getElementById("h2right").content.cloneNode(true),
+      ),
+    );
 </script>

@@ -21,6 +21,7 @@ isn't well animated, doesn't use good type, or ships components whose UX
 wasn't thought through state by state.
 
 Success looks like this:
+
 - the app reads as a modern, calm, confident product of its own
 - changing a primitive changes it everywhere
 - every component has been deliberately designed in every state, on phones first
@@ -57,6 +58,7 @@ Success looks like this:
 ## Anti-goals
 
 These would count as failure even if everything technically works:
+
 - **Copying the references.** uncut.wtf and collletttivo.it are
   inspiration, not templates. No mid-gray page, mascot, color-block hero,
   or floating-tile page layout lifted from them.
@@ -101,15 +103,15 @@ These were made with the owner, from mockups.
 
   Reference values from the approved mockup:
 
-  | Role | Value |
-  |---|---|
-  | page | `#e4e4e2` |
-  | card | `#f7f7f6` |
-  | ink | `#020203` |
-  | muted | `#5c5e62` |
-  | faint | `#8a9094` |
+  | Role     | Value             |
+  | -------- | ----------------- |
+  | page     | `#e4e4e2`         |
+  | card     | `#f7f7f6`         |
+  | ink      | `#020203`         |
+  | muted    | `#5c5e62`         |
+  | faint    | `#8a9094`         |
   | hairline | `rgba(2,2,3,.12)` |
-  | chip | `#d6d6d4` |
+  | chip     | `#d6d6d4`         |
 
 - **One accent: highlighter yellow** (`#ffce00` in the mockup). It is used
   sparingly to mark what matters (the current day of the weekly goal, the
@@ -125,6 +127,7 @@ These were made with the owner, from mockups.
   once on scroll-into-view on touch. On an inverted ink surface the swipe
   fills the full line height and flips the text to ink, so it stays legible.
   This was a bug found in the mockup.
+
 - **Type: Ronzino** (Collletttivo, SIL OFL), self-hosted, regular, medium,
   and bold plus their obliques. It is used for **both UI and article
   reading.**
@@ -158,6 +161,7 @@ appearance setting in the app.
 ### Motion
 
 Borrowed in spirit from collletttivo.it's system:
+
 - **Named easings as tokens:**
   - a snappy expo-out for most transitions, `cubic-bezier(0.075, 0.82, 0.165, 1)`
     in the mockups;
@@ -287,6 +291,7 @@ this one. It's recorded here so the shell and tokens support it.
 ## Review gates
 
 These are owner checkpoints during building:
+
 1. **Tokens + dark palette:** a mockup of the light and dark Marker palettes
    on a sample screen.
 2. **Component sheets:** primitives in every state, both modes, phone and
