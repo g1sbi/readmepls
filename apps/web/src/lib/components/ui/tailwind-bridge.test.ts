@@ -57,4 +57,8 @@ describe("shadcn ↔ tokens bridge", () => {
     expect(c).toMatch(/--breakpoint-sm:\s*40rem/);
     expect(c).toMatch(/--breakpoint-lg:\s*64rem/);
   });
+
+  it("declares the alias block on :root and every [data-theme] scope", () => {
+    expect(css()).toMatch(/:root,\s*\[data-theme\] \{\s*--background:/);
+  });
 });

@@ -1,9 +1,9 @@
 /* shadcn-svelte ↔ tokens.css bridge.
  * shadcn components reference alias vars (--background, --primary, …). We
- * point those at tokens.css's --color-* semantic layer ONCE, in :root.
- * Because custom properties re-resolve at use-site, the existing
- * [data-theme="dark"] remaps of --color-* are inherited with no
- * per-theme override here (confirmed in the effort analysis, §2). */
+ * point those at tokens.css's --color-* semantic layer. A custom property is
+ * computed where it is declared and descendants inherit the computed value,
+ * so the alias block is declared on :root AND every [data-theme] scope: a
+ * nested theme container re-resolves the aliases against its own --color-*. */
 @layer theme, base, components, utilities;
 @import "tailwindcss/theme.css" layer(theme);
 @import "tailwindcss/utilities.css" layer(utilities);
@@ -13,7 +13,8 @@
 /* This repo themes via [data-theme], not shadcn's default .dark class. */
 @custom-variant dark ([data-theme="dark"] &);
 
-:root {
+:root,
+[data-theme] {
   --background: var(--color-bg);
   --foreground: var(--color-text);
   --card: var(--color-surface-raised);

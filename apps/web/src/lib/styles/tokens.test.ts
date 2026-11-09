@@ -164,4 +164,10 @@ describe("tokens.css (Marker)", () => {
     expect(light.has("--color-bg")).toBe(true);
     expect(css).toMatch(/\[data-theme="light"\] \{[^}]*color-scheme:\s*light;/);
   });
+
+  it("orders the light block before the dark block in the cascade", () => {
+    expect(css.indexOf(`${LIGHT_SELECTOR} {`)).toBeLessThan(
+      css.indexOf('[data-theme="dark"] {'),
+    );
+  });
 });
