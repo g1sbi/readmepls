@@ -3,26 +3,29 @@ import { render, screen, fireEvent } from "@testing-library/svelte";
 import ReaderControlBar from "./ReaderControlBar.svelte";
 
 describe("ReaderControlBar", () => {
-  it("renders all four items when hasChapters is true", () => {
+  it("renders three items when hasChapters is true", () => {
     render(ReaderControlBar, { hasChapters: true, onOpen: vi.fn() });
     expect(
       screen.getByRole("navigation", { name: "reader controls" }),
     ).toBeTruthy();
-    for (const label of ["text", "chapters", "highlights", "more"]) {
+    for (const label of ["Chapters", "Highlights", "More"]) {
       expect(screen.getByText(label)).toBeTruthy();
     }
   });
 
   it("omits chapters when hasChapters is false", () => {
     render(ReaderControlBar, { hasChapters: false, onOpen: vi.fn() });
-    expect(screen.queryByText("chapters")).toBeNull();
-    expect(screen.getByText("text")).toBeTruthy();
+    expect(screen.queryByText("Chapters")).toBeNull();
+    expect(screen.queryByText("text")).toBeNull();
+    expect(screen.queryByText("Text")).toBeNull();
+    expect(screen.getByText("Highlights")).toBeTruthy();
+    expect(screen.getByText("More")).toBeTruthy();
   });
 
   it("fires onOpen with the item key on click", async () => {
     const onOpen = vi.fn();
     render(ReaderControlBar, { hasChapters: true, onOpen });
-    await fireEvent.click(screen.getByText("highlights"));
+    await fireEvent.click(screen.getByText("Highlights"));
     expect(onOpen).toHaveBeenCalledWith("highlights");
   });
 
@@ -33,7 +36,7 @@ describe("ReaderControlBar", () => {
       onOpen: vi.fn(),
     });
     expect(
-      screen.getByText("more").closest("button")!.getAttribute("aria-current"),
+      screen.getByText("More").closest("button")!.getAttribute("aria-current"),
     ).toBe("true");
   });
 });

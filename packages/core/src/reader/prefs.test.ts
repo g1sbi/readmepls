@@ -2,37 +2,22 @@ import { describe, it, expect } from "vitest";
 import { withReaderDefaults } from "./prefs.js";
 
 describe("withReaderDefaults", () => {
-  it("returns full defaults for empty input", () => {
-    expect(withReaderDefaults()).toEqual({
-      font: "sans",
-      size: 18,
-      lineHeight: 1.6,
-      width: "normal",
-      theme: "system",
-    });
+  it("returns the theme default for empty input", () => {
+    expect(withReaderDefaults()).toEqual({ theme: "system" });
   });
 
-  it("overrides only provided fields", () => {
-    expect(withReaderDefaults({ theme: "dark", size: 20 })).toMatchObject({
-      theme: "dark",
-      size: 20,
-      font: "sans",
-    });
-  });
-
-  it("clamps out-of-range numeric values", () => {
-    const p = withReaderDefaults({ size: 99, lineHeight: 0.5 });
-    expect(p.size).toBe(24);
-    expect(p.lineHeight).toBe(1.3);
-  });
-
-  it("ignores unknown/invalid enum values and falls back to default", () => {
-    const p = withReaderDefaults({ font: "comic" as never });
-    expect(p.font).toBe("sans");
+  it("keeps the theme and drops retired typography keys", () => {
+    expect(
+      withReaderDefaults({ theme: "dark", size: 20, font: "serif" }),
+    ).toEqual({ theme: "dark" });
   });
 
   it("falls back to system for a legacy sepia theme", () => {
-    const p = withReaderDefaults({ theme: "sepia" as never });
-    expect(p.theme).toBe("system");
+    expect(withReaderDefaults({ theme: "sepia" })).toEqual({ theme: "system" });
+  });
+
+  it("never throws on junk input", () => {
+    expect(withReaderDefaults("junk")).toEqual({ theme: "system" });
+    expect(withReaderDefaults(null)).toEqual({ theme: "system" });
   });
 });

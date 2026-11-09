@@ -1,6 +1,5 @@
 <script lang="ts">
   import {
-    Type,
     List,
     Highlighter,
     MoreHorizontal,
@@ -21,10 +20,9 @@
   } = $props();
 
   const items: { key: SheetKey; label: string; icon: LucideIcon }[] = [
-    { key: "type", label: "text", icon: Type },
-    { key: "chapters", label: "chapters", icon: List },
-    { key: "highlights", label: "highlights", icon: Highlighter },
-    { key: "more", label: "more", icon: MoreHorizontal },
+    { key: "chapters", label: "Chapters", icon: List },
+    { key: "highlights", label: "Highlights", icon: Highlighter },
+    { key: "more", label: "More", icon: MoreHorizontal },
   ];
   const shown = $derived(
     items.filter((it) => it.key !== "chapters" || hasChapters),

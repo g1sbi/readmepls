@@ -4,29 +4,21 @@
   import { browserPb } from "$lib/pb.js";
   import { httpUrlOrNull } from "$lib/url/http-url.js";
   import {
-    withReaderDefaults,
     anchoring,
     rangeOver,
     slugify,
     STARTED_THRESHOLD,
     FINISHED_THRESHOLD,
   } from "@readmepls/core";
-  import {
-    Highlight,
-    TocEntry,
-    type ReaderPrefs,
-    type HighlightColor,
-  } from "@readmepls/types";
+  import { Highlight, TocEntry, type HighlightColor } from "@readmepls/types";
   import type { Mode, ThemePref } from "$lib/theme/theme.js";
   import type { ArticleRecord } from "$lib/article/record.js";
   import type { RecordModel } from "pocketbase";
   import { ClientResponseError } from "pocketbase";
   import { goto, afterNavigate, invalidateAll } from "$app/navigation";
   import { resolve } from "$app/paths";
-  import { readerCssVars } from "$lib/reader/css-vars.js";
   import { markRange, unmarkAll } from "$lib/highlight/render";
   import { deleteArticle } from "$lib/article/delete.js";
-  import ReaderControls from "$lib/components/ReaderControls.svelte";
   import ChaptersSidebar from "$lib/components/ChaptersSidebar.svelte";
   import { buildTocFromDom } from "$lib/reader/toc.js";
   import ConfirmAction from "$lib/components/ConfirmAction.svelte";
@@ -83,7 +75,6 @@
 
   let article = $state<ArticleRecord | null>(null);
   let content = $state<RecordModel | null>(null);
-  let prefs = $state<ReaderPrefs>(withReaderDefaults());
 
   let progress = $state(0);
   // Last measurement taken while THIS page's DOM was known to be live. In an
@@ -257,36 +248,9 @@
     await loadHighlights($page.params.id!);
   }
 
-  let saveTimer: ReturnType<typeof setTimeout> | undefined;
-  function savePrefs(next: ReaderPrefs) {
-    // If theme changed, drive it through the global model (localStorage + <html>
-    // data-theme + reader_prefs.theme) so the chrome and article agree.
-    if (next.theme !== prefs.theme && themeCtx) {
-      themeCtx.set(next.theme);
-    }
-    prefs = next;
-    clearTimeout(saveTimer);
-    saveTimer = setTimeout(() => {
-      const uid = pb.authStore.model?.id;
-      // The reader never owns `theme`: the layout does. Merge over the current
-      // account prefs and the live theme so a TopBar change made after this
-      // page loaded isn't overwritten with the stale copy in `next`.
-      if (uid)
-        pb.collection("users").update(uid, {
-          reader_prefs: {
-            ...pb.authStore.model?.reader_prefs,
-            ...next,
-            theme: themeCtx?.current ?? next.theme,
-          },
-        });
-    }, 500);
-  }
-
-  // Derive the active theme: prefer the live global context (keeps article in
-  // sync when TopBar changes theme) and fall back to local prefs for isolation.
-  const activeTheme = $derived<Mode>(
-    themeCtx ? themeCtx.mode : prefs.theme === "dark" ? "dark" : "light",
-  );
+  // The live global theme context keeps the article in sync with the chrome;
+  // light is the fallback when the reader renders in isolation.
+  const activeTheme = $derived<Mode>(themeCtx ? themeCtx.mode : "light");
   const source = $derived(sourceView(pb, content));
   const originalUrl = $derived(
     article?.url ? httpUrlOrNull(article.url) : null,
@@ -403,11 +367,6 @@
     progress = article!.progress ?? 0;
     pendingProgress = progress;
 
-    const uid = pb.authStore.model?.id;
-    if (uid) {
-      const me = await pb.collection("users").getOne(uid);
-      prefs = withReaderDefaults(me.reader_prefs ?? undefined);
-    }
     if (article!.status === "unread") {
       await pb
         .collection("articles")
@@ -501,8 +460,7 @@
   collections={navCollections}
 />
 
-<!-- reader vars live on the shell so the width pref governs the shell, not just the article -->
-<div class="reader-shell" style={readerCssVars(prefs)}>
+<div class="reader-shell">
   {#if actionError}
     <p class="delete-error" role="alert">{actionError}</p>
   {/if}
@@ -527,7 +485,6 @@
               />
             </section>
           {/if}
-          <ReaderControls {prefs} onChange={savePrefs} />
           <TagEditor
             tags={manualTags.map((t) => ({ id: t.id, name: t.name }))}
             onadd={addTag}
@@ -621,19 +578,11 @@
     onOpen={(s) => (activeSheet = s)}
   />
 
-  <BottomSheet
-    open={activeSheet === "type"}
-    onClose={() => (activeSheet = null)}
-    title="text"
-  >
-    <ReaderControls {prefs} onChange={savePrefs} />
-  </BottomSheet>
-
   {#if hasChapters}
     <BottomSheet
       open={activeSheet === "chapters"}
       onClose={() => (activeSheet = null)}
-      title="chapters"
+      title="Chapters"
     >
       <ChaptersSidebar
         {toc}
@@ -646,7 +595,7 @@
   <BottomSheet
     open={activeSheet === "highlights"}
     onClose={() => (activeSheet = null)}
-    title="highlights"
+    title="Highlights"
   >
     <HighlightsSidebar
       {highlights}
@@ -662,7 +611,7 @@
   <BottomSheet
     open={activeSheet === "more"}
     onClose={() => (activeSheet = null)}
-    title="more"
+    title="More"
   >
     <TagEditor
       tags={manualTags.map((t) => ({ id: t.id, name: t.name }))}
@@ -679,9 +628,7 @@
 {/if}
 
 <style>
-  /* --reading-measure is set inline on .reader-shell so the column width
-     follows the pref (narrow/normal/wide) end-to-end (FIX 2).
-     The shell is wider than the prose measure so the highlights rail has room. */
+  /* The shell is wider than the prose measure so the highlights rail has room. */
   .reader-shell {
     max-width: var(--width-prose);
     margin: 0 auto;

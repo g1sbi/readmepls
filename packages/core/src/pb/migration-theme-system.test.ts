@@ -92,7 +92,8 @@ describe("theme system migration", () => {
   it("down maps system back to light and keeps other keys", async () => {
     const dataDir = mkdtempSync(join(tmpdir(), "pb-theme-data-"));
     const migrationsDir = mkdtempSync(join(tmpdir(), "pb-theme-migrations-"));
-    for (const f of ALL_MIGRATIONS) {
+    // `down 1` reverts the newest migration, so stop at the theme one.
+    for (const f of ALL_MIGRATIONS.filter((f) => f <= THEME_FILE)) {
       copyFileSync(join(MIGRATIONS_SRC, f), join(migrationsDir, f));
     }
     const h1 = await startEphemeralPb({ dir: dataDir, migrationsDir });

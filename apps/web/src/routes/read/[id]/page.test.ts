@@ -208,7 +208,7 @@ describe("reader page — delete error path", () => {
 
     // Article actions (archive/delete/add to collection) live in the mobile
     // "more" sheet — open it before interacting with anything inside.
-    await fireEvent.click(screen.getByText("more"));
+    await fireEvent.click(screen.getByText("More"));
 
     // Trigger the confirm-delete dialog
     await fireEvent.click(
@@ -234,7 +234,7 @@ describe("reader page — delete error path", () => {
     await waitFor(() =>
       expect(screen.getByText("Test Article")).toBeInTheDocument(),
     );
-    await fireEvent.click(screen.getByText("more"));
+    await fireEvent.click(screen.getByText("More"));
     expect(screen.queryByLabelText(/new collection/i)).not.toBeInTheDocument();
     expect(
       screen.getByRole("button", { name: "add to collection" }),
@@ -246,7 +246,7 @@ describe("reader page — delete error path", () => {
     await waitFor(() =>
       expect(screen.getByText("Test Article")).toBeInTheDocument(),
     );
-    await fireEvent.click(screen.getByText("more"));
+    await fireEvent.click(screen.getByText("More"));
     await fireEvent.click(
       screen.getByRole("button", { name: "archive article" }),
     );
@@ -261,7 +261,7 @@ describe("reader page — delete error path", () => {
     await waitFor(() =>
       expect(screen.getByText("Test Article")).toBeInTheDocument(),
     );
-    await fireEvent.click(screen.getByText("more"));
+    await fireEvent.click(screen.getByText("More"));
     await fireEvent.click(
       screen.getByRole("button", { name: "delete article" }),
     );
@@ -277,7 +277,7 @@ describe("reader page — delete error path", () => {
     await waitFor(() =>
       expect(screen.getByText("Test Article")).toBeInTheDocument(),
     );
-    await fireEvent.click(screen.getByText("more"));
+    await fireEvent.click(screen.getByText("More"));
     const trigger = screen.getByRole("button", { name: "add to collection" });
     await fireEvent.keyDown(trigger, { key: "Enter" });
     await fireEvent.click(
@@ -305,7 +305,7 @@ describe("reader page — delete error path", () => {
     await waitFor(() =>
       expect(screen.getByText("Test Article")).toBeInTheDocument(),
     );
-    await fireEvent.click(screen.getByText("more"));
+    await fireEvent.click(screen.getByText("More"));
 
     await fireEvent.click(
       screen.getByRole("button", { name: "delete article" }),
@@ -669,7 +669,7 @@ describe("reader page — chapters sidebar", () => {
     // The bar's "chapters" item only appears once resolveToc() has run (a tick
     // or more after the article heading first renders) — findByText retries
     // until then rather than racing a synchronous getByText.
-    await fireEvent.click(await screen.findByText("chapters"));
+    await fireEvent.click(await screen.findByText("Chapters"));
 
     const nav = await screen.findByRole("navigation", { name: "chapters" });
     expect(nav).toBeTruthy();
@@ -714,7 +714,7 @@ describe("reader page — mobile control chrome", () => {
     // The bar's "chapters" item only appears once resolveToc() has run (a tick
     // or more after the article heading first renders) — findByText retries
     // until then rather than racing a synchronous getByText.
-    await fireEvent.click(await screen.findByText("chapters"));
+    await fireEvent.click(await screen.findByText("Chapters"));
     const nav = await screen.findByRole("navigation", { name: "chapters" });
     expect(nav).toBeTruthy();
     // Scoped to the nav — content_html's real <h2>First Chapter</h2> also
@@ -722,25 +722,16 @@ describe("reader page — mobile control chrome", () => {
     expect(within(nav).getByText("First Chapter")).toBeTruthy();
   });
 
-  it("never overwrites the account theme with stale reader prefs", async () => {
-    // Theme context as the layout provides it; the user flips to dark via the
-    // TopBar AFTER the reader loaded its (light) prefs.
-    const themeCtx = { current: "light", mode: "light", set: vi.fn() };
-    render(ReaderPage, { context: new Map([["theme", themeCtx]]) });
+  it("renders no typography settings controls", async () => {
+    render(ReaderPage);
     await waitFor(() =>
       expect(screen.getByText("Test Article")).toBeInTheDocument(),
     );
-    themeCtx.current = "dark";
-
-    await fireEvent.click(await screen.findByText("text"));
-    await fireEvent.click(
-      await screen.findByRole("button", { name: "increase text size" }),
-    );
-
-    await waitFor(() => expect(usersUpdate).toHaveBeenCalled());
-    const payload = usersUpdate.mock.calls.at(-1)![1];
-    expect(payload.reader_prefs.size).toBe(19);
-    expect(payload.reader_prefs.theme).toBe("dark");
+    expect(
+      document.querySelector(
+        '[aria-label*="text size" i], [aria-label*="font" i], [aria-label*="line height" i], [aria-label*="width" i]',
+      ),
+    ).toBeNull();
   });
 });
 

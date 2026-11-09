@@ -1,30 +1,11 @@
 import { ReaderPrefs } from "@readmepls/types";
 
-const DEFAULTS: ReaderPrefs = {
-  font: "sans",
-  size: 18,
-  lineHeight: 1.6,
-  width: "normal",
-  theme: "system",
-};
+const DEFAULTS: ReaderPrefs = { theme: "system" };
 
-const clamp = (n: number, lo: number, hi: number) =>
-  Math.min(hi, Math.max(lo, n));
-
-/** Merge a partial (e.g. from users.reader_prefs) onto safe defaults, clamping
- *  numerics and discarding any field that fails schema validation so one bad
- *  value can't wipe the valid overrides around it. */
-export function withReaderDefaults(
-  partial?: Partial<ReaderPrefs>,
-): ReaderPrefs {
-  const merged: Record<string, unknown> = { ...DEFAULTS, ...(partial ?? {}) };
-  merged.size = clamp(Math.round(Number(merged.size)), 14, 24);
-  merged.lineHeight = clamp(Number(merged.lineHeight), 1.3, 2.0);
-
-  const out = { ...DEFAULTS };
-  for (const k of Object.keys(DEFAULTS) as (keyof ReaderPrefs)[]) {
-    const probe = ReaderPrefs.shape[k].safeParse(merged[k]);
-    if (probe.success) (out[k] as unknown) = probe.data;
-  }
-  return out;
+/** Parse stored users.reader_prefs onto safe defaults. Never throws: anything
+ *  that isn't a valid prefs object (legacy sepia theme, junk, null) yields the
+ *  defaults, and retired keys (font, size, ...) are dropped. */
+export function withReaderDefaults(partial?: unknown): ReaderPrefs {
+  const parsed = ReaderPrefs.safeParse(partial);
+  return parsed.success ? parsed.data : { ...DEFAULTS };
 }
