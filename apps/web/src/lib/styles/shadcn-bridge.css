@@ -36,6 +36,7 @@
   --ring: var(--color-ring);
   --marker: var(--color-marker);
   --marker-foreground: var(--color-text-on-marker);
+  --scrim: var(--color-scrim);
   --inverse: var(--color-inverse);
   --inverse-foreground: var(--color-text-inverse);
   --hairline: var(--color-hairline);
@@ -66,6 +67,7 @@
   --color-ring: var(--ring);
   --color-marker: var(--marker);
   --color-marker-foreground: var(--marker-foreground);
+  --color-scrim: var(--scrim);
   --color-inverse: var(--inverse);
   --color-inverse-foreground: var(--inverse-foreground);
   --color-hairline: var(--hairline);

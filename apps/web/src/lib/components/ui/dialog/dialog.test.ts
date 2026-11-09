@@ -13,6 +13,7 @@ describe("Dialog", () => {
     const close = screen.getByRole("button", { name: "Close" });
     expect(close).toBeInTheDocument();
     expect(close.className).toContain("size-9");
+    expect(close.className).toContain("after:-inset-1");
   });
 
   it("content uses the Marker shell", () => {
@@ -31,10 +32,11 @@ describe("Dialog", () => {
       expect(cls).toContain(c);
   });
 
-  it("overlay is ink at 40% in both modes", () => {
+  it("overlay uses the scrim token", () => {
     const cls = read("dialog-overlay.svelte");
-    expect(cls).toContain(
-      "bg-[color-mix(in_srgb,var(--color-inverse)_40%,transparent)]",
+    expect(cls).toContain("bg-scrim");
+    expect(read("../alert-dialog/alert-dialog-overlay.svelte")).toContain(
+      "bg-scrim",
     );
     expect(cls).toContain("fade-in-0");
   });

@@ -142,6 +142,7 @@
   /* lines & inverse fills */
   --color-hairline: rgb(2 2 3 / 0.12);
   --color-inverse: #020203; /* active pill, ink tile */
+  --color-scrim: rgb(2 2 3 / 0.4); /* modal backdrop */
 
   /* accent: ink is the primary action; the marker is the highlighter */
   --color-accent: #020203;
@@ -202,6 +203,7 @@
 
   --color-hairline: rgb(237 237 236 / 0.1);
   --color-inverse: #ededec;
+  --color-scrim: rgb(0 0 0 / 0.6); /* dims, never brightens */
 
   --color-accent: #ededec;
   --color-accent-hover: #ffffff;

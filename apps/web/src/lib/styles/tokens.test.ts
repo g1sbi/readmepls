@@ -171,3 +171,14 @@ describe("tokens.css (Marker)", () => {
     );
   });
 });
+
+describe("scrim token", () => {
+  it("is defined in both scopes and dark dims at least as much", () => {
+    const light = block(css, '[data-theme="light"]').get("--color-scrim");
+    const dark = block(css, '[data-theme="dark"]').get("--color-scrim");
+    expect(light).toBeDefined();
+    expect(dark).toBeDefined();
+    const alpha = (v: string) => Number(/\/\s*([\d.]+)\)/.exec(v)?.[1]);
+    expect(alpha(dark ?? "")).toBeGreaterThanOrEqual(alpha(light ?? ""));
+  });
+});
