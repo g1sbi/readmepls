@@ -1,6 +1,6 @@
 <script lang="ts">
   import { Dialog } from "bits-ui";
-  import Button from "./Button.svelte";
+  import { Button } from "$lib/components/ui/button";
 
   let {
     open,
@@ -35,8 +35,8 @@
         >{message}</Dialog.Description
       >
       <div class="confirm-dialog__actions">
-        <Button onclick={onCancel}>cancel</Button>
-        <Button variant="accent" onclick={onConfirm}>{confirmLabel}</Button>
+        <Button variant="outline" onclick={onCancel}>cancel</Button>
+        <Button onclick={onConfirm}>{confirmLabel}</Button>
       </div>
     </Dialog.Content>
   </Dialog.Portal>

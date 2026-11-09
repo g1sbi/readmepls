@@ -2,7 +2,7 @@
   import { page } from "$app/stores";
   import { invalidateAll } from "$app/navigation";
   import { browserPb } from "$lib/pb.js";
-  import Button from "$lib/components/ui/Button.svelte";
+  import { Button } from "$lib/components/ui/button";
 
   const pb = browserPb();
 
@@ -34,9 +34,11 @@
       this instance's plan is set by this instance's operator, not by you.
     </p>
   {:else if tier === "standard"}
-    <Button variant="accent" onclick={() => setTier("pro")}>go pro</Button>
+    <Button onclick={() => setTier("pro")}>go pro</Button>
   {:else}
-    <Button onclick={() => setTier("standard")}>back to standard</Button>
+    <Button variant="outline" onclick={() => setTier("standard")}
+      >back to standard</Button
+    >
   {/if}
 </section>
 

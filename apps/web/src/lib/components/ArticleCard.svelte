@@ -1,7 +1,7 @@
 <script lang="ts">
   import Card from "./ui/Card.svelte";
   import Tag from "./ui/Tag.svelte";
-  import Button from "./ui/Button.svelte";
+  import { Button } from "$lib/components/ui/button";
   import Spinner from "./ui/Spinner.svelte";
   import SourcePill from "./ui/SourcePill.svelte";
   import ConfirmDialog from "./ui/ConfirmDialog.svelte";
@@ -97,7 +97,7 @@
   {:else if state === "failed" || state === "partial"}
     <h3>{content?.title ?? article.url}</h3>
     <p data-state={state}>{content?.failure_reason ?? "extraction problem"}</p>
-    <Button variant="accent" onclick={() => onRetry?.(article.id)}
+    <Button onclick={() => onRetry?.(article.id)}
       ><RotateCw class="icon-sm" aria-hidden="true" /> retry</Button
     >
   {:else}

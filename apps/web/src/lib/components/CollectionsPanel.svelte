@@ -1,7 +1,7 @@
 <script lang="ts">
   import { resolve } from "$app/paths";
   import Input from "./ui/Input.svelte";
-  import Button from "./ui/Button.svelte";
+  import { Button } from "$lib/components/ui/button";
   import { Folder, Pencil, Trash2, Check, X, Plus } from "@lucide/svelte";
 
   let {
@@ -101,7 +101,7 @@
           placeholder="new collection…"
           aria-label="new collection name"
         />
-        <Button type="submit"
+        <Button variant="outline" type="submit"
           ><Plus class="icon-sm" aria-hidden="true" /> create</Button
         >
       </form>

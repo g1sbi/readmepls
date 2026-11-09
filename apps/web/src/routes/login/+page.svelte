@@ -4,7 +4,7 @@
   import { browserPb } from "$lib/pb.js";
   import { validateCredentials } from "$lib/auth/validate.js";
   import Input from "$lib/components/ui/Input.svelte";
-  import Button from "$lib/components/ui/Button.svelte";
+  import { Button } from "$lib/components/ui/button";
   import type { PageData } from "./$types";
 
   let { data }: { data: PageData } = $props();
@@ -64,9 +64,7 @@
     >
       <Input bind:value={email} type="email" placeholder="email" />
       <Input bind:value={password} type="password" placeholder="password" />
-      <Button type="submit" variant="accent"
-        >{mode === "signin" ? "sign in" : "sign up"}</Button
-      >
+      <Button type="submit">{mode === "signin" ? "sign in" : "sign up"}</Button>
       {#if err}<p role="alert" class="err">{err}</p>{/if}
     </form>
     {#if !data.locked}

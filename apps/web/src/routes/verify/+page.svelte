@@ -3,7 +3,7 @@
   import { goto } from "$app/navigation";
   import { resolve } from "$app/paths";
   import { browserPb } from "$lib/pb.js";
-  import Button from "$lib/components/ui/Button.svelte";
+  import { Button } from "$lib/components/ui/button";
   import type { PageData } from "./$types";
 
   let { data }: { data: PageData } = $props();
@@ -78,7 +78,7 @@
         </p>{/if}
       {#if status === "error"}<p class="err" role="alert">{msg}</p>{/if}
       <div class="actions">
-        <Button variant="accent" onclick={resend}>resend email</Button>
+        <Button onclick={resend}>resend email</Button>
         <button class="link" type="button" onclick={logout}>log out</button>
       </div>
     {/if}
