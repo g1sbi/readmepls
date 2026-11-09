@@ -1,7 +1,8 @@
 <!-- apps/web/src/lib/components/ActiveFilters.svelte -->
 <script lang="ts">
   import type { LibraryParams } from "@readmepls/types";
-  import Chip from "./ui/Chip.svelte";
+  import { Badge } from "$lib/components/ui/badge";
+  import { hitArea } from "$lib/components/ui/button";
 
   type LabelLookup = {
     tag: Record<string, string>;
@@ -91,11 +92,11 @@
       <span class="q-chip">
         <button
           type="button"
-          class="q-edit"
+          class={["q-edit", hitArea]}
           aria-label={`edit search “${params.q}”`}
           onclick={() => onEditQuery?.()}
         >
-          <Chip selected>{`“${params.q}”`}</Chip>
+          <Badge variant="chip" selected>{`“${params.q}”`}</Badge>
         </button>
         <button
           type="button"
@@ -108,11 +109,11 @@
     {#each chips as c (c.key)}
       <button
         data-testid="active-chip"
-        class="chip-btn"
+        class={["chip-btn", hitArea]}
         aria-label={`remove ${c.label}`}
         onclick={() => onRemove(c.patch)}
       >
-        <Chip selected>{c.label} ✕</Chip>
+        <Badge variant="chip" selected>{c.label} ✕</Badge>
       </button>
     {/each}
     <button class="clear" onclick={onClear}>clear all</button>

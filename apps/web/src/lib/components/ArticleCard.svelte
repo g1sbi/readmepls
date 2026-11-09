@@ -1,6 +1,6 @@
 <script lang="ts">
   import Card from "./ui/Card.svelte";
-  import Tag from "./ui/Tag.svelte";
+  import { Badge } from "$lib/components/ui/badge";
   import { Button } from "$lib/components/ui/button";
   import Spinner from "./ui/Spinner.svelte";
   import SourcePill from "./ui/SourcePill.svelte";
@@ -119,7 +119,7 @@
       </div>
     {/if}
     <div class="tags">
-      {#each tags as t (t)}<Tag>{t}</Tag>{/each}
+      {#each tags as t (t)}<Badge variant="tag">{t}</Badge>{/each}
     </div>
     {#if showProgress}
       <div

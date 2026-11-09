@@ -8,7 +8,8 @@
 
   // Hit-area extension: sizes under 44px grow an invisible ::after so the tap
   // target is 36px + 2x4px = 44px without changing the visual size.
-  const hitArea = "relative after:absolute after:-inset-1 after:content-['']";
+  export const hitArea =
+    "relative after:absolute after:-inset-1 after:content-['']";
 
   export const buttonVariants = tv({
     base: "group/button inline-flex shrink-0 items-center justify-center gap-2 rounded-full font-medium whitespace-nowrap no-underline outline-none select-none transition-[background-color,transform,box-shadow] duration-150 ease-out active:scale-[0.97] active:ease-bounce focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background disabled:pointer-events-none disabled:opacity-50 motion-reduce:transition-none motion-reduce:active:scale-100 [&_svg:not([class*='size-'])]:size-4 [&_svg]:pointer-events-none [&_svg]:shrink-0",

@@ -1,5 +1,6 @@
 <script lang="ts">
-  import Chip from "./ui/Chip.svelte";
+  import { Badge } from "$lib/components/ui/badge";
+  import { hitArea } from "$lib/components/ui/button";
   import { Star } from "@lucide/svelte";
   import { browserPb } from "$lib/pb.js";
   import type { SourceFacet } from "@readmepls/core";
@@ -26,21 +27,21 @@
 {#if facets.length > 0}
   <nav class="source-filter" aria-label="Filter by source">
     <button
-      class="chip-btn"
+      class={["chip-btn", hitArea]}
       aria-pressed={selected.size === 0}
       onclick={() => onToggle("__all__")}
     >
-      <Chip selected={selected.size === 0}>all</Chip>
+      <Badge variant="chip" selected={selected.size === 0}>all</Badge>
     </button>
     {#each facets as f (f.id)}
       {@const url = iconUrl(f)}
       <span class="source-chip">
         <button
-          class="chip-btn"
+          class={["chip-btn", hitArea]}
           aria-pressed={selected.has(f.id)}
           onclick={() => onToggle(f.id)}
         >
-          <Chip selected={selected.has(f.id)}>
+          <Badge variant="chip" selected={selected.has(f.id)}>
             {#if url}<img
                 class="chip-favicon"
                 src={url}
@@ -49,8 +50,8 @@
                 height="14"
               />{/if}
             {f.name || f.host}
-            {#snippet trailing()}<span class="count">{f.count}</span>{/snippet}
-          </Chip>
+            <span class="count">{f.count}</span>
+          </Badge>
         </button>
         <button
           class="fav-btn"

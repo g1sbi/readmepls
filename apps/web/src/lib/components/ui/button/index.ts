@@ -3,6 +3,7 @@ import Root, {
   type ButtonSize,
   type ButtonVariant,
   buttonVariants,
+  hitArea,
 } from "./button.svelte";
 
 export {
@@ -11,6 +12,7 @@ export {
   //
   Root as Button,
   buttonVariants,
+  hitArea,
   type ButtonProps,
   type ButtonSize,
   type ButtonVariant,

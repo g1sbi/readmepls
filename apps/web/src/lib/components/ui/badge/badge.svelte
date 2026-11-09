@@ -11,10 +11,14 @@
         destructive:
           "bg-destructive/10 [a]:hover:bg-destructive/20 focus-visible:ring-destructive/20 dark:focus-visible:ring-destructive/40 text-destructive dark:bg-destructive/20",
         outline:
-          "border-border text-foreground [a]:hover:bg-muted [a]:hover:text-muted-foreground",
+          "border-transparent ring-1 ring-hairline text-foreground [a]:hover:bg-muted [a]:hover:text-muted-foreground",
         ghost:
           "hover:bg-muted hover:text-muted-foreground dark:hover:bg-muted/50",
         link: "text-primary underline-offset-4 hover:underline",
+        tag: "h-6 rounded-full px-2.5 text-xs bg-secondary text-secondary-foreground",
+        chip: "h-9 gap-1.5 rounded-full px-3.5 text-sm bg-secondary text-foreground data-[selected=true]:bg-inverse data-[selected=true]:text-inverse-foreground",
+        marker:
+          "h-6 rounded-full px-2.5 text-xs bg-marker text-marker-foreground",
       },
     },
     defaultVariants: {
@@ -34,10 +38,12 @@
     href,
     class: className,
     variant = "default",
+    selected,
     children,
     ...restProps
   }: WithElementRef<HTMLAnchorAttributes> & {
     variant?: BadgeVariant;
+    selected?: boolean;
   } = $props();
 </script>
 
@@ -46,6 +52,7 @@
   bind:this={ref}
   data-slot="badge"
   {href}
+  data-selected={selected}
   class={cn(badgeVariants({ variant }), className)}
   {...restProps}
 >

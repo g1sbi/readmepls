@@ -1,5 +1,6 @@
 <script lang="ts">
-  import Chip from "./ui/Chip.svelte";
+  import { Badge } from "$lib/components/ui/badge";
+  import { hitArea } from "$lib/components/ui/button";
   let {
     tags,
     onadd,
@@ -23,14 +24,14 @@
 
 <div class="tag-editor">
   {#each tags as t (t.id)}
-    <Chip>
+    <Badge variant="chip">
       {t.name}
-      {#snippet trailing()}
-        <button aria-label={`remove ${t.name}`} onclick={() => onremove(t.id)}
-          >×</button
-        >
-      {/snippet}
-    </Chip>
+      <button
+        class={hitArea}
+        aria-label={`remove ${t.name}`}
+        onclick={() => onremove(t.id)}>×</button
+      >
+    </Badge>
   {/each}
   <form onsubmit={submit}>
     <input aria-label="add tag" placeholder="add tag…" bind:value={draft} />
@@ -44,7 +45,7 @@
     gap: var(--space-2);
     align-items: center;
   }
-  .tag-editor :global(.chip button) {
+  .tag-editor :global([data-slot="badge"] button) {
     background: none;
     border: none;
     cursor: pointer;
