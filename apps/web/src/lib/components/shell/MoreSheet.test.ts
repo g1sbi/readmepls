@@ -42,6 +42,25 @@ describe("MoreSheet", () => {
     expect(screen.getByText("More")).toBeInTheDocument();
   });
 
+  it("takes a custom title", () => {
+    mount({ title: "Navigation" });
+    expect(
+      screen.getByRole("heading", { name: "Navigation" }),
+    ).toBeInTheDocument();
+    expect(screen.queryByText("More")).toBeNull();
+  });
+
+  it("separates the nav rows from Settings when it leads with nav", () => {
+    mount({ withNav: true });
+    const library = screen.getByRole("link", { name: "Library" });
+    const settings = screen.getByRole("link", { name: "Settings" });
+    const group = library.closest("[data-nav-group]");
+    expect(group).not.toBeNull();
+    expect(group).toContainElement(screen.getByRole("link", { name: "Home" }));
+    expect(group).not.toContainElement(settings);
+    expect(group).toHaveClass("border-b");
+  });
+
   it("leaves Home and Library to the tab bar by default", () => {
     mount();
     expect(screen.queryByRole("link", { name: "Home" })).toBeNull();

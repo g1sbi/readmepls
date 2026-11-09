@@ -45,5 +45,6 @@
     {collections}
     onCreated={invalidateAll}
     withNav
+    title="Navigation"
   />
 {/if}

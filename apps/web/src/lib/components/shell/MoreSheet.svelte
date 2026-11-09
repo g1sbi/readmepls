@@ -17,6 +17,7 @@
     collections,
     onCreated,
     withNav = false,
+    title = "More",
   }: {
     open: boolean;
     onClose: () => void;
@@ -25,6 +26,7 @@
     onCreated: () => void;
     /** Lead with Home and Library, for surfaces that have no tab bar. */
     withNav?: boolean;
+    title?: string;
   } = $props();
 
   const active = $derived(activeKey(pathname));
@@ -34,10 +36,14 @@
   const onLinkClick = $derived(closeOnLink(onClose));
 </script>
 
-<BottomSheet {open} {onClose} title="More">
+<BottomSheet {open} {onClose} {title}>
   <!-- svelte-ignore a11y_click_events_have_key_events, a11y_no_static_element_interactions -->
   <div onclick={onLinkClick}>
-    {#if withNav}<NavRows {pathname} />{/if}
+    {#if withNav}
+      <div data-nav-group class="mb-2 border-b border-hairline pb-2">
+        <NavRows {pathname} />
+      </div>
+    {/if}
     <a
       href={resolve("/settings")}
       aria-current={active === "settings" ? "page" : undefined}

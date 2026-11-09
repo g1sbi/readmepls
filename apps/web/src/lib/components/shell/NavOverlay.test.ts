@@ -52,7 +52,11 @@ describe("NavOverlay", () => {
 
   it("renders the More sheet with Home and Library on top when narrow", async () => {
     mount();
-    expect(await screen.findByText("More")).toBeInTheDocument();
+    // No tab bar points at it here, so "More" would mean nothing.
+    expect(
+      await screen.findByRole("heading", { name: "Navigation" }),
+    ).toBeInTheDocument();
+    expect(screen.queryByText("More")).toBeNull();
     expect(screen.queryByRole("navigation", { name: "Main" })).toBeNull();
     const home = screen.getByRole("link", { name: "Home" });
     const library = screen.getByRole("link", { name: "Library" });
