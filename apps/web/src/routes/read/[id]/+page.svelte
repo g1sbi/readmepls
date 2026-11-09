@@ -29,7 +29,7 @@
   import ReaderControls from "$lib/components/ReaderControls.svelte";
   import ChaptersSidebar from "$lib/components/ChaptersSidebar.svelte";
   import { buildTocFromDom } from "$lib/reader/toc.js";
-  import ConfirmDialog from "$lib/components/ui/ConfirmDialog.svelte";
+  import ConfirmAction from "$lib/components/ConfirmAction.svelte";
   import TagEditor from "$lib/components/TagEditor.svelte";
   import Rail from "$lib/components/ui/Rail.svelte";
   import ArticleActions from "$lib/components/ArticleActions.svelte";
@@ -572,9 +572,11 @@
   />
 {/if}
 
-<ConfirmDialog
+<ConfirmAction
   open={confirmingDelete}
   title="delete this article?"
+  confirmLabel="delete"
+  cancelLabel="cancel"
   message="this can't be undone."
   onConfirm={confirmDelete}
   onCancel={() => (confirmingDelete = false)}

@@ -207,7 +207,7 @@ describe("reader page — delete error path", () => {
       screen.getByRole("button", { name: "delete article" }),
     );
 
-    // Confirm the deletion (the button inside ConfirmDialog)
+    // Confirm the deletion (the button inside ConfirmAction)
     await fireEvent.click(screen.getByRole("button", { name: "delete" }));
 
     // Error alert must appear with the exact production message

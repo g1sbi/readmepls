@@ -4,7 +4,7 @@
   import { Button } from "$lib/components/ui/button";
   import { Spinner } from "./ui/spinner";
   import SourcePill from "./ui/SourcePill.svelte";
-  import ConfirmDialog from "./ui/ConfirmDialog.svelte";
+  import ConfirmAction from "./ConfirmAction.svelte";
   import * as DropdownMenu from "$lib/components/ui/dropdown-menu";
   import {
     RotateCw,
@@ -198,9 +198,11 @@
       </DropdownMenu.Root>
     </div>
     {#if onDelete}
-      <ConfirmDialog
+      <ConfirmAction
         open={confirming}
         title="delete this article?"
+        confirmLabel="delete"
+        cancelLabel="cancel"
         message="this can't be undone."
         onConfirm={() => {
           confirming = false;
