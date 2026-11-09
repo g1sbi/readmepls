@@ -4,7 +4,8 @@
   import { browserPb } from "$lib/pb.js";
   import { splitHomeFeed } from "$lib/article/home-feed.js";
   import type { ArticleRecord } from "$lib/article/record.js";
-  import CaptureBar from "$lib/components/CaptureBar.svelte";
+  import CaptureForm from "$lib/components/capture/CaptureForm.svelte";
+  import PageHeader from "$lib/components/shell/PageHeader.svelte";
   import CyclingGreeting from "$lib/components/CyclingGreeting.svelte";
   import ArticleCard from "$lib/components/ArticleCard.svelte";
   import CardGrid from "$lib/components/ui/CardGrid.svelte";
@@ -46,10 +47,12 @@
   onDestroy(() => unsub?.());
 </script>
 
+<PageHeader title="Home" />
+
 <section class="hero">
-  <h1 class="sr-only">save any link and actually read it</h1>
-  <CyclingGreeting phrases={GREETINGS} />
-  <CaptureBar onCaptured={load} />
+  <h2 class="sr-only">save any link and actually read it</h2>
+  <CaptureForm variant="inline" />
+  <div class="mt-5"><CyclingGreeting phrases={GREETINGS} /></div>
   <nav class="quick" aria-label="quick actions">
     <Button
       href="/library"
@@ -96,7 +99,7 @@
 <style>
   .hero {
     text-align: center;
-    padding: var(--space-7) 0 var(--space-6);
+    padding: var(--space-4) 0 var(--space-6);
   }
   .quick {
     display: flex;

@@ -1,4 +1,4 @@
-import { describe, it, expect, vi } from "vitest";
+import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
 import { render, screen } from "@testing-library/svelte";
 
 // Home page constructs a PocketBase client and subscribes on mount; stub it so
@@ -15,17 +15,34 @@ vi.mock("$lib/pb.js", () => ({
 import Page from "./+page.svelte";
 
 describe("home page hero", () => {
-  it("keeps a screen-reader heading but drops the visible tagline styling", () => {
+  // PageHeader's capture sheet reads a MediaQuery, which needs matchMedia.
+  beforeEach(() => {
+    vi.stubGlobal("matchMedia", (q: string) => ({
+      matches: true,
+      media: q,
+      addEventListener: () => {},
+      removeEventListener: () => {},
+    }));
+  });
+  afterEach(() => vi.unstubAllGlobals());
+
+  it("titles the page Home and keeps a screen-reader tagline heading", () => {
     render(Page);
     expect(
-      screen.getByRole("heading", { level: 1, name: /save any link/i }),
+      screen.getByRole("heading", { level: 1, name: "Home" }),
+    ).toBeInTheDocument();
+    expect(
+      screen.getByRole("heading", { level: 2, name: /save any link/i }),
     ).toBeInTheDocument();
   });
 
-  it("renders the capture pill", () => {
+  it("renders the inline capture field and the header's capture button", () => {
     render(Page);
     expect(
-      screen.getByRole("textbox", { name: /paste a link/i }),
+      screen.getByRole("textbox", { name: "Save a link" }),
+    ).toBeInTheDocument();
+    expect(
+      screen.getByRole("button", { name: "Save a link" }),
     ).toBeInTheDocument();
   });
 
