@@ -1,7 +1,7 @@
 import { describe, it, expect } from "vitest";
 import { render, screen } from "@testing-library/svelte";
 import { createRawSnippet } from "svelte";
-import Button, { buttonVariants } from "./button.svelte";
+import Button, { buttonVariants, chipButton } from "./button.svelte";
 
 const text = (s: string) =>
   createRawSnippet(() => ({ render: () => `<span>${s}</span>` }));
@@ -53,5 +53,17 @@ describe("Button", () => {
     expect(cls).toContain("underline");
     expect(cls).toContain("decoration-marker");
     expect(cls).toContain("text-foreground");
+  });
+
+  it("gives chip buttons the same visible focus ring", () => {
+    const cls = chipButton.split(/\s+/);
+    for (const c of [
+      "outline-none",
+      "focus-visible:ring-2",
+      "focus-visible:ring-ring",
+      "focus-visible:ring-offset-2",
+      "focus-visible:ring-offset-background",
+    ])
+      expect(cls, c).toContain(c);
   });
 });

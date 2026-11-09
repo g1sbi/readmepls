@@ -13,7 +13,7 @@
 
   // Wrapper-button class for interactive chips: hit area + press feedback; the
   // child chip Badge reads `group-hover` for the fine-pointer hover tint.
-  export const chipButton = `group ${hitArea} cursor-pointer rounded-full transition-transform duration-150 ease-out active:scale-[0.97] motion-reduce:transition-none motion-reduce:active:scale-100`;
+  export const chipButton = `group ${hitArea} cursor-pointer rounded-full outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background transition-transform duration-150 ease-out active:scale-[0.97] motion-reduce:transition-none motion-reduce:active:scale-100`;
 
   export const buttonVariants = tv({
     base: "group/button inline-flex shrink-0 items-center justify-center gap-2 rounded-full font-medium whitespace-nowrap no-underline outline-none select-none transition-[background-color,transform,box-shadow] duration-150 ease-out active:scale-[0.97] active:ease-bounce focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background disabled:pointer-events-none disabled:opacity-50 motion-reduce:transition-none motion-reduce:active:scale-100 [&_svg:not([class*='size-'])]:size-4 [&_svg]:pointer-events-none [&_svg]:shrink-0",
