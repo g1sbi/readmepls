@@ -1,0 +1,161 @@
+<style>
+  @font-face { font-family: Ronzino; font-weight: 400; src: url(/files/Ronzino-Regular.woff2) format("woff2"); }
+  @font-face { font-family: Ronzino; font-weight: 500; src: url(/files/Ronzino-Medium.woff2) format("woff2"); }
+  @font-face { font-family: Ronzino; font-weight: 700; src: url(/files/Ronzino-Bold.woff2) format("woff2"); }
+
+  .phones { display: flex; gap: 18px; flex-wrap: wrap; justify-content: center; }
+  .pcol { display: flex; flex-direction: column; align-items: center; gap: 10px; }
+  .pcol .cap { font-size: 13px; color: #666; text-align: center; max-width: 300px; }
+  .ph { --ease: cubic-bezier(0.075, 0.82, 0.165, 1); --bounce: cubic-bezier(.175,.885,.325,1.275);
+        --bg:#e4e4e2; --tile:#f7f7f6; --ink:#020203; --inv:#f7f7f6; --muted:#5c5e62; --faint:#8a9094; --hair:rgba(2,2,3,.12); --chip:#d6d6d4; --marker:#ffce00;
+        width: 300px; height: 620px; border-radius: 34px; background: var(--bg); color: var(--ink); font-family: Ronzino, sans-serif; letter-spacing: -0.01em;
+        position: relative; overflow: hidden; box-shadow: 0 0 0 8px #111, 0 20px 40px rgba(0,0,0,.25); text-align: left; -webkit-font-smoothing: antialiased; }
+  .ph * { box-sizing: border-box; }
+  .ph .sbar { height: 34px; display: flex; justify-content: space-between; align-items: center; padding: 0 22px; font-size: 12px; font-weight: 500; }
+  .ph .tb { display: flex; align-items: center; gap: 8px; padding: 6px 14px 10px; }
+  .ph .tb .t { flex: 1; font-size: 24px; font-weight: 500; letter-spacing: -0.035em; }
+  .ph .ib { width: 40px; height: 40px; border-radius: 999px; background: var(--tile); box-shadow: 0 0 0 1px var(--hair); display: grid; place-items: center; font-size: 16px; flex: none; transition: transform .3s var(--bounce); cursor: default; }
+  .ph .ib:active { transform: scale(.92); }
+  .ph .ib.add { background: var(--ink); color: var(--inv); box-shadow: none; }
+  .ph .content { padding: 0 14px; display: flex; flex-direction: column; gap: 8px; }
+  .ph .chips { display: flex; gap: 6px; }
+  .ph .chips span { font-size: 12.5px; padding: 7px 12px; border-radius: 999px; background: var(--chip); }
+  .ph .chips span.on { background: var(--ink); color: var(--inv); }
+  .ph .pc { background: var(--tile); border-radius: 14px; padding: 12px; box-shadow: 0 0 0 1px var(--hair); }
+  .ph .pc .s { font-size: 11px; color: var(--muted); display: flex; gap: 6px; align-items: center; margin-bottom: 8px; }
+  .ph .pc .s b { width: 13px; height: 13px; border-radius: 50%; background: var(--chip); }
+  .ph .pc h4 { margin: 0 0 6px; font-size: 15px; font-weight: 500; letter-spacing: -0.02em; line-height: 1.2; }
+  .ph .pc .m { font-size: 11px; color: var(--faint); }
+
+  /* A: bottom tab bar */
+  .ph .tabs { position: absolute; left: 10px; right: 10px; bottom: 14px; height: 62px; border-radius: 22px; background: var(--tile); box-shadow: 0 0 0 1px var(--hair), 0 8px 24px rgba(0,0,0,.08);
+              display: grid; grid-template-columns: repeat(5, 1fr); align-items: center; }
+  .ph .tab { display: flex; flex-direction: column; align-items: center; gap: 4px; font-size: 10.5px; color: var(--muted); cursor: default; height: 100%; justify-content: center; }
+  .ph .tab i { width: 20px; height: 20px; border-radius: 6px; background: var(--chip); display: block; font-style: normal; transition: background-color .3s var(--ease); }
+  .ph .tab.on { color: var(--ink); font-weight: 500; }
+  .ph .tab.on i { background: var(--ink); }
+  .ph .tab.on span { background-image: linear-gradient(var(--marker), var(--marker)); background-size: 100% 40%; background-position: 0 90%; background-repeat: no-repeat; padding: 0 2px; }
+
+  /* B: drawer */
+  .ph .scrim { position: absolute; inset: 0; background: rgba(2,2,3,.32); }
+  .ph .drawer { position: absolute; top: 0; bottom: 0; left: 0; width: 82%; background: var(--bg); border-radius: 0 24px 24px 0; padding: 44px 12px 16px; display: flex; flex-direction: column; gap: 2px; box-shadow: 8px 0 30px rgba(0,0,0,.15); }
+  .ph .drawer .brand { font-weight: 700; font-size: 18px; letter-spacing: -0.03em; padding: 0 10px 14px; }
+  .ph .drawer .brand span { background-image: linear-gradient(var(--marker), var(--marker)); background-size: 100% 42%; background-position: 0 88%; background-repeat: no-repeat; }
+  .ph .nav { font-size: 15px; padding: 11px 12px; border-radius: 999px; color: var(--muted); display: flex; gap: 10px; align-items: center; min-height: 44px; }
+  .ph .nav i { width: 18px; height: 18px; border-radius: 5px; background: var(--chip); display: inline-block; }
+  .ph .nav.on { background: var(--ink); color: var(--inv); }
+  .ph .nav.on i { background: #444; }
+  .ph .nav .n { margin-left: auto; font-size: 12px; color: var(--faint); }
+  .ph .sec { font-size: 11px; color: var(--faint); padding: 14px 12px 4px; display: flex; justify-content: space-between; }
+  .ph .foot { margin-top: auto; display: flex; gap: 8px; align-items: center; padding: 10px 12px; border-top: 1px solid var(--hair); font-size: 13px; color: var(--muted); }
+  .ph .foot b { width: 26px; height: 26px; border-radius: 50%; background: var(--chip); }
+
+  /* C: sheet */
+  .ph .sheet { position: absolute; left: 0; right: 0; bottom: 0; background: var(--bg); border-radius: 26px 26px 0 0; padding: 10px 12px 90px; box-shadow: 0 -8px 30px rgba(0,0,0,.15); }
+  .ph .grab { width: 38px; height: 5px; border-radius: 9px; background: var(--chip); margin: 0 auto 12px; }
+  .ph .tiles2 { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-bottom: 4px; }
+  .ph .tiles2 div { background: var(--tile); border-radius: 14px; padding: 12px; font-size: 14px; box-shadow: 0 0 0 1px var(--hair); min-height: 64px; display: flex; flex-direction: column; justify-content: space-between; }
+  .ph .tiles2 div small { font-size: 11px; color: var(--faint); }
+  .ph .tabs.c4 { grid-template-columns: repeat(4, 1fr); z-index: 2; }
+</style>
+
+<h2>Phone navigation: three ways</h2>
+<p class="subtitle">Same Marker light theme in Ronzino, at a real phone width (300px here; the app is built for 360px and up). Every tap target is at least 44px. The black <b>+</b> is "save a link", reachable in every option. The active tab carries a small marker underline, our motif again. Click your pick.</p>
+
+<div class="cards" style="grid-template-columns: 1fr;">
+  <div class="card" data-choice="tabs" onclick="toggleSelect(this)">
+    <div class="card-image" style="padding:26px 10px;background:transparent;height:auto;display:block">
+      <div class="phones">
+        <div class="pcol">
+          <div class="ph">
+            <div class="sbar"><span>9:41</span><span>●●● ▮</span></div>
+            <div class="tb"><span class="t">Library</span><span class="ib">⌕</span><span class="ib add">+</span></div>
+            <div class="content">
+              <div class="chips"><span class="on">All</span><span>Unread</span><span>Started</span></div>
+              <div class="pc"><div class="s"><b></b>wikipedia.org</div><h4>Navier–Stokes equations</h4><div class="m">12 min · 2d ago</div></div>
+              <div class="pc"><div class="s"><b></b>paulgraham.com</div><h4>How to Do Great Work</h4><div class="m">48 min · 5d ago</div></div>
+              <div class="pc"><div class="s"><b></b>incompleteideas.net</div><h4>The Bitter Lesson</h4><div class="m">9 min · 1w ago</div></div>
+            </div>
+            <div class="tabs">
+              <div class="tab"><i></i>Home</div><div class="tab on"><i></i><span>Library</span></div><div class="tab"><i></i>Collections</div><div class="tab"><i></i>Websites</div><div class="tab"><i></i>Goals</div>
+            </div>
+          </div>
+          <div class="cap">Five sections, always one tap away. Individual collections live inside the Collections tab.</div>
+        </div>
+      </div>
+    </div>
+    <div class="card-body"><h3>A · Bottom tab bar</h3><p>Fastest to switch sections, feels most like a native app, and suits a future App Store version. Cost: the bar takes space permanently, and five tabs is the limit, so anything new won't fit.</p></div>
+  </div>
+
+  <div class="card" data-choice="drawer" onclick="toggleSelect(this)">
+    <div class="card-image" style="padding:26px 10px;background:transparent;height:auto;display:block">
+      <div class="phones">
+        <div class="pcol">
+          <div class="ph">
+            <div class="sbar"><span>9:41</span><span>●●● ▮</span></div>
+            <div class="tb"><span class="ib">☰</span><span class="t">Library</span><span class="ib">⌕</span><span class="ib add">+</span></div>
+            <div class="content">
+              <div class="chips"><span class="on">All</span><span>Unread</span><span>Started</span></div>
+              <div class="pc"><div class="s"><b></b>wikipedia.org</div><h4>Navier–Stokes equations</h4><div class="m">12 min · 2d ago</div></div>
+              <div class="pc"><div class="s"><b></b>paulgraham.com</div><h4>How to Do Great Work</h4><div class="m">48 min · 5d ago</div></div>
+              <div class="pc"><div class="s"><b></b>incompleteideas.net</div><h4>The Bitter Lesson</h4><div class="m">9 min · 1w ago</div></div>
+              <div class="pc"><div class="s"><b></b>danluu.com</div><h4>Reading postmortems</h4><div class="m">15 min · 2w ago</div></div>
+            </div>
+          </div>
+          <div class="cap">Closed: the whole screen is content.</div>
+        </div>
+        <div class="pcol">
+          <div class="ph">
+            <div class="sbar"><span>9:41</span><span>●●● ▮</span></div>
+            <div class="tb"><span class="ib">☰</span><span class="t">Library</span></div>
+            <div class="scrim"></div>
+            <div class="drawer">
+              <div class="brand">readme<span>pls</span></div>
+              <div class="nav"><i></i>Home</div>
+              <div class="nav on"><i></i>Library<span class="n" style="color:#aaa">128</span></div>
+              <div class="nav"><i></i>Websites</div>
+              <div class="nav"><i></i>Goals</div>
+              <div class="sec"><span>Collections</span><span>+</span></div>
+              <div class="nav"><i></i>Physics<span class="n">14</span></div>
+              <div class="nav"><i></i>Long reads<span class="n">9</span></div>
+              <div class="nav"><i></i>To cook<span class="n">6</span></div>
+              <div class="foot"><b></b>Settings</div>
+            </div>
+          </div>
+          <div class="cap">Open (swipe from the left edge or tap ☰): the same sidebar as desktop, collections included.</div>
+        </div>
+      </div>
+    </div>
+    <div class="card-body"><h3>B · Drawer (Notion-style)</h3><p>Exactly mirrors the desktop sidebar, so there's one navigation to learn, and collections are one tap from anywhere. Room for new sections. Cost: switching sections always takes two taps.</p></div>
+  </div>
+
+  <div class="card" data-choice="hybrid" onclick="toggleSelect(this)">
+    <div class="card-image" style="padding:26px 10px;background:transparent;height:auto;display:block">
+      <div class="phones">
+        <div class="pcol">
+          <div class="ph">
+            <div class="sbar"><span>9:41</span><span>●●● ▮</span></div>
+            <div class="tb"><span class="t">Library</span><span class="ib">⌕</span><span class="ib add">+</span></div>
+            <div class="content">
+              <div class="chips"><span class="on">All</span><span>Unread</span><span>Started</span></div>
+              <div class="pc"><div class="s"><b></b>wikipedia.org</div><h4>Navier–Stokes equations</h4><div class="m">12 min · 2d ago</div></div>
+              <div class="pc"><div class="s"><b></b>paulgraham.com</div><h4>How to Do Great Work</h4><div class="m">48 min · 5d ago</div></div>
+            </div>
+            <div class="sheet">
+              <div class="grab"></div>
+              <div class="tiles2"><div>Websites<small>42 sites</small></div><div>Settings<small>account, export</small></div></div>
+              <div class="sec"><span>Collections</span><span>+ new</span></div>
+              <div class="nav"><i></i>Physics<span class="n">14</span></div>
+              <div class="nav"><i></i>Long reads<span class="n">9</span></div>
+            </div>
+            <div class="tabs c4">
+              <div class="tab"><i></i>Home</div><div class="tab"><i></i>Library</div><div class="tab"><i></i>Goals</div><div class="tab on"><i></i><span>More</span></div>
+            </div>
+          </div>
+          <div class="cap">Shown with "More" open as a sheet from the bottom.</div>
+        </div>
+      </div>
+    </div>
+    <div class="card-body"><h3>C · Tabs + "More" sheet</h3><p>Three main sections one tap away, and everything else (websites, collections, settings) in a sheet that rises from the bottom, within thumb reach. Room to grow. Cost: websites and collections sit one level deeper.</p></div>
+  </div>
+</div>
