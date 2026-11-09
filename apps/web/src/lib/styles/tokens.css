@@ -92,11 +92,17 @@
   --shadow-lg: 0 12px 28px rgb(var(--shadow-color) / 0.14);
   --shadow-xl: 0 26px 44px rgb(var(--shadow-color) / 0.22);
 
-  /* ---- 1. PRIMITIVES — motion ------------------------------------------ */
-  --ease-out: cubic-bezier(0.16, 1, 0.3, 1);
-  --dur-fast: 120ms;
-  --dur-base: 200ms;
-  --dur-slow: 360ms;
+  /* snappy expo-out: the default easing */
+  --ease-out: cubic-bezier(0.075, 0.82, 0.165, 1);
+  /* exits */
+  --ease-in: cubic-bezier(0.4, 0, 1, 1);
+  /* presses, primary buttons */
+  --motion-bounce: cubic-bezier(0.175, 0.885, 0.325, 1.275);
+  --ease-bounce: var(--motion-bounce);
+  --dur-fast: 150ms;
+  --dur-base: 250ms;
+  --dur-slow: 450ms;
+  --dur-marker: 600ms;
   --dur-shimmer: 1.4s;
 
   --dur-view: var(--dur-base); /* cross-route view-transition duration */
@@ -229,5 +235,6 @@
     --dur-fast: 0ms;
     --dur-base: 0ms;
     --dur-slow: 0ms;
+    --dur-marker: 0ms;
   }
 }

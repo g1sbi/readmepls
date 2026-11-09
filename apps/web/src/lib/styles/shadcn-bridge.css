@@ -7,6 +7,8 @@
 @layer theme, base, components, utilities;
 @import "tailwindcss/theme.css" layer(theme);
 @import "tailwindcss/utilities.css" layer(utilities);
+/* enter/exit utilities (animate-in, fade-in-0, zoom-in-95, …) used by shadcn overlays */
+@import "tw-animate-css";
 
 /* This repo themes via [data-theme], not shadcn's default .dark class. */
 @custom-variant dark ([data-theme="dark"] &);
@@ -61,4 +63,8 @@
   --radius-md: var(--radius-md);
   --radius-lg: var(--radius-lg);
   --radius-xl: var(--radius-xl);
+
+  /* Source token is --motion-bounce so this alias is not self-referencing.
+   * ease-out/ease-in need no remap: tokens.css :root overrides them. */
+  --ease-bounce: var(--motion-bounce);
 }
