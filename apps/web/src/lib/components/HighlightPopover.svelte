@@ -16,6 +16,13 @@
   } = $props();
 
   const colors: HighlightColor[] = ["terracotta", "amber", "sage"];
+  // Stored keys are legacy names; swatches render the Marker colors, so the
+  // accessible name follows what is displayed.
+  const labels: Record<HighlightColor, string> = {
+    terracotta: "Yellow",
+    amber: "Rose",
+    sage: "Mint",
+  };
   let note = $state("");
 
   // Zero-size element placed at the selection rect; Popover.Content anchors to it
@@ -45,7 +52,7 @@
         <button
           class="swatch"
           style="background: var(--hl-{c});"
-          aria-label={c}
+          aria-label={labels[c]}
           onclick={() => onpick(c, note)}
         ></button>
       {/each}

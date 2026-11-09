@@ -6,8 +6,19 @@ describe("HighlightPopover", () => {
   it("emits the chosen color and note", async () => {
     const onpick = vi.fn();
     render(HighlightPopover, { x: 10, y: 10, onpick, oncancel: vi.fn() });
-    await fireEvent.click(screen.getByRole("button", { name: /amber/i }));
+    await fireEvent.click(screen.getByRole("button", { name: "Rose" }));
     expect(onpick).toHaveBeenCalledWith("amber", "");
+  });
+
+  it("names swatches by their displayed Marker colors", () => {
+    render(HighlightPopover, {
+      x: 10,
+      y: 10,
+      onpick: vi.fn(),
+      oncancel: vi.fn(),
+    });
+    for (const name of ["Yellow", "Rose", "Mint"])
+      expect(screen.getByRole("button", { name })).toBeInTheDocument();
   });
 
   it("fires oncancel when Escape is pressed", async () => {
