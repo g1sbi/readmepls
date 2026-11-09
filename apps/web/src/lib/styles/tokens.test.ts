@@ -150,4 +150,9 @@ describe("tokens.css (Marker)", () => {
       bodies.some((m) => /font-family:\s*var\(--font-ui\)/.test(m[1] ?? "")),
     ).toBe(true);
   });
+
+  it("declares color-scheme per mode so native controls follow the theme", () => {
+    expect(css).toMatch(/:root \{[^}]*color-scheme:\s*light;/);
+    expect(css).toMatch(/\[data-theme="dark"\] \{[^}]*color-scheme:\s*dark;/);
+  });
 });

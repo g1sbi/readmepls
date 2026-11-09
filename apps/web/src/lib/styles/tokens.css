@@ -17,6 +17,7 @@
  * ========================================================================== */
 
 :root {
+  color-scheme: light;
   /* ---- 1. PRIMITIVES — palette ----------------------------------------- */
   /* the one accent hue: highlighter yellow. Same in light and dark. */
   --marker-400: #ffce00;
@@ -186,6 +187,7 @@
  * ========================================================================== */
 
 [data-theme="dark"] {
+  color-scheme: dark;
   --color-bg: #0e0f11;
   --color-surface: #17181b;
   --color-surface-sunken: #26282c;
