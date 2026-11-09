@@ -1,4 +1,4 @@
-import { describe, it, expect, vi } from "vitest";
+import { describe, it, expect, vi, afterEach } from "vitest";
 import { ClientResponseError } from "pocketbase";
 import { createCollection } from "./actions.js";
 
@@ -10,6 +10,8 @@ function fakePb(create: ReturnType<typeof vi.fn>, uid: string | null = "u1") {
 }
 
 describe("createCollection", () => {
+  afterEach(() => vi.restoreAllMocks());
+
   it("posts the slugified name", async () => {
     const create = vi.fn().mockResolvedValue({});
     const res = await createCollection(fakePb(create), "Long reads");
@@ -34,6 +36,7 @@ describe("createCollection", () => {
   });
 
   it("reports a 500 as failed", async () => {
+    vi.spyOn(console, "error").mockImplementation(() => {});
     const create = vi
       .fn()
       .mockRejectedValue(new ClientResponseError({ status: 500 }));
@@ -44,6 +47,7 @@ describe("createCollection", () => {
   });
 
   it("reports a network error (status 0) as failed", async () => {
+    vi.spyOn(console, "error").mockImplementation(() => {});
     const create = vi
       .fn()
       .mockRejectedValue(new ClientResponseError({ status: 0 }));
@@ -53,12 +57,25 @@ describe("createCollection", () => {
     });
   });
 
-  it("reports an unexpected throw as failed", async () => {
-    const create = vi.fn().mockRejectedValue(new Error("boom"));
+  it("reports an unexpected throw as failed, and logs it", async () => {
+    const error = vi.spyOn(console, "error").mockImplementation(() => {});
+    const boom = new Error("boom");
+    const create = vi.fn().mockRejectedValue(boom);
     expect(await createCollection(fakePb(create), "x")).toEqual({
       ok: false,
       error: "failed",
     });
+    // The UI only says "failed"; the cause has to land somewhere.
+    expect(error).toHaveBeenCalledWith("createCollection failed", boom);
+  });
+
+  it("doesn't log an expected duplicate", async () => {
+    const error = vi.spyOn(console, "error").mockImplementation(() => {});
+    const create = vi
+      .fn()
+      .mockRejectedValue(new ClientResponseError({ status: 400 }));
+    await createCollection(fakePb(create), "Dup");
+    expect(error).not.toHaveBeenCalled();
   });
 
   it("reports no signed-in user as unauthenticated, without a request", async () => {

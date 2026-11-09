@@ -36,6 +36,8 @@ export async function createCollection(
       return { ok: false, error: "duplicate" };
     // Everything else (5xx, network status 0, unexpected) must reach the user
     // as feedback, never as an unhandled rejection in a UI event handler.
+    // The copy is generic, so keep the cause for whoever debugs it.
+    console.error("createCollection failed", err);
     return { ok: false, error: "failed" };
   }
 }
