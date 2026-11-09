@@ -33,6 +33,11 @@
   --border: var(--color-border);
   --input: var(--color-border);
   --ring: var(--color-ring);
+  --marker: var(--color-marker);
+  --marker-foreground: var(--color-text-on-marker);
+  --inverse: var(--color-inverse);
+  --inverse-foreground: var(--color-text-inverse);
+  --hairline: var(--color-hairline);
 }
 
 /* Expose the alias vars + the existing radius ramp as Tailwind theme tokens
@@ -58,6 +63,11 @@
   --color-border: var(--border);
   --color-input: var(--input);
   --color-ring: var(--ring);
+  --color-marker: var(--marker);
+  --color-marker-foreground: var(--marker-foreground);
+  --color-inverse: var(--inverse);
+  --color-inverse-foreground: var(--inverse-foreground);
+  --color-hairline: var(--hairline);
 
   --radius-sm: var(--radius-sm);
   --radius-md: var(--radius-md);
@@ -67,4 +77,10 @@
   /* Source token is --motion-bounce so this alias is not self-referencing.
    * ease-out/ease-in need no remap: tokens.css :root overrides them. */
   --ease-bounce: var(--motion-bounce);
+}
+
+/* The app's two breakpoints (640px, 1024px). */
+@theme {
+  --breakpoint-sm: 40rem;
+  --breakpoint-lg: 64rem;
 }

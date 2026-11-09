@@ -39,7 +39,8 @@ function contrast(a: string, b: string): number {
   return (hi + 0.05) / (lo + 0.05);
 }
 
-const light = block(css, ":root");
+const LIGHT_SELECTOR = ':root,\n[data-theme="light"]';
+const light = block(css, LIGHT_SELECTOR);
 const dark = block(css, '[data-theme="dark"]');
 
 const SEMANTIC = [
@@ -152,7 +153,15 @@ describe("tokens.css (Marker)", () => {
   });
 
   it("declares color-scheme per mode so native controls follow the theme", () => {
-    expect(css).toMatch(/:root \{[^}]*color-scheme:\s*light;/);
+    expect(css).toMatch(
+      /:root,\s*\[data-theme="light"\] \{[^}]*color-scheme:\s*light;/,
+    );
     expect(css).toMatch(/\[data-theme="dark"\] \{[^}]*color-scheme:\s*dark;/);
+  });
+
+  it("scopes light tokens to :root and [data-theme=light]", () => {
+    expect(css).toContain(`${LIGHT_SELECTOR} {`);
+    expect(light.has("--color-bg")).toBe(true);
+    expect(css).toMatch(/\[data-theme="light"\] \{[^}]*color-scheme:\s*light;/);
   });
 });
