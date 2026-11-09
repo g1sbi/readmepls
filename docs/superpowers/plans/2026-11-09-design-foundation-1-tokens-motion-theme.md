@@ -1,6 +1,6 @@
 # Design Foundation, Plan 1 of 5: Tokens, Fonts, Motion, Theme Implementation Plan
 
-> **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.
+> **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [x]`) syntax for tracking.
 
 **Goal:** Retone the whole app from warm-paper to Marker (light + dark) by
 replacing tokens, fonts, and motion, and replace the light/dark/sepia theme
@@ -125,7 +125,7 @@ it here and in Task 3 before continuing.
 | `--hl-amber` (→ rose)                          | `rgb(255 107 157 / 0.30)`        | `rgb(255 107 157 / 0.32)` |
 | `--hl-sage` (→ mint)                           | `rgb(52 199 123 / 0.30)`         | `rgb(52 199 123 / 0.30)`  |
 
-- [ ] **Step 1: Build `palette.html`.**
+- [x] **Step 1: Build `palette.html`.**
   - Start from `docs/superpowers/mockups/2026-11-09-design-foundation/home-v2.html`.
   - Render the home screen (ink feature, goal tile, continue-reading list,
     sidebar) twice, light and dark, using exactly the values above as
@@ -133,11 +133,11 @@ it here and in Task 3 before continuing.
   - Add a swatch table and a highlighted paragraph showing all three
     highlight colors.
   - Load Ronzino from `https://cdn.jsdelivr.net/gh/collletttivo/ronzino@main/fonts/`.
-- [ ] **Step 2: Show it to the owner and record approval.**
+- [x] **Step 2: Show it to the owner and record approval.**
   - Get the owner's approval, or their changes, in the issue: comment on
     #10 with the final table.
   - Update the table above if anything changed.
-- [ ] **Step 3: Commit**
+- [x] **Step 3: Commit**
 
 ```bash
 git add docs/superpowers/mockups/2026-11-09-design-foundation/palette.html docs/superpowers/plans/2026-11-09-design-foundation-1-tokens-motion-theme.md
@@ -162,7 +162,7 @@ git commit -m "docs: Marker light/dark palette review mockup"
   700, each normal and italic. Task 3's `--font-ui` and `--font-reading`
   stacks reference it. IBM Plex Mono stays as `--font-mono`.
 
-- [ ] **Step 1: Write the failing test** `fonts.test.ts`. It reads
+- [x] **Step 1: Write the failing test** `fonts.test.ts`. It reads
       `fonts.css` and `app.html` from disk, like `ui/tailwind-bridge.test.ts`
       does, and asserts:
   - `it("declares Ronzino in 3 weights × normal/italic")`: for each
@@ -177,9 +177,9 @@ git commit -m "docs: Marker light/dark palette review mockup"
   - `it("preloads Ronzino regular + medium, not the old faces")`: `app.html`
     contains `fonts/ronzino-regular.woff2` and `fonts/ronzino-medium.woff2`
     preload links, and not `fredoka` or `newsreader`.
-- [ ] **Step 2: Run it and confirm it fails.**
+- [x] **Step 2: Run it and confirm it fails.**
       `pnpm exec vitest run fonts.test`. Expected: FAIL (no Ronzino face).
-- [ ] **Step 3: Download the fonts and wire them up.**
+- [x] **Step 3: Download the fonts and wire them up.**
   - Download the six `fonts/Ronzino-*.woff2` files and `LICENSE.txt` from
     `collletttivo/ronzino@main`. Save them lowercase-kebab
     (`Ronzino-MediumOblique.woff2` → `ronzino-medium-oblique.woff2`) and
@@ -189,9 +189,9 @@ git commit -m "docs: Marker light/dark palette review mockup"
     existing IBM Plex Mono blocks, and update the header comment.
   - In `app.html`, replace the two preloads with Ronzino regular and
     medium.
-- [ ] **Step 4: Run it and confirm it passes.**
+- [x] **Step 4: Run it and confirm it passes.**
       `pnpm exec vitest run fonts.test`. Expected: PASS.
-- [ ] **Step 5: Commit**
+- [x] **Step 5: Commit**
 
 ```bash
 git add apps/web/static/fonts apps/web/src/lib/styles/fonts.css apps/web/src/lib/styles/fonts.test.ts apps/web/src/app.html
@@ -260,20 +260,20 @@ Current consumers (verified at planning time):
 - The shadcn bridge keeps compiling: every `--color-*` it references still
   exists, so `ui/tailwind-bridge.test.ts` must stay green.
 
-- [ ] **Step 1: Write the failing test** `retired-tokens.test.ts`. It globs
+- [x] **Step 1: Write the failing test** `retired-tokens.test.ts`. It globs
       `apps/web/src/**/*.{svelte,ts,css}`, excluding `lib/styles/tokens.css`
       and test files.
   - `it("no source file references a retired token")`: no file contains
     `var(--X` for any retired name or ramp prefix listed above.
   - `it("PaperCorner is gone")`: no file imports `PaperCorner`.
-- [ ] **Step 2: Run it and confirm it fails.**
+- [x] **Step 2: Run it and confirm it fails.**
       `pnpm exec vitest run retired-tokens`. Expected: FAIL, listing the
       consumers above.
-- [ ] **Step 3: Update every consumer as listed.** Update
+- [x] **Step 3: Update every consumer as listed.** Update
       `css-vars.test.ts` so its expectation for `sans` is `var(--font-reading)`.
-- [ ] **Step 4: Run it and confirm it passes.**
+- [x] **Step 4: Run it and confirm it passes.**
       `pnpm exec vitest run retired-tokens css-vars`. Expected: PASS.
-- [ ] **Step 5: Write the failing test** `tokens.test.ts`. Use a small
+- [x] **Step 5: Write the failing test** `tokens.test.ts`. Use a small
       in-test helper `block(css, selector): Map<string,string>` that extracts
       the custom properties declared in the `:root {…}` (first) or
       `[data-theme="dark"] {…}` block. Also add a `contrast(hexA, hexB): number`
@@ -299,9 +299,9 @@ Current consumers (verified at planning time):
   - `it("sets Ronzino for UI and reading")`: `--font-ui` and
     `--font-reading` both start with `"Ronzino"`.
 
-- [ ] **Step 6: Run it and confirm it fails.**
+- [x] **Step 6: Run it and confirm it fails.**
       `pnpm exec vitest run tokens.test`. Expected: FAIL.
-- [ ] **Step 7: Rewrite `tokens.css`.**
+- [x] **Step 7: Rewrite `tokens.css`.**
   - Primitives: a neutral gray ramp plus the marker, as needed by the
     semantic values. Delete all retired ramps.
   - Semantic light values from Task 1, in `:root`.
@@ -309,16 +309,16 @@ Current consumers (verified at planning time):
   - Keep the reader `--reading-*` knobs, the space, width, z, and icon
     scales, and the `--topbar-h` comment block.
   - Rewrite the header comment to describe Marker.
-- [ ] **Step 8: Run the tests and confirm they pass.**
+- [x] **Step 8: Run the tests and confirm they pass.**
       `pnpm exec vitest run tokens.test retired-tokens tailwind-bridge`.
       Expected: PASS.
-- [ ] **Step 9: Check it visually.**
+- [x] **Step 9: Check it visually.**
   - Start the dev server with `pnpm --filter @readmepls/web dev`.
   - Open `/library` and `/read/<id>` at 360px and at desktop width, in
     light and in dark (set `data-theme` in devtools).
   - Confirm no unreadable text and no leftover warm tints.
   - Screenshot both modes for the PR.
-- [ ] **Step 10: Commit**
+- [x] **Step 10: Commit**
 
 ```bash
 git add -A apps/web/src
@@ -352,7 +352,7 @@ Refs #10"
   (`animate-in`, `fade-in-0`, `zoom-in-95`, `slide-in-from-bottom`, …) now
   work, and plans 2–3 use them for every overlay.
 
-- [ ] **Step 1: Write the failing test** `motion.test.ts`, reading
+- [x] **Step 1: Write the failing test** `motion.test.ts`, reading
       `tokens.css`, `shadcn-bridge.css`, and `package.json`:
   - `it("defines the named easings and durations")`: exact values as
     above.
@@ -365,9 +365,9 @@ Refs #10"
   - `it("registers ease-bounce as a Tailwind easing")`:
     `shadcn-bridge.css`'s `@theme` declares an `--ease-bounce` that
     resolves to the token (no literal curve duplicated).
-- [ ] **Step 2: Run it and confirm it fails.**
+- [x] **Step 2: Run it and confirm it fails.**
       `pnpm exec vitest run motion.test`. Expected: FAIL.
-- [ ] **Step 3: Install the library and wire up the tokens.**
+- [x] **Step 3: Install the library and wire up the tokens.**
   - Run `pnpm --filter @readmepls/web add -D tw-animate-css` (pin the exact
     resolved version).
   - Import it in the bridge after the utilities import.
@@ -378,11 +378,11 @@ Refs #10"
     - To avoid a self-referencing `--ease-bounce`, name the source token
       `--motion-bounce` in tokens and alias `--ease-bounce` to it in both
       places.
-- [ ] **Step 4: Run it and confirm it passes.**
+- [x] **Step 4: Run it and confirm it passes.**
       `pnpm exec vitest run motion.test tailwind-bridge`. Expected: PASS.
       Then check by hand: open any shadcn dialog in dev and confirm it fades
       and zooms in.
-- [ ] **Step 5: Commit**
+- [x] **Step 5: Commit**
 
 ```bash
 git add apps/web/package.json pnpm-lock.yaml apps/web/src/lib/styles
@@ -426,7 +426,7 @@ git commit -m "feat(web): Marker motion tokens + tw-animate-css enter/exit libra
 
   Mirror `actions/reveal.ts`.
 
-- [ ] **Step 1: Write the failing tests** `marker-in-view.test.ts`. Stub
+- [x] **Step 1: Write the failing tests** `marker-in-view.test.ts`. Stub
       `window.matchMedia` and a fake `IntersectionObserver` that records
       `observe`/`disconnect` calls and lets the test fire entries.
   - `it("draws immediately under reduced motion")`
@@ -437,20 +437,20 @@ git commit -m "feat(web): Marker motion tokens + tw-animate-css enter/exit libra
     work.
   - `it("on hover-capable pointers, leaves drawing to CSS")`: no observer
     is created and no class is added.
-- [ ] **Step 2: Write `marker.test.ts`** (reads `marker.css`):
+- [x] **Step 2: Write `marker.test.ts`** (reads `marker.css`):
   - `.marker-swipe` transitions `background-size` using `var(--dur-marker)`
     and `var(--ease-out)`;
   - the hover rule sits inside `@media (hover: hover) and (pointer: fine)`;
   - the band color is `var(--color-marker-soft)` (inverse:
     `var(--color-marker)`);
   - there are no literal colors.
-- [ ] **Step 3: Run them and confirm they fail.**
+- [x] **Step 3: Run them and confirm they fail.**
       `pnpm exec vitest run marker`. Expected: FAIL (the files don't exist).
-- [ ] **Step 4: Implement `marker.css` and `markerInView`,** then import
+- [x] **Step 4: Implement `marker.css` and `markerInView`,** then import
       `marker.css` in `+layout.svelte`.
-- [ ] **Step 5: Run them and confirm they pass.**
+- [x] **Step 5: Run them and confirm they pass.**
       `pnpm exec vitest run marker`. Expected: PASS.
-- [ ] **Step 6: Commit**
+- [x] **Step 6: Commit**
 
 ```bash
 git add apps/web/src/lib/styles/marker.css apps/web/src/lib/styles/marker.test.ts apps/web/src/lib/actions/marker-in-view.ts apps/web/src/lib/actions/marker-in-view.test.ts apps/web/src/routes/+layout.svelte
@@ -497,7 +497,7 @@ git commit -m "feat(web): marker swipe motif (hover on pointers, scroll-in on to
   An unparseable stored `"sepia"` therefore falls back to `"system"` via
   the existing per-field discard.
 
-- [ ] **Step 1: Write the failing tests** in `theme.test.ts`, replacing the
+- [x] **Step 1: Write the failing tests** in `theme.test.ts`, replacing the
       `resolveTheme` tests:
   - `resolveThemePref`:
     - `("dark", null)` → `"dark"`;
@@ -523,14 +523,14 @@ git commit -m "feat(web): marker swipe motif (hover on pointers, scroll-in on to
   - `withReaderDefaults({})` → `theme: "system"`;
   - `withReaderDefaults({ theme: "sepia" as never })` → `theme: "system"`.
 
-- [ ] **Step 2: Run them and confirm they fail.**
+- [x] **Step 2: Run them and confirm they fail.**
       `pnpm exec vitest run theme.test prefs.test`. Expected: FAIL.
-- [ ] **Step 3: Implement it in `theme.ts`, `reader.ts`, and `prefs.ts`.**
-- [ ] **Step 4: Run them and confirm they pass.** Run the same command;
+- [x] **Step 3: Implement it in `theme.ts`, `reader.ts`, and `prefs.ts`.**
+- [x] **Step 4: Run them and confirm they pass.** Run the same command;
       expected: PASS. `pnpm typecheck` is expected to fail only at the Task 7
       call sites (`+layout.svelte`, `TopBar.svelte`). Note the errors and fix
       them in Task 7.
-- [ ] **Step 5: Commit**
+- [x] **Step 5: Commit**
 
 ```bash
 git add apps/web/src/lib/theme packages/types/src/reader.ts packages/core/src/reader
@@ -567,7 +567,7 @@ git commit -m "feat: theme preference light/dark/system with legacy sepia fallba
   - The TopBar theme control emits `ThemePref`. Plan 3 moves this control
     into `/settings` → Appearance; the control itself stays.
 
-- [ ] **Step 1: Write the failing test** `boot-script.test.ts`. It extracts
+- [x] **Step 1: Write the failing test** `boot-script.test.ts`. It extracts
       the `<script data-theme-boot>` body from `app.html` and runs it with
       `new Function` against a fake `document.documentElement.dataset`, a fake
       `localStorage`, and a `matchMedia` stub:
@@ -578,9 +578,9 @@ git commit -m "feat: theme preference light/dark/system with legacy sepia fallba
     the storage `theme` is removed;
   - a `localStorage` getter that throws → `"light"` with no exception
     escaping.
-- [ ] **Step 2: Run it and confirm it fails.**
+- [x] **Step 2: Run it and confirm it fails.**
       `pnpm exec vitest run boot-script`. Expected: FAIL.
-- [ ] **Step 3: Implement the wiring.**
+- [x] **Step 3: Implement the wiring.**
   - Add the inline script to `app.html` before `%sveltekit.head%`. Keep it
     tiny and dependency-free, with the logic mirroring Task 6.
   - In `+layout.svelte`, `onMount` runs:
@@ -592,14 +592,14 @@ git commit -m "feat: theme preference light/dark/system with legacy sepia fallba
   - `setTheme(pref)` persists `reader_prefs.theme` as today.
   - In TopBar, show the three options with `aria-pressed`. The accessible
     names are "Light", "Dark", and "Match system".
-- [ ] **Step 4: Run the tests and confirm they pass.**
+- [x] **Step 4: Run the tests and confirm they pass.**
       `pnpm exec vitest run boot-script theme TopBar layout`, then
       `pnpm typecheck`. Expected: PASS, with no new type errors.
-- [ ] **Step 5: Check it by hand.**
+- [x] **Step 5: Check it by hand.**
   - Hard-reload with the OS in dark: there should be no light flash.
   - Toggle the OS theme with the app open while the pref is "Match
     system": the app retones live.
-- [ ] **Step 6: Commit**
+- [x] **Step 6: Commit**
 
 ```bash
 git add apps/web/src/app.html apps/web/src/routes/+layout.svelte apps/web/src/lib/components/TopBar.svelte apps/web/src/lib/theme
@@ -623,7 +623,7 @@ git commit -m "feat(web): paint the right theme before load; light/dark/match-sy
     untouched.
   - Down: `"system"` → `"light"`.
 
-- [ ] **Step 1: Write the failing test.** Use the two-boot pattern from
+- [x] **Step 1: Write the failing test.** Use the two-boot pattern from
       `migration-tier-standard-rename.test.ts`.
   - Boot 1 runs all migrations before `1720300000_theme_system.js` and
     creates four users with `reader_prefs` of:
@@ -634,18 +634,18 @@ git commit -m "feat(web): paint the right theme before load; light/dark/match-sy
   - Boot 2 adds the migration and asserts the stored themes are
     `"system"`, `"system"`, `"dark"`, and an unchanged empty prefs value.
     The first user keeps `size: 18`.
-- [ ] **Step 2: Run it and confirm it fails.**
+- [x] **Step 2: Run it and confirm it fails.**
       `pnpm exec vitest run migration-theme-system`. Expected: FAIL (the
       migration file is missing).
-- [ ] **Step 3: Write the migration.**
+- [x] **Step 3: Write the migration.**
   - Iterate `app.findRecordsByFilter("users", "reader_prefs != ''", "", 0, 0)`.
   - Read the JSON. If the theme matches, `set` the merged object and
     `app.save`.
   - Comment the why: the old default was `light`, so most `light` values
     weren't a real choice.
-- [ ] **Step 4: Run it and confirm it passes.**
+- [x] **Step 4: Run it and confirm it passes.**
       `pnpm exec vitest run migration-theme-system`. Expected: PASS.
-- [ ] **Step 5: Commit**
+- [x] **Step 5: Commit**
 
 ```bash
 git add pocketbase/pb_migrations/1720300000_theme_system.js packages/core/src/pb/migration-theme-system.test.ts
@@ -669,14 +669,14 @@ git commit -m "feat(pb): migrate sepia/light theme prefs to system"
   Update the dark-variant and theme lines to `data-theme` light/dark plus
   the `system` pref.
 
-- [ ] **Step 1: Rewrite both sections.**
-- [ ] **Step 2: Verify everything.**
+- [x] **Step 1: Rewrite both sections.**
+- [x] **Step 2: Verify everything.**
   - Run `pnpm test && pnpm typecheck && pnpm lint`. Expected: all green;
     paste the summary lines into the PR.
   - Run `grep -rn "sepia\|Fredoka\|terracotta" CLAUDE.md docs/superpowers/specs/2026-06-22-design-system.md`.
     The only allowed hits are historical mentions (e.g. "replaces
     warm-paper").
-- [ ] **Step 3: Commit**
+- [x] **Step 3: Commit**
 
 ```bash
 git add CLAUDE.md docs/superpowers/specs/2026-06-22-design-system.md
