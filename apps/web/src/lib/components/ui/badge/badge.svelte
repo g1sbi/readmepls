@@ -16,7 +16,7 @@
           "hover:bg-muted hover:text-muted-foreground dark:hover:bg-muted/50",
         link: "text-primary underline-offset-4 hover:underline",
         tag: "h-6 rounded-full px-2.5 text-xs bg-secondary text-secondary-foreground",
-        chip: "h-9 gap-1.5 rounded-full px-3.5 text-sm bg-secondary text-foreground data-[selected=true]:bg-inverse data-[selected=true]:text-inverse-foreground",
+        chip: "h-9 gap-1.5 rounded-full px-3.5 text-sm bg-secondary text-foreground overflow-visible [@media(hover:hover)]:group-hover:not-data-[selected=true]:bg-accent data-[selected=true]:bg-inverse data-[selected=true]:text-inverse-foreground",
         marker:
           "h-6 rounded-full px-2.5 text-xs bg-marker text-marker-foreground",
       },

@@ -119,7 +119,9 @@
       </div>
     {/if}
     <div class="tags">
-      {#each tags as t (t)}<Badge variant="tag">{t}</Badge>{/each}
+      {#each tags.filter((t) => t.trim()) as t (t)}<Badge variant="tag"
+          >{t}</Badge
+        >{/each}
     </div>
     {#if showProgress}
       <div

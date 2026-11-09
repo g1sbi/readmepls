@@ -32,6 +32,13 @@ describe("FilterDrawer", () => {
     expect(getByText("tags")).toBeTruthy();
   });
 
+  it("chip buttons are pressed-aware with a 44px hit area", () => {
+    const { getByLabelText } = render(FilterDrawer, props());
+    const btn = getByLabelText("read: unread");
+    expect(btn.getAttribute("aria-pressed")).toBe("false");
+    expect(btn.className).toContain("after:-inset-1");
+  });
+
   it("toggling a read value emits the additive patch", async () => {
     const onChange = vi.fn();
     const { getByLabelText } = render(FilterDrawer, props({ onChange }));

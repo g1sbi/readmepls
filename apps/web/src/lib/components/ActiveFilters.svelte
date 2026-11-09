@@ -2,7 +2,7 @@
 <script lang="ts">
   import type { LibraryParams } from "@readmepls/types";
   import { Badge } from "$lib/components/ui/badge";
-  import { hitArea } from "$lib/components/ui/button";
+  import { chipButton } from "$lib/components/ui/button";
 
   type LabelLookup = {
     tag: Record<string, string>;
@@ -92,7 +92,7 @@
       <span class="q-chip">
         <button
           type="button"
-          class={["q-edit", hitArea]}
+          class={["q-edit", chipButton]}
           aria-label={`edit search “${params.q}”`}
           onclick={() => onEditQuery?.()}
         >
@@ -109,7 +109,7 @@
     {#each chips as c (c.key)}
       <button
         data-testid="active-chip"
-        class={["chip-btn", hitArea]}
+        class={["chip-btn", chipButton]}
         aria-label={`remove ${c.label}`}
         onclick={() => onRemove(c.patch)}
       >

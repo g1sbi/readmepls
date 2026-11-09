@@ -27,7 +27,10 @@
     <Badge variant="chip">
       {t.name}
       <button
-        class={hitArea}
+        class={[
+          hitArea,
+          "-mr-2.5 inline-flex h-9 min-w-9 cursor-pointer items-center justify-center rounded-full",
+        ]}
         aria-label={`remove ${t.name}`}
         onclick={() => onremove(t.id)}>×</button
       >

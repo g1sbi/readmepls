@@ -18,7 +18,7 @@
   import type { FacetOptions, SourceFacet } from "@readmepls/core";
   import Sheet from "./ui/Sheet.svelte";
   import { Badge } from "$lib/components/ui/badge";
-  import { hitArea } from "$lib/components/ui/button";
+  import { chipButton } from "$lib/components/ui/button";
   import SourceFilter from "./SourceFilter.svelte";
   import CollectionsPanel from "./CollectionsPanel.svelte";
 
@@ -94,7 +94,7 @@
     <legend>read</legend>
     {#each READ_STATES as v (v)}
       <button
-        class={hitArea}
+        class={chipButton}
         aria-label={`read: ${v}`}
         aria-pressed={params.read.includes(v as ReadState)}
         onclick={() => toggleList<ReadState>("read", v)}
@@ -110,7 +110,7 @@
     <legend>reading time</legend>
     {#each TIME_BUCKETS as v (v)}
       <button
-        class={hitArea}
+        class={chipButton}
         aria-label={`reading time: ${TIME_LABELS[v as TimeBucket]}`}
         aria-pressed={params.time.includes(v as TimeBucket)}
         onclick={() => toggleList<TimeBucket>("time", v)}
@@ -126,7 +126,7 @@
     <legend>tags</legend>
     {#each tags as t (t.id)}
       <button
-        class={hitArea}
+        class={chipButton}
         aria-label={t.name}
         aria-pressed={params.tag.includes(t.id)}
         onclick={() => toggleList("tag", t.id)}
@@ -142,7 +142,7 @@
     <legend>collections</legend>
     {#each collections as c (c.id)}
       <button
-        class={hitArea}
+        class={chipButton}
         aria-label={c.name}
         aria-pressed={params.collection.includes(c.id)}
         onclick={() => toggleList("collection", c.id)}
@@ -165,7 +165,7 @@
   <fieldset>
     <legend>source</legend>
     <button
-      class={hitArea}
+      class={chipButton}
       aria-label="favorite sources only"
       aria-pressed={params.favsrc}
       onclick={() => onChange({ favsrc: !params.favsrc })}
@@ -185,7 +185,7 @@
     <legend>saved</legend>
     {#each DATE_PRESETS as v (v)}
       <button
-        class={hitArea}
+        class={chipButton}
         aria-label={`saved ${DATE_LABELS[v as DatePreset]}`}
         aria-pressed={params.saved === v}
         onclick={() => pickPreset("saved", v as DatePreset)}
@@ -201,7 +201,7 @@
     <legend>published</legend>
     {#each DATE_PRESETS as v (v)}
       <button
-        class={hitArea}
+        class={chipButton}
         aria-label={`published ${DATE_LABELS[v as DatePreset]}`}
         aria-pressed={params.published === v}
         onclick={() => pickPreset("published", v as DatePreset)}
@@ -217,7 +217,7 @@
     <legend>language</legend>
     {#each options.languages as l (l)}
       <button
-        class={hitArea}
+        class={chipButton}
         aria-label={`language: ${l}`}
         aria-pressed={params.lang.includes(l)}
         onclick={() => toggleList("lang", l)}
@@ -231,7 +231,7 @@
     <legend>author</legend>
     {#each options.authors as a (a)}
       <button
-        class={hitArea}
+        class={chipButton}
         aria-label={`author: ${a}`}
         aria-pressed={params.author.includes(a)}
         onclick={() => toggleList("author", a)}
@@ -245,7 +245,7 @@
     <legend>has</legend>
     {#each HAS_FLAGS as v (v)}
       <button
-        class={hitArea}
+        class={chipButton}
         aria-label={`has: ${v}`}
         aria-pressed={params.has.includes(v as HasFlag)}
         onclick={() => toggleList<HasFlag>("has", v)}
@@ -261,7 +261,7 @@
     <legend>needs attention</legend>
     {#each ATTENTION as v (v)}
       <button
-        class={hitArea}
+        class={chipButton}
         aria-label={`needs attention: ${v}`}
         aria-pressed={params.attention.includes(v as Attention)}
         onclick={() => toggleList<Attention>("attention", v)}
