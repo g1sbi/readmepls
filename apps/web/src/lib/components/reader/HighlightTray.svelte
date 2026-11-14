@@ -12,9 +12,9 @@
 </script>
 
 <!-- Takes the control bar's place at the bottom while a selection stands. -->
-<section class="tray" role="dialog" aria-label="Add highlight">
+<div class="tray" role="dialog" aria-label="Add highlight">
   <HighlightPicker label="Highlight" size="tray" {onpick} onclose={oncancel} />
-</section>
+</div>
 
 <style>
   .tray {

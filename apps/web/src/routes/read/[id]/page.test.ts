@@ -726,14 +726,13 @@ describe("reader page — chapters sidebar", () => {
     await fireEvent.click(await screen.findByText("Chapters"));
     const nav = await screen.findByRole("navigation", { name: "chapters" });
     await waitFor(() =>
-      expect(within(nav).getByText("First Chapter")).toHaveAttribute(
-        "aria-current",
-        "true",
-      ),
+      expect(
+        within(nav).getByRole("button", { name: "First Chapter" }),
+      ).toHaveAttribute("aria-current", "location"),
     );
-    expect(within(nav).getByText("Second Chapter")).not.toHaveAttribute(
-      "aria-current",
-    );
+    expect(
+      within(nav).getByRole("button", { name: "Second Chapter" }),
+    ).not.toHaveAttribute("aria-current");
     rect.mockRestore();
   });
 });
@@ -1097,5 +1096,82 @@ describe("reader page — making a highlight on a phone", () => {
     expect(
       screen.getByRole("navigation", { name: "reader controls" }),
     ).toBeInTheDocument();
+  });
+});
+
+describe("reader page — phone chrome", () => {
+  const withChapters = () => ({
+    ...defaultArticle(),
+    expand: {
+      content: {
+        id: "c1",
+        title: "Test Article",
+        content_html:
+          "<h2>First Chapter</h2><p>hello world</p><h2>Second Chapter</h2>",
+        extract_status: "ok",
+      },
+    },
+  });
+
+  beforeEach(() => {
+    vi.clearAllMocks();
+    articleUpdate.mockResolvedValue({});
+    articleGetOne.mockResolvedValue(withChapters());
+    Object.defineProperty(window, "matchMedia", {
+      writable: true,
+      configurable: true,
+      value: (query: string) => ({
+        matches: false,
+        media: query,
+        onchange: null,
+        addEventListener: () => {},
+        removeEventListener: () => {},
+        addListener: () => {},
+        removeListener: () => {},
+        dispatchEvent: () => false,
+      }),
+    });
+    Object.defineProperty(window, "scrollY", { value: 0, configurable: true });
+  });
+
+  const bar = () => screen.getByRole("navigation", { name: "reader controls" });
+
+  it("opens the chapters sheet, then jumps and closes it", async () => {
+    const scrollIntoView = vi.spyOn(Element.prototype, "scrollIntoView");
+    render(ReaderPage);
+    await fireEvent.click(await screen.findByText("Chapters"));
+    const sheet = await screen.findByRole("dialog");
+    const row = within(sheet).getByRole("button", { name: "Second Chapter" });
+    await fireEvent.click(row);
+    expect(scrollIntoView).toHaveBeenCalled();
+    await waitFor(() => expect(screen.queryByRole("dialog")).toBeNull());
+    scrollIntoView.mockRestore();
+  });
+
+  it("opens the article's actions from More", async () => {
+    render(ReaderPage);
+    await fireEvent.click(await screen.findByText("More"));
+    const sheet = await screen.findByRole("dialog");
+    expect(within(sheet).getByText("More")).toBeInTheDocument();
+    expect(
+      within(sheet).getByRole("button", { name: "Archive" }),
+    ).toBeInTheDocument();
+  });
+
+  it("brings the tucked chrome back on a tap with nothing selected", async () => {
+    render(ReaderPage);
+    await waitFor(() =>
+      expect(screen.getByText("Test Article")).toBeInTheDocument(),
+    );
+    // Scrolling down tucks the bar away.
+    Object.defineProperty(window, "scrollY", {
+      value: 400,
+      configurable: true,
+    });
+    await fireEvent.scroll(window);
+    await waitFor(() => expect(bar()).toHaveAttribute("data-hidden", "true"));
+
+    await fireEvent.click(screen.getByText("hello world"));
+    await waitFor(() => expect(bar()).toHaveAttribute("data-hidden", "false"));
   });
 });

@@ -254,6 +254,14 @@
     };
   }
 
+  // The chrome tucks away on scroll-down; a tap on the text brings it back,
+  // unless that tap is part of selecting a passage.
+  function revealChrome() {
+    if (pending) return;
+    if (!window.getSelection()?.isCollapsed) return;
+    controlsVisible = true;
+  }
+
   function onSelectionChange() {
     clearTimeout(selectionTimer);
     selectionTimer = setTimeout(readSelection, SELECTION_DEBOUNCE);
@@ -589,6 +597,7 @@
       class="reader prose-reader"
       data-shifted={isDesktop && panelOpen}
       onmouseup={readSelection}
+      onclick={revealChrome}
     >
       <h1 bind:this={titleEl}>{content.title}</h1>
       <ArticleMeta

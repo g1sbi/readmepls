@@ -29,14 +29,20 @@ describe("ReaderControlBar", () => {
     expect(onOpen).toHaveBeenCalledWith("highlights");
   });
 
-  it("marks the active item with aria-current", () => {
+  it("marks the active item with aria-current and aria-expanded", () => {
     render(ReaderControlBar, {
       hasChapters: true,
       active: "more",
       onOpen: vi.fn(),
     });
+    const open = screen.getByText("More").closest("button")!;
+    expect(open.getAttribute("aria-current")).toBe("true");
+    expect(open.getAttribute("aria-expanded")).toBe("true");
     expect(
-      screen.getByText("More").closest("button")!.getAttribute("aria-current"),
-    ).toBe("true");
+      screen
+        .getByText("Highlights")
+        .closest("button")!
+        .getAttribute("aria-expanded"),
+    ).toBe("false");
   });
 });
