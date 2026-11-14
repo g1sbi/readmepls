@@ -418,7 +418,7 @@ Behavior, from `notes.md` → "Chapters as ticks":
   collapses it.
 - **No `toc`:** render nothing.
 
-- [ ] **Step 1: Write the failing tests.**
+- [x] **Step 1: Write the failing tests.**
   - `scroll-spy`:
     - `[{a,-500},{b,100},{c,900}]` with `viewportH` 800 → `"b"`;
     - none at or above 240 → `null`;
@@ -435,10 +435,10 @@ Behavior, from `notes.md` → "Chapters as ticks":
     - with fake timers, pointerenter followed by 50ms leaves it collapsed,
       and 120ms expands it;
     - pointerleave followed by 250ms collapses it.
-- [ ] **Step 2: Run** `pnpm exec vitest run scroll-spy ChapterTicks`. Expected: FAIL.
-- [ ] **Step 3: Implement.**
-- [ ] **Step 4: Run** the same command. Expected: PASS.
-- [ ] **Step 5: Commit** `feat(web): chapter ticks expand into the chapter list`.
+- [x] **Step 2: Run** `pnpm exec vitest run scroll-spy ChapterTicks`. Expected: FAIL.
+- [x] **Step 3: Implement.**
+- [x] **Step 4: Run** the same command. Expected: PASS.
+- [x] **Step 5: Commit** `feat(web): chapter ticks expand into the chapter list`.
 
 ### Task 6: Highlight map (desktop right edge)
 
