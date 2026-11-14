@@ -24,7 +24,8 @@
   import ConfirmAction from "$lib/components/ConfirmAction.svelte";
   import TagEditor from "$lib/components/TagEditor.svelte";
   import Rail from "$lib/components/ui/Rail.svelte";
-  import ArticleActions from "$lib/components/ArticleActions.svelte";
+  import ReaderActionsMenu from "$lib/components/reader/ReaderActionsMenu.svelte";
+  import ReaderMoreSheet from "$lib/components/reader/ReaderMoreSheet.svelte";
   import { ArrowUpRight } from "@lucide/svelte";
   import { Skeleton } from "$lib/components/ui/skeleton";
   import HighlightPopover from "$lib/components/HighlightPopover.svelte";
@@ -94,9 +95,6 @@
 
   // Manual tag state — only manual-sourced tags are shown/edited here; AI tags remain read-only
   let manualTags = $state<{ id: string; name: string; linkId: string }[]>([]);
-
-  // Collection state
-  let collections = $state<{ id: string; name: string }[]>([]);
 
   let confirmingDelete = $state(false);
   // Shared inline error for reader actions (archive / delete).
@@ -384,7 +382,6 @@
     document.addEventListener("visibilitychange", onVisibilityChange);
     await loadHighlights(id);
     await loadTags(id);
-    await loadCollections();
   });
 
   // An async onMount can't register a cleanup; tear down listeners here and
@@ -412,13 +409,6 @@
     } catch {
       actionError = "couldn't archive that. try again.";
     }
-  }
-
-  async function loadCollections() {
-    // Use pb.filter binding to prevent injection
-    collections = (
-      await pb.collection("collections").getFullList({ sort: "name" })
-    ).map((c) => ({ id: c.id, name: c.name as string }));
   }
 
   async function addToCollection(collectionId: string) {
@@ -490,8 +480,9 @@
             onadd={addTag}
             onremove={removeTag}
           />
-          <ArticleActions
-            {collections}
+          <ReaderActionsMenu
+            collections={navCollections}
+            {originalUrl}
             onAddToCollection={addToCollection}
             onArchive={archive}
             onDelete={() => (confirmingDelete = true)}
@@ -612,23 +603,18 @@
     />
   </BottomSheet>
 
-  <BottomSheet
+  <ReaderMoreSheet
     open={activeSheet === "more"}
     onClose={() => (activeSheet = null)}
-    title="More"
-  >
-    <TagEditor
-      tags={manualTags.map((t) => ({ id: t.id, name: t.name }))}
-      onadd={addTag}
-      onremove={removeTag}
-    />
-    <ArticleActions
-      {collections}
-      onAddToCollection={addToCollection}
-      onArchive={archive}
-      onDelete={() => (confirmingDelete = true)}
-    />
-  </BottomSheet>
+    collections={navCollections}
+    {originalUrl}
+    tags={manualTags.map((t) => ({ id: t.id, name: t.name }))}
+    onAddTag={addTag}
+    onRemoveTag={removeTag}
+    onAddToCollection={addToCollection}
+    onArchive={archive}
+    onDelete={() => (confirmingDelete = true)}
+  />
 {/if}
 
 <style>

@@ -3,6 +3,7 @@
   import { resolve } from "$app/paths";
   import { browserPb } from "$lib/pb.js";
   import { splitHomeFeed } from "$lib/article/home-feed.js";
+  import { retryArticle } from "$lib/article/retry.js";
   import type { ArticleRecord } from "$lib/article/record.js";
   import CaptureForm from "$lib/components/capture/CaptureForm.svelte";
   import { captureSaved } from "$lib/capture/saved.svelte.js";
@@ -36,13 +37,7 @@
     if (seq !== loadSeq) return;
     articles = list.items as ArticleRecord[];
   }
-  async function retry(id: string) {
-    await fetch("/api/retry", {
-      method: "POST",
-      headers: { "content-type": "application/json" },
-      body: JSON.stringify({ articleId: id }),
-    });
-  }
+  const retry = (id: string) => retryArticle(fetch, id);
 
   onMount(async () => {
     // A failed first load still subscribes, so the next realtime event can

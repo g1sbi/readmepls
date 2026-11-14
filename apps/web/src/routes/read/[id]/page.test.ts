@@ -67,7 +67,6 @@ const articleGetOne = vi.fn().mockResolvedValue(defaultArticle());
 const articleUpdate = vi.fn().mockResolvedValue({});
 const articleDelete = vi.fn().mockResolvedValue(undefined);
 const usersUpdate = vi.fn().mockResolvedValue({});
-const collectionsList = vi.fn().mockResolvedValue([]);
 const collectionItemCreate = vi.fn().mockResolvedValue({ id: "ci1" });
 
 vi.mock("$lib/pb.js", () => ({
@@ -88,9 +87,6 @@ vi.mock("$lib/pb.js", () => ({
           getOne: vi.fn().mockResolvedValue({ id: "u1", reader_prefs: null }),
           update: usersUpdate,
         };
-      }
-      if (name === "collections") {
-        return { getFullList: collectionsList };
       }
       if (name === "collection_items") {
         return { create: collectionItemCreate };
@@ -116,6 +112,13 @@ vi.mock("$app/stores", () => ({
       fn({
         params: { id: "art1" },
         url: new URL("http://localhost/read/art1"),
+        // The reader's collections come from the root layout load, not its
+        // own PocketBase query.
+        data: {
+          collections: [
+            { id: "col1", name: "physics", slug: "physics", count: 2 },
+          ],
+        },
       });
       return () => {};
     },
@@ -211,9 +214,7 @@ describe("reader page — delete error path", () => {
     await fireEvent.click(screen.getByText("More"));
 
     // Trigger the confirm-delete dialog
-    await fireEvent.click(
-      screen.getByRole("button", { name: "delete article" }),
-    );
+    await fireEvent.click(screen.getByRole("button", { name: "Delete" }));
 
     // Confirm the deletion (the button inside ConfirmAction)
     await fireEvent.click(screen.getByRole("button", { name: "delete" }));
@@ -236,9 +237,7 @@ describe("reader page — delete error path", () => {
     );
     await fireEvent.click(screen.getByText("More"));
     expect(screen.queryByLabelText(/new collection/i)).not.toBeInTheDocument();
-    expect(
-      screen.getByRole("button", { name: "add to collection" }),
-    ).toBeInTheDocument();
+    expect(screen.getByText("Add to collection")).toBeInTheDocument();
   });
 
   it("archives the article and navigates to the library", async () => {
@@ -247,9 +246,7 @@ describe("reader page — delete error path", () => {
       expect(screen.getByText("Test Article")).toBeInTheDocument(),
     );
     await fireEvent.click(screen.getByText("More"));
-    await fireEvent.click(
-      screen.getByRole("button", { name: "archive article" }),
-    );
+    await fireEvent.click(screen.getByRole("button", { name: "Archive" }));
     // The shell's collection counts and the library list are stale now.
     await waitFor(() =>
       expect(goto).toHaveBeenCalledWith("/library", { invalidateAll: true }),
@@ -262,9 +259,7 @@ describe("reader page — delete error path", () => {
       expect(screen.getByText("Test Article")).toBeInTheDocument(),
     );
     await fireEvent.click(screen.getByText("More"));
-    await fireEvent.click(
-      screen.getByRole("button", { name: "delete article" }),
-    );
+    await fireEvent.click(screen.getByRole("button", { name: "Delete" }));
     await fireEvent.click(screen.getByRole("button", { name: "delete" }));
     await waitFor(() =>
       expect(goto).toHaveBeenCalledWith("/library", { invalidateAll: true }),
@@ -272,16 +267,13 @@ describe("reader page — delete error path", () => {
   });
 
   it("refreshes shell data after adding to a collection", async () => {
-    collectionsList.mockResolvedValueOnce([{ id: "col1", name: "physics" }]);
     render(ReaderPage);
     await waitFor(() =>
       expect(screen.getByText("Test Article")).toBeInTheDocument(),
     );
     await fireEvent.click(screen.getByText("More"));
-    const trigger = screen.getByRole("button", { name: "add to collection" });
-    await fireEvent.keyDown(trigger, { key: "Enter" });
     await fireEvent.click(
-      await screen.findByRole("menuitem", { name: "physics" }),
+      await screen.findByRole("button", { name: /physics/ }),
     );
     await waitFor(() => expect(collectionItemCreate).toHaveBeenCalled());
     // The sidebar's collection counts come from the root layout load.
@@ -307,9 +299,7 @@ describe("reader page — delete error path", () => {
     );
     await fireEvent.click(screen.getByText("More"));
 
-    await fireEvent.click(
-      screen.getByRole("button", { name: "delete article" }),
-    );
+    await fireEvent.click(screen.getByRole("button", { name: "Delete" }));
     await fireEvent.click(screen.getByRole("button", { name: "delete" }));
 
     await waitFor(() =>
