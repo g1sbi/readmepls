@@ -606,7 +606,7 @@ Behavior, from `notes.md` → "Highlights" and "New highlight":
   `--dur-marker` (`data-hl-new` triggers it). On desktop its map tick draws
   in 400ms later. Under reduced motion both are already drawn.
 
-- [ ] **Step 1: Write the failing tests.**
+- [x] **Step 1: Write the failing tests.**
   - Popover:
     - the three swatches are named Yellow, Rose and Mint;
     - Yellow has `data-primary`;
@@ -615,10 +615,10 @@ Behavior, from `notes.md` → "Highlights" and "New highlight":
   - Tray: the same pick contract, plus Close calls `oncancel`.
   - Reader page, phone viewport: a selection inside the article hides the
     control bar and shows the tray. A collapsed selection restores the bar.
-- [ ] **Step 2: Run** `pnpm exec vitest run HighlightPopover HighlightTray routes/read`. Expected: FAIL.
-- [ ] **Step 3: Implement.**
-- [ ] **Step 4: Run** the same command. Expected: PASS.
-- [ ] **Step 5: Commit** `feat(web): highlight popover on desktop, tray on phones`.
+- [x] **Step 2: Run** `pnpm exec vitest run HighlightPopover HighlightTray routes/read`. Expected: FAIL.
+- [x] **Step 3: Implement.**
+- [x] **Step 4: Run** the same command. Expected: PASS.
+- [x] **Step 5: Commit** `feat(web): highlight popover on desktop, tray on phones`.
 
 ### Task 9: Phone reader chrome — B1 bar and sheets
 
