@@ -637,7 +637,7 @@ Behavior, from `notes.md` → "Highlights" and "New highlight":
 - Test: `ReaderControlBar.test.ts`, the chapter list test, and reader
   `page.test.ts`
 
-- [ ] **Step 1: Write the failing tests.**
+- [x] **Step 1: Write the failing tests.**
   - Bar: with chapters there are 3 slots; without, 2 (Review Focus 1). The
     active slot has `aria-expanded="true"`.
   - Reader page, phone: after a scroll down hides the chrome, a tap on the
@@ -648,10 +648,10 @@ Behavior, from `notes.md` → "Highlights" and "New highlight":
     - tapping a chapter closes it and scrolls;
     - More opens "More" with "Archive";
     - Highlights opens the list.
-- [ ] **Step 2: Run** `pnpm exec vitest run ReaderControlBar ChapterList routes/read`. Expected: FAIL.
-- [ ] **Step 3: Implement.** Match `reader-phone.html` exactly; it is approved as rendered.
-- [ ] **Step 4: Run** the same command, then `pnpm test`. Expected: PASS.
-- [ ] **Step 5: Commit** `feat(web): phone reader bar and sheets in Marker`.
+- [x] **Step 2: Run** `pnpm exec vitest run ReaderControlBar ChapterList routes/read`. Expected: FAIL.
+- [x] **Step 3: Implement.** Match `reader-phone.html` exactly; it is approved as rendered.
+- [x] **Step 4: Run** the same command, then `pnpm test`. Expected: PASS.
+- [x] **Step 5: Commit** `feat(web): phone reader bar and sheets in Marker`.
 
 ### Task 10: Reader states — loading, failed, partial (C2), end of article
 
