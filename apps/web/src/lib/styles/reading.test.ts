@@ -99,3 +99,12 @@ describe("reading.css", () => {
     expect(strip(reading)).not.toMatch(/#[0-9a-f]{3,8}\b|rgb\(|hsl\(/i);
   });
 });
+
+describe("jumping to a highlight", () => {
+  it("redraws the band once while data-hl-flash is set", () => {
+    const sel = ".prose-reader mark[data-hl-flash]";
+    const rule = rulesFor(reading, sel);
+    expect(rule).toMatch(/animation/);
+    expect(reading).toMatch(/@keyframes hl-flash/);
+  });
+});

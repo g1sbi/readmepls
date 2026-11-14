@@ -239,3 +239,13 @@ describe("scrim token", () => {
     expect(alpha(dark ?? "")).toBeGreaterThanOrEqual(alpha(light ?? ""));
   });
 });
+
+describe("highlight swatches", () => {
+  it("carries an opaque variant of every band color, in both modes", () => {
+    for (const scope of ['[data-theme="light"]', '[data-theme="dark"]']) {
+      const vars = block(css, scope);
+      for (const key of ["terracotta", "amber", "sage"])
+        expect(vars.get(`--hl-${key}-solid`)).toBeTruthy();
+    }
+  });
+});

@@ -137,6 +137,25 @@
 .prose-reader mark[data-hl-color="sage"] {
   --hlc: var(--hl-sage);
 }
+/* Jumped to from the map or the list: the band redraws once so the eye can
+   find it. The page clears the attribute again. */
+.prose-reader mark[data-hl-flash] {
+  background-repeat: no-repeat;
+  animation: hl-flash var(--dur-marker) var(--ease-out);
+}
+@keyframes hl-flash {
+  from {
+    background-size: 0% 100%;
+  }
+  to {
+    background-size: 100% 100%;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .prose-reader mark[data-hl-flash] {
+    animation: none;
+  }
+}
 
 /* ---- lists ------------------------------------------------------------ */
 .prose-reader ul,

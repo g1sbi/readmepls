@@ -224,6 +224,11 @@
   --hl-terracotta: rgb(255 206 0 / 0.45);
   --hl-amber: rgb(255 107 157 / 0.3);
   --hl-sage: rgb(52 199 123 / 0.3);
+  /* opaque swatches: the bands are washes, but a 3px map tick or an 8px dot
+     needs the full-strength color to read at all */
+  --hl-terracotta-solid: var(--color-marker);
+  --hl-amber-solid: #ff8db4;
+  --hl-sage-solid: #6fd6a0;
 
   /* shadow tint (neutral black; dark doubles the alpha) */
   --shadow-color: 0 0 0;
@@ -280,6 +285,9 @@
   --hl-terracotta: rgb(255 206 0 / 0.32);
   --hl-amber: rgb(255 107 157 / 0.32);
   --hl-sage: rgb(52 199 123 / 0.3);
+  --hl-terracotta-solid: var(--color-marker);
+  --hl-amber-solid: #e57aa1;
+  --hl-sage-solid: #5cc08c;
 
   --shadow-color: 0 0 0;
   --shadow-sm: 0 1px 2px rgb(var(--shadow-color) / 0.16);
