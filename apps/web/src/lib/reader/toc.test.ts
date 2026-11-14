@@ -1,5 +1,5 @@
 import { describe, it, expect } from "vitest";
-import { buildTocFromDom } from "./toc.js";
+import { buildTocFromDom, flattenToc } from "./toc.js";
 
 function root(html: string): HTMLElement {
   const el = document.createElement("div");
@@ -39,5 +39,31 @@ describe("buildTocFromDom", () => {
 
   it("returns [] when there are no headings", () => {
     expect(buildTocFromDom(root("<p>nope</p>"))).toEqual([]);
+  });
+});
+
+describe("flattenToc", () => {
+  it("walks the tree depth-first, keeping each entry's depth", () => {
+    expect(
+      flattenToc([
+        {
+          id: "flow",
+          text: "Flow",
+          level: 2,
+          children: [
+            { id: "laminar", text: "Laminar", level: 3, children: [] },
+          ],
+        },
+        { id: "notes", text: "Notes", level: 2, children: [] },
+      ]),
+    ).toEqual([
+      { id: "flow", text: "Flow", level: 2, depth: 0 },
+      { id: "laminar", text: "Laminar", level: 3, depth: 1 },
+      { id: "notes", text: "Notes", level: 2, depth: 0 },
+    ]);
+  });
+
+  it("has nothing to flatten in an empty toc", () => {
+    expect(flattenToc([])).toEqual([]);
   });
 });

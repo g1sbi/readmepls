@@ -29,3 +29,22 @@ export function buildTocFromDom(root: HTMLElement): TocEntry[] {
   }
   return nestHeadings(flat);
 }
+
+/** A toc entry lifted out of the tree, with how deep it sat. */
+export interface FlatTocEntry {
+  id: string;
+  text: string;
+  level: number;
+  depth: number;
+}
+
+/**
+ * Depth-first flattening of a toc tree. The chapter ticks need one row per
+ * entry in reading order; the tree shape only survives as `depth` (indent).
+ */
+export function flattenToc(items: TocEntry[], depth = 0): FlatTocEntry[] {
+  return items.flatMap((n) => [
+    { id: n.id, text: n.text, level: n.level, depth },
+    ...flattenToc(n.children, depth + 1),
+  ]);
+}

@@ -8,8 +8,8 @@ import {
 } from "@testing-library/svelte";
 
 // jsdom doesn't implement IntersectionObserver (github.com/jsdom/jsdom/issues/2032).
-// The reader page's chapters scroll-spy constructs one on mount, so mounting it
-// here needs this to exist. Scoped to this file only (not vitest-setup.ts) —
+// The marker-swipe motif inside the reader's prose constructs one, so mounting
+// the page here needs this to exist. Scoped to this file only (not vitest-setup.ts) —
 // reveal.test.ts specifically asserts behavior for when it's ABSENT, so a
 // global polyfill would break that test.
 class IntersectionObserverStub implements IntersectionObserver {
@@ -666,6 +666,66 @@ describe("reader page — chapters sidebar", () => {
     // Scoped to the nav — content_html's real <h2>First Chapter</h2> also
     // renders in the article body itself, so an unscoped query would match twice.
     expect(within(nav).getByText("First Chapter")).toBeTruthy();
+  });
+
+  it("marks the chapter the reader has scrolled into", async () => {
+    articleGetOne.mockResolvedValueOnce({
+      ...defaultArticle(),
+      expand: {
+        content: {
+          id: "c1",
+          title: "Test Article",
+          content_html:
+            "<h2>First Chapter</h2><p>...</p><h2>Second Chapter</h2>",
+          extract_status: "ok",
+        },
+      },
+    });
+
+    // jsdom lays nothing out, so place the headings by hand: the first has
+    // scrolled past the top third, the second has not.
+    const tops: Record<string, number> = {
+      "First Chapter": -200,
+      "Second Chapter": 600,
+    };
+    const rect = vi
+      .spyOn(Element.prototype, "getBoundingClientRect")
+      .mockImplementation(function (this: Element) {
+        const top = tops[(this.textContent ?? "").trim()] ?? 0;
+        return { top, bottom: top + 30, height: 30 } as DOMRect;
+      });
+    Object.defineProperty(window, "innerHeight", {
+      value: 800,
+      configurable: true,
+    });
+    // Mid-article: tall enough that the page has not bottomed out, which is
+    // what switches the spy to its last-heading-on-screen rule.
+    Object.defineProperty(document.body, "scrollHeight", {
+      value: 4000,
+      configurable: true,
+    });
+    Object.defineProperty(window, "scrollY", {
+      value: 400,
+      configurable: true,
+    });
+
+    render(ReaderPage);
+    await waitFor(() =>
+      expect(screen.getByText("Test Article")).toBeInTheDocument(),
+    );
+    await fireEvent.scroll(window);
+    await fireEvent.click(await screen.findByText("Chapters"));
+    const nav = await screen.findByRole("navigation", { name: "chapters" });
+    await waitFor(() =>
+      expect(within(nav).getByText("First Chapter")).toHaveAttribute(
+        "aria-current",
+        "true",
+      ),
+    );
+    expect(within(nav).getByText("Second Chapter")).not.toHaveAttribute(
+      "aria-current",
+    );
+    rect.mockRestore();
   });
 });
 

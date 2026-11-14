@@ -21,6 +21,7 @@
   import { deleteArticle } from "$lib/article/delete.js";
   import ChaptersSidebar from "$lib/components/ChaptersSidebar.svelte";
   import { buildTocFromDom } from "$lib/reader/toc.js";
+  import { activeHeadingId as headingInView } from "$lib/reader/scroll-spy.js";
   import ConfirmAction from "$lib/components/ConfirmAction.svelte";
   import TagEditor from "$lib/components/TagEditor.svelte";
   import Rail from "$lib/components/ui/Rail.svelte";
@@ -103,7 +104,7 @@
   // Chapters sidebar state
   let toc = $state<TocEntry[]>([]);
   let activeHeadingId = $state<string | null>(null);
-  let tocObserver: IntersectionObserver | null = null;
+  let spyFrame: number | null = null;
 
   // Mobile control chrome: one sheet open at a time, and the control bar and
   // header hide on scroll-down, reveal on scroll-up (see bottom-nav-scroll.js).
@@ -269,6 +270,7 @@
   }
 
   function onScroll() {
+    scheduleHeadingSpy();
     const curY = window.scrollY;
     controlsVisible = nextNavVisible(prevScrollY, curY, controlsVisible);
     prevScrollY = curY;
@@ -328,17 +330,27 @@
         : buildTocFromDom(bodyEl);
   }
 
-  function observeHeadings() {
-    const headings = bodyEl.querySelectorAll<HTMLElement>("h1,h2,h3,h4,h5,h6");
-    if (headings.length === 0) return;
-    tocObserver = new IntersectionObserver(
-      (entries) => {
-        for (const e of entries)
-          if (e.isIntersecting && e.target.id) activeHeadingId = e.target.id;
-      },
-      { rootMargin: "0px 0px -70% 0px", threshold: 0 },
-    );
-    headings.forEach((h) => tocObserver!.observe(h));
+  // Measured per frame rather than observed: an IntersectionObserver can't
+  // express "the last chapter is current once the page bottoms out", which is
+  // how a short final chapter becomes current at all.
+  function updateActiveHeading() {
+    if (!bodyEl) return;
+    const headings = [
+      ...bodyEl.querySelectorAll<HTMLElement>("h1,h2,h3,h4,h5,h6"),
+    ]
+      .filter((h) => h.id)
+      .map((h) => ({ id: h.id, top: h.getBoundingClientRect().top }));
+    const atBottom =
+      window.scrollY + window.innerHeight >= document.body.scrollHeight - 2;
+    activeHeadingId = headingInView(headings, window.innerHeight, atBottom);
+  }
+
+  function scheduleHeadingSpy() {
+    if (spyFrame !== null) return;
+    spyFrame = requestAnimationFrame(() => {
+      spyFrame = null;
+      updateActiveHeading();
+    });
   }
 
   function jumpToHeading(id: string) {
@@ -374,7 +386,7 @@
     await tick();
     resolveInitialScroll();
     resolveToc();
-    observeHeadings();
+    updateActiveHeading();
     // Attach before the remaining loads (not after) so a scroll during those
     // network calls is never silently dropped.
     prevScrollY = window.scrollY;
@@ -388,7 +400,7 @@
   // flush any pending debounced save so navigating away doesn't lose it.
   onDestroy(() => {
     progressCtx?.set(0);
-    tocObserver?.disconnect();
+    if (spyFrame !== null) cancelAnimationFrame(spyFrame);
     desktopMq?.removeEventListener("change", onDesktopChange);
     if (typeof window === "undefined") return;
     window.removeEventListener("scroll", onScroll);
