@@ -352,17 +352,17 @@ All values come from `notes.md` → "Type, per breakpoint", "Dark tuning" and
     bar exists. This changes Plan 3's `WIDE_QUERY`. `inert` follows the
     same rule.
 
-- [ ] **Step 1: Write the failing tests.**
+- [x] **Step 1: Write the failing tests.**
   - Desktop: the Highlights button shows the count and calls
     `onHighlights`, and the `actions` snippet renders.
   - Phone: neither renders.
   - `showTitle` toggles the visible title.
   - The header is `inert` and translated at 900px wide when hidden, and
     not at 1280.
-- [ ] **Step 2: Run** `pnpm exec vitest run ReaderHeader nav`. Expected: FAIL.
-- [ ] **Step 3: Implement.**
-- [ ] **Step 4: Run** the same command. Expected: PASS.
-- [ ] **Step 5: Commit** `feat(web): reader header gains highlights, actions and title on desktop`.
+- [x] **Step 2: Run** `pnpm exec vitest run ReaderHeader nav`. Expected: FAIL.
+- [x] **Step 3: Implement.**
+- [x] **Step 4: Run** the same command. Expected: PASS.
+- [x] **Step 5: Commit** `feat(web): reader header gains highlights, actions and title on desktop`.
 
 ### Task 5: Chapter ticks that expand into the list (desktop), and a scroll spy that reaches the end
 
