@@ -489,7 +489,7 @@ Behavior, from `notes.md` → "Highlight map":
   jumps, and a tap elsewhere dismisses.
 - **Orphans:** highlights missing from `positions` are not drawn.
 
-- [ ] **Step 1: Write the failing tests.**
+- [x] **Step 1: Write the failing tests.**
   - `mapPositions`:
     - `[{a,500},{b,100}]` with height 1000 → `[{b,0.1},{a,0.5}]`;
     - height 0 → `[]`;
@@ -502,10 +502,10 @@ Behavior, from `notes.md` → "Highlight map":
       note;
     - Enter calls `onjump`;
     - a tick's style top equals `at*100%`.
-- [ ] **Step 2: Run** `pnpm exec vitest run highlight-map HighlightMap`. Expected: FAIL.
-- [ ] **Step 3: Implement.**
-- [ ] **Step 4: Run** the same command. Expected: PASS.
-- [ ] **Step 5: Commit** `feat(web): highlight map on the reader's right edge`.
+- [x] **Step 2: Run** `pnpm exec vitest run highlight-map HighlightMap`. Expected: FAIL.
+- [x] **Step 3: Implement.**
+- [x] **Step 4: Run** the same command. Expected: PASS.
+- [x] **Step 5: Commit** `feat(web): highlight map on the reader's right edge`.
 
 ### Task 7: Focused desktop layout, highlights panel, and page recomposition
 
