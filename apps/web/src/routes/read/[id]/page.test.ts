@@ -68,6 +68,7 @@ const articleUpdate = vi.fn().mockResolvedValue({});
 const articleDelete = vi.fn().mockResolvedValue(undefined);
 const usersUpdate = vi.fn().mockResolvedValue({});
 const collectionItemCreate = vi.fn().mockResolvedValue({ id: "ci1" });
+const highlightsList = vi.fn().mockResolvedValue([]);
 
 vi.mock("$lib/pb.js", () => ({
   browserPb: () => ({
@@ -90,6 +91,13 @@ vi.mock("$lib/pb.js", () => ({
       }
       if (name === "collection_items") {
         return { create: collectionItemCreate };
+      }
+      if (name === "highlights") {
+        return {
+          getFullList: highlightsList,
+          create: vi.fn().mockResolvedValue({ id: "new1" }),
+          delete: vi.fn().mockResolvedValue(undefined),
+        };
       }
       // highlights, article_tags — all empty
       return {
@@ -187,6 +195,7 @@ vi.mock("$lib/highlight/render", () => ({
 // after mocks are registered so the same reference is available for assertions.
 import ReaderPage from "./+page.svelte";
 import { goto, afterNavigate, invalidateAll } from "$app/navigation";
+import { anchoring } from "@readmepls/core";
 import { unmarkAll } from "$lib/highlight/render";
 
 // ---------------------------------------------------------------------------
@@ -863,5 +872,163 @@ describe("reader page — focused chrome", () => {
       "href",
       "/",
     );
+  });
+});
+
+describe("reader page — focused desktop", () => {
+  const article = {
+    ...defaultArticle(),
+    expand: {
+      content: {
+        id: "c1",
+        title: "Test Article",
+        content_html:
+          '<h2>First Chapter</h2><p><mark data-hl-id="h1">kept one</mark></p>' +
+          '<h2>Second Chapter</h2><p><mark data-hl-id="h2">kept two</mark></p>',
+        extract_status: "ok",
+      },
+    },
+  };
+
+  const highlight = (id: string, text: string) => ({
+    id,
+    user: "u1",
+    article: "art1",
+    text,
+    prefix: "",
+    suffix: "",
+    start_offset: 0,
+    end_offset: 8,
+    color: "terracotta",
+    note: "",
+    created: "2026-11-02 10:00:00.000Z",
+  });
+
+  beforeEach(() => {
+    vi.clearAllMocks();
+    articleUpdate.mockResolvedValue({});
+    articleGetOne.mockResolvedValue(article);
+    // The focused layout starts at lg; everything narrower keeps the phone bar.
+    Object.defineProperty(window, "matchMedia", {
+      writable: true,
+      configurable: true,
+      value: (query: string) => ({
+        matches: query.includes("64rem") || query.includes("1024px"),
+        media: query,
+        onchange: null,
+        addEventListener: () => {},
+        removeEventListener: () => {},
+        addListener: () => {},
+        removeListener: () => {},
+        dispatchEvent: () => false,
+      }),
+    });
+    // jsdom lays nothing out: give the page a document to measure against.
+    Object.defineProperty(document.body, "scrollHeight", {
+      value: 4000,
+      configurable: true,
+    });
+    Object.defineProperty(window, "innerHeight", {
+      value: 800,
+      configurable: true,
+    });
+  });
+
+  const seedHighlights = () => {
+    highlightsList.mockResolvedValue([
+      highlight("h1", "kept one"),
+      highlight("h2", "kept two"),
+      highlight("h3", "lost passage"),
+    ]);
+    // The first two anchor; the third is an orphan.
+    vi.mocked(anchoring.anchor)
+      .mockResolvedValueOnce({} as Range)
+      .mockResolvedValueOnce({} as Range)
+      .mockResolvedValue(null);
+  };
+
+  it("leaves the reading-tools rail behind", async () => {
+    render(ReaderPage);
+    await waitFor(() =>
+      expect(
+        screen.getByRole("heading", { name: "Test Article", level: 1 }),
+      ).toBeInTheDocument(),
+    );
+    expect(document.querySelector('[aria-label="reading tools"]')).toBeNull();
+    expect(
+      screen.queryByRole("navigation", { name: "reader controls" }),
+    ).toBeNull();
+  });
+
+  it("puts the chapters on the left edge and the highlights on the right", async () => {
+    seedHighlights();
+    render(ReaderPage);
+    expect(
+      await screen.findByRole("navigation", { name: "Chapters" }),
+    ).toBeInTheDocument();
+    expect(
+      await screen.findByRole("button", { name: "Highlight: kept one" }),
+    ).toBeInTheDocument();
+    // The orphan has no mark to measure, so the map never places it.
+    expect(screen.queryByRole("button", { name: /lost passage/ })).toBeNull();
+  });
+
+  // Review Focus 4: the badge counts orphans too.
+  it("counts anchored and orphaned highlights in the header", async () => {
+    seedHighlights();
+    render(ReaderPage);
+    expect(
+      await screen.findByRole("button", { name: "Highlights, 3" }),
+    ).toBeInTheDocument();
+  });
+
+  it("opens the panel with every highlight from the header", async () => {
+    seedHighlights();
+    render(ReaderPage);
+    await fireEvent.click(
+      await screen.findByRole("button", { name: "Highlights, 3" }),
+    );
+    const panel = await screen.findByRole("dialog");
+    expect(within(panel).getByText("lost passage")).toBeInTheDocument();
+    expect(
+      within(panel).getAllByRole("button", { name: /^Delete highlight/ }),
+    ).toHaveLength(3);
+  });
+
+  it("lists the shell's collections in the header actions menu", async () => {
+    render(ReaderPage);
+    await waitFor(() =>
+      expect(
+        screen.getByRole("heading", { name: "Test Article", level: 1 }),
+      ).toBeInTheDocument(),
+    );
+    await fireEvent.click(
+      screen.getByRole("button", { name: "Article actions" }),
+    );
+    expect(
+      await screen.findByRole("menuitem", { name: /physics/ }),
+    ).toBeInTheDocument();
+  });
+
+  // Review Focus 1: an article without headings gets no chapter column.
+  it("has no chapter column in an article without headings", async () => {
+    articleGetOne.mockResolvedValue({
+      ...defaultArticle(),
+      expand: {
+        content: {
+          id: "c1",
+          title: "Test Article",
+          content_html: "<p>no headings here</p>",
+          extract_status: "ok",
+        },
+      },
+    });
+    render(ReaderPage);
+    await waitFor(() =>
+      expect(
+        screen.getByRole("heading", { name: "Test Article", level: 1 }),
+      ).toBeInTheDocument(),
+    );
+    expect(screen.queryByRole("navigation", { name: "Chapters" })).toBeNull();
   });
 });

@@ -19,20 +19,26 @@
   import { resolve } from "$app/paths";
   import { markRange, unmarkAll } from "$lib/highlight/render";
   import { deleteArticle } from "$lib/article/delete.js";
-  import ChaptersSidebar from "$lib/components/ChaptersSidebar.svelte";
+  import ChapterList from "$lib/components/ChapterList.svelte";
+  import ChapterTicks from "$lib/components/reader/ChapterTicks.svelte";
   import { buildTocFromDom } from "$lib/reader/toc.js";
   import { activeHeadingId as headingInView } from "$lib/reader/scroll-spy.js";
+  import {
+    mapPositions,
+    measureMarks,
+    type MapPosition,
+  } from "$lib/reader/highlight-map.js";
+  import { MediaQuery } from "svelte/reactivity";
+  import { DESKTOP_QUERY } from "$lib/shell/nav.js";
   import ConfirmAction from "$lib/components/ConfirmAction.svelte";
-  import TagEditor from "$lib/components/TagEditor.svelte";
-  import Rail from "$lib/components/ui/Rail.svelte";
   import ReaderActionsMenu from "$lib/components/reader/ReaderActionsMenu.svelte";
   import ReaderMoreSheet from "$lib/components/reader/ReaderMoreSheet.svelte";
-  import { ArrowUpRight } from "@lucide/svelte";
   import { Skeleton } from "$lib/components/ui/skeleton";
   import HighlightPopover from "$lib/components/HighlightPopover.svelte";
-  import HighlightsSidebar from "$lib/components/HighlightsSidebar.svelte";
-  import SourcePill from "$lib/components/ui/SourcePill.svelte";
-  import { Button } from "$lib/components/ui/button";
+  import HighlightList from "$lib/components/reader/HighlightList.svelte";
+  import HighlightsPanel from "$lib/components/reader/HighlightsPanel.svelte";
+  import HighlightMap from "$lib/components/reader/HighlightMap.svelte";
+  import ArticleMeta from "$lib/components/reader/ArticleMeta.svelte";
   import { sourceView } from "$lib/source/source-view.js";
   import ReaderControlBar from "$lib/components/ReaderControlBar.svelte";
   import BottomSheet from "$lib/components/ui/BottomSheet.svelte";
@@ -111,12 +117,19 @@
   let activeSheet = $state<SheetKey | null>(null);
   let controlsVisible = $state(true);
   let prevScrollY = 0;
-  let isDesktop = $state(false);
-  let desktopMq: MediaQueryList | null = null;
+  // The focused desktop layout (edge chapters, highlight map, side panel)
+  // starts at lg; below it the phone bar and its sheets do the same jobs.
+  const desktop = new MediaQuery(DESKTOP_QUERY);
+  const isDesktop = $derived(desktop.current);
   const hasChapters = $derived(toc.length > 0);
-  function onDesktopChange(e: MediaQueryListEvent) {
-    isDesktop = e.matches;
-  }
+
+  // Focused-desktop chrome.
+  let panelOpen = $state(false);
+  let titleEl = $state<HTMLElement | null>(null);
+  // The header carries the article title once the h1 has scrolled away.
+  let showTitle = $state(false);
+  let positions = $state<MapPosition[]>([]);
+  let viewport = $state({ at: 0, size: 1 });
 
   async function loadHighlights(articleId: string) {
     const raw = await pb.collection("highlights").getFullList({
@@ -196,6 +209,24 @@
       else missing.push(h.id);
     }
     orphans = missing;
+    measureMap();
+  }
+
+  // The map is measured, not derived: only the rendered marks know where a
+  // highlight ended up. Re-run on load, on resize and whenever marks change.
+  function measureMap() {
+    if (!bodyEl) return;
+    positions = mapPositions(measureMarks(bodyEl), document.body.scrollHeight);
+    updateViewport();
+  }
+
+  function updateViewport() {
+    const docH = document.body.scrollHeight;
+    if (docH <= 0) return;
+    viewport = {
+      at: Math.min(1, Math.max(0, window.scrollY / docH)),
+      size: Math.min(1, window.innerHeight / docH),
+    };
   }
 
   function onMouseUp() {
@@ -236,10 +267,15 @@
     }
   }
 
+  const FLASH_MS = 1200;
+
   function jumpTo(id: string) {
-    bodyEl
-      .querySelector(`mark[data-hl-id="${id}"]`)
-      ?.scrollIntoView({ behavior: "smooth", block: "center" });
+    const mark = bodyEl.querySelector<HTMLElement>(`mark[data-hl-id="${id}"]`);
+    if (!mark) return;
+    mark.scrollIntoView({ behavior: "smooth", block: "center" });
+    // reading.css redraws the band while the attribute is set.
+    mark.dataset.hlFlash = "";
+    setTimeout(() => delete mark.dataset.hlFlash, FLASH_MS);
   }
 
   async function deleteHighlight(id: string) {
@@ -271,6 +307,10 @@
 
   function onScroll() {
     scheduleHeadingSpy();
+    updateViewport();
+    // The h1's bottom leaving the top of the screen hands the title to the
+    // header, as the renders show.
+    showTitle = (titleEl?.getBoundingClientRect().bottom ?? 1) < 0;
     const curY = window.scrollY;
     controlsVisible = nextNavVisible(prevScrollY, curY, controlsVisible);
     prevScrollY = curY;
@@ -361,12 +401,6 @@
   }
 
   onMount(async () => {
-    // Set up before the article fetch (not after) so isDesktop is correct
-    // from the very first paint, including during the loading skeleton.
-    desktopMq = window.matchMedia("(min-width: 1024px)");
-    isDesktop = desktopMq.matches;
-    desktopMq.addEventListener("change", onDesktopChange);
-
     const id = $page.params.id;
     if (!id) return;
     article = await pb
@@ -391,6 +425,7 @@
     // network calls is never silently dropped.
     prevScrollY = window.scrollY;
     window.addEventListener("scroll", onScroll, { passive: true });
+    window.addEventListener("resize", measureMap, { passive: true });
     document.addEventListener("visibilitychange", onVisibilityChange);
     await loadHighlights(id);
     await loadTags(id);
@@ -401,9 +436,9 @@
   onDestroy(() => {
     progressCtx?.set(0);
     if (spyFrame !== null) cancelAnimationFrame(spyFrame);
-    desktopMq?.removeEventListener("change", onDesktopChange);
     if (typeof window === "undefined") return;
     window.removeEventListener("scroll", onScroll);
+    window.removeEventListener("resize", measureMap);
     document.removeEventListener("visibilitychange", onVisibilityChange);
     flushSave();
   });
@@ -453,7 +488,22 @@
   {backHref}
   hidden={!controlsVisible}
   onMenu={() => (navOpen = true)}
+  title={content?.title as string | undefined}
+  {showTitle}
+  highlightsCount={highlights.length}
+  onHighlights={content ? () => (panelOpen = !panelOpen) : undefined}
+  actions={content ? readerActions : undefined}
 />
+
+{#snippet readerActions()}
+  <ReaderActionsMenu
+    collections={navCollections}
+    {originalUrl}
+    onAddToCollection={addToCollection}
+    onArchive={archive}
+    onDelete={() => (confirmingDelete = true)}
+  />
+{/snippet}
 
 <NavOverlay
   open={navOpen}
@@ -474,87 +524,45 @@
       {/each}
     </div>
   {:else}
-    <div class="reader-layout">
-      {#if isDesktop}
-        <Rail label="reading tools">
-          {#if toc.length}
-            <section class="rail-chapters">
-              <h2 class="rail-heading">chapters</h2>
-              <ChaptersSidebar
-                {toc}
-                activeId={activeHeadingId}
-                onjump={jumpToHeading}
-              />
-            </section>
-          {/if}
-          <TagEditor
-            tags={manualTags.map((t) => ({ id: t.id, name: t.name }))}
-            onadd={addTag}
-            onremove={removeTag}
-          />
-          <ReaderActionsMenu
-            collections={navCollections}
-            {originalUrl}
-            onAddToCollection={addToCollection}
-            onArchive={archive}
-            onDelete={() => (confirmingDelete = true)}
-          />
-        </Rail>
-      {/if}
+    {#if isDesktop}
+      <ChapterTicks {toc} activeId={activeHeadingId} onjump={jumpToHeading} />
+      <HighlightMap {highlights} {positions} {viewport} onjump={jumpTo} />
+      <HighlightsPanel
+        open={panelOpen}
+        onClose={() => (panelOpen = false)}
+        {highlights}
+        {orphans}
+        onjump={jumpTo}
+        ondelete={deleteHighlight}
+      />
+    {/if}
 
-      <div class="reader-main">
-        <!-- data-theme uses the live global context so TopBar changes retone the article (FIX 1) -->
-        <!-- Svelte emits an a11y warning for onmouseup on a non-interactive <article>; accepted for text-selection in the reader. -->
-        <article
-          data-theme={activeTheme}
-          class="reader prose-reader"
-          onmouseup={onMouseUp}
-        >
-          <h1>{content.title}</h1>
-          {#if source || originalUrl}
-            <div class="reader-source">
-              {#if source}<SourcePill
-                  name={source.name}
-                  host={source.host}
-                  iconUrl={source.iconUrl}
-                />{/if}
-              {#if source && originalUrl}<span class="dot" aria-hidden="true"
-                  >·</span
-                >{/if}
-              {#if originalUrl}
-                <Button
-                  variant="link"
-                  href={originalUrl}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  class="open-original"
-                >
-                  open original <ArrowUpRight
-                    class="icon-sm"
-                    aria-hidden="true"
-                  />
-                </Button>
-              {/if}
-            </div>
-          {/if}
-          <!-- content_html is sanitized in the worker (Task 2) before storage -->
-          <!-- bind:this anchors the highlight anchoring scope to the article body -->
-          <div bind:this={bodyEl}>
-            <!-- eslint-disable-next-line svelte/no-at-html-tags -- worker-sanitized above; rendering article HTML is the reader's whole purpose -->
-            {@html content.content_html}
-          </div>
-        </article>
+    <!-- data-theme uses the live global context so a theme change retones
+         the article; the edges fade out while the panel is open. -->
+    <!-- Svelte emits an a11y warning for onmouseup on a non-interactive <article>; accepted for text-selection in the reader. -->
+    <article
+      data-theme={activeTheme}
+      class="reader prose-reader"
+      data-shifted={isDesktop && panelOpen}
+      onmouseup={onMouseUp}
+    >
+      <h1 bind:this={titleEl}>{content.title}</h1>
+      <ArticleMeta
+        {source}
+        {originalUrl}
+        readTime={(content.read_time as number | undefined) ?? null}
+        created={(article?.created as string | undefined) ?? ""}
+        tags={manualTags.map((t) => ({ id: t.id, name: t.name }))}
+        onAddTag={addTag}
+        onRemoveTag={removeTag}
+      />
+      <!-- content_html is sanitized in the worker (Task 2) before storage -->
+      <!-- bind:this anchors the highlight anchoring scope to the article body -->
+      <div bind:this={bodyEl}>
+        <!-- eslint-disable-next-line svelte/no-at-html-tags -- worker-sanitized above; rendering article HTML is the reader's whole purpose -->
+        {@html content.content_html}
       </div>
-
-      {#if isDesktop}
-        <HighlightsSidebar
-          {highlights}
-          {orphans}
-          onjump={jumpTo}
-          ondelete={deleteHighlight}
-        />
-      {/if}
-    </div>
+    </article>
   {/if}
 </div>
 
@@ -591,11 +599,13 @@
       onClose={() => (activeSheet = null)}
       title="Chapters"
     >
-      <ChaptersSidebar
-        {toc}
-        activeId={activeHeadingId}
-        onjump={jumpToHeading}
-      />
+      <nav class="phone-chapters" aria-label="chapters">
+        <ChapterList
+          items={toc}
+          activeId={activeHeadingId}
+          onjump={jumpToHeading}
+        />
+      </nav>
     </BottomSheet>
   {/if}
 
@@ -604,7 +614,7 @@
     onClose={() => (activeSheet = null)}
     title="Highlights"
   >
-    <HighlightsSidebar
+    <HighlightList
       {highlights}
       {orphans}
       onjump={(id) => {
@@ -630,16 +640,11 @@
 {/if}
 
 <style>
-  /* The shell is wider than the prose measure so the highlights rail has room. */
+  /* The shell is the reading measure itself now: the chapter ticks and the
+     highlight map are fixed to the viewport edges, not columns in a grid. */
   .reader-shell {
     max-width: var(--width-prose);
     margin: 0 auto;
-  }
-  .rail-heading {
-    font-family: var(--font-ui);
-    font-size: var(--text-sm);
-    color: var(--color-text-muted);
-    margin: 0 0 var(--space-2);
   }
 
   /* The article's box only; reading.css (.prose-reader) owns the type. */
@@ -650,31 +655,15 @@
     margin: 0 auto;
     padding: 1.5rem;
     border-radius: var(--radius-lg);
+    transition: transform var(--dur-slow) var(--ease-out);
   }
-
-  /* single-column by default: rail (controls+actions) above article, highlights below */
-  .reader-layout {
-    display: grid;
-    grid-template-columns: 1fr;
-    gap: var(--space-5);
+  /* The panel takes the right edge, so the article steps left to stay whole. */
+  .reader[data-shifted="true"] {
+    transform: translateX(-170px);
   }
-  @media (min-width: 1024px) {
-    .reader-shell {
-      max-width: var(--width-reader);
-    }
-    .reader-layout {
-      grid-template-columns: 14rem minmax(0, 1fr) 16rem;
-      align-items: start;
-    }
-    /* Same pinning contract as the rail (see Rail.svelte): clear the sticky
-       TopBar, and scroll internally once the highlight list outgrows the
-       viewport instead of trailing off the bottom of it. */
-    .reader-layout :global(.hl-sidebar) {
-      position: sticky;
-      top: calc(var(--topbar-h) + var(--space-4));
-      max-height: calc(100dvh - var(--topbar-h) - 2 * var(--space-4));
-      overflow-y: auto;
-      overscroll-behavior: contain;
+  @media (prefers-reduced-motion: reduce) {
+    .reader {
+      transition: none;
     }
   }
   /* Phone: run the article edge-to-edge. It sits inside .page's 1.25rem
@@ -687,33 +676,26 @@
       border-radius: 0;
     }
   }
+  .phone-chapters {
+    font-family: var(--font-ui);
+    font-size: var(--text-sm);
+  }
+  .phone-chapters :global(ul) {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+  }
+  .phone-chapters :global(ul ul) {
+    margin-left: var(--space-3);
+  }
   .delete-error {
     margin: 0 0 0.75rem;
     font-size: var(--text-sm);
     color: var(--color-accent);
   }
-  .reader-source {
-    display: flex;
-    align-items: center;
-    gap: var(--space-2);
-    flex-wrap: wrap;
-    margin: 0 0 var(--space-4);
-  }
-  .reader-source .dot {
-    color: var(--color-text-muted);
-  }
-  .reader-source :global(.open-original) {
-    /* chrome, not prose: opt out of the reading link stroke */
-    background: none;
-    font-family: var(--font-ui);
-    font-size: var(--text-sm);
-    height: auto;
-    padding: 0;
-    gap: var(--space-1);
-  }
 
   /* Keep the last lines of prose clear of the fixed control bar on mobile. */
-  @media (max-width: 1023.98px) {
+  @media (max-width: 63.99rem) {
     .reader-shell {
       padding-bottom: 72px;
     }
