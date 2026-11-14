@@ -544,7 +544,7 @@ Behavior, from `notes.md` → "Highlight map":
 - Consumes: Tasks 3, 4, 5 and 6.
 - Produces: the desktop composition that gate 4 screenshots.
 
-- [ ] **Step 1: Write the failing tests.**
+- [x] **Step 1: Write the failing tests.**
   - `HighlightList`:
     - the orphan shows the warning and still has delete;
     - a note renders;
@@ -561,10 +561,10 @@ Behavior, from `notes.md` → "Highlight map":
     - clicking it opens the panel listing 3;
     - the "⋯" menu lists the collections from `$page.data.collections`.
   - Reader page with no toc: no chapter ticks (Review Focus 1).
-- [ ] **Step 2: Run** `pnpm exec vitest run HighlightsPanel HighlightList routes/read`. Expected: FAIL.
-- [ ] **Step 3: Implement.** Keep the page's loading and wiring only, and move any remaining markup into components.
-- [ ] **Step 4: Run** the same command, then `pnpm test`. Expected: PASS.
-- [ ] **Step 5: Commit** `feat(web): focused desktop reader with edge chapters, highlight map and panel`.
+- [x] **Step 2: Run** `pnpm exec vitest run HighlightsPanel HighlightList routes/read`. Expected: FAIL.
+- [x] **Step 3: Implement.** Keep the page's loading and wiring only, and move any remaining markup into components.
+- [x] **Step 4: Run** the same command, then `pnpm test`. Expected: PASS.
+- [x] **Step 5: Commit** `feat(web): focused desktop reader with edge chapters, highlight map and panel`.
 
 ### Task 8: Making a highlight — desktop popover, phone tray, draw-in
 
