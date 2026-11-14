@@ -85,6 +85,12 @@ describe("HighlightMap", () => {
     expect(bar.style.height).toBe("30%");
   });
 
+  it("marks a just-saved highlight so its tick draws itself in", () => {
+    mount({ newId: "h2" });
+    expect(ticks()[0]!).not.toHaveAttribute("data-new");
+    expect(ticks()[1]!).toHaveAttribute("data-new", "true");
+  });
+
   it("has nothing to draw without highlights", () => {
     const { container } = mount({ highlights: [], positions: [] });
     expect(container.textContent).toBe("");

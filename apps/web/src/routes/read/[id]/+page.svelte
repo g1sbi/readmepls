@@ -34,7 +34,8 @@
   import ReaderActionsMenu from "$lib/components/reader/ReaderActionsMenu.svelte";
   import ReaderMoreSheet from "$lib/components/reader/ReaderMoreSheet.svelte";
   import { Skeleton } from "$lib/components/ui/skeleton";
-  import HighlightPopover from "$lib/components/HighlightPopover.svelte";
+  import HighlightPopover from "$lib/components/reader/HighlightPopover.svelte";
+  import HighlightTray from "$lib/components/reader/HighlightTray.svelte";
   import HighlightList from "$lib/components/reader/HighlightList.svelte";
   import HighlightsPanel from "$lib/components/reader/HighlightsPanel.svelte";
   import HighlightMap from "$lib/components/reader/HighlightMap.svelte";
@@ -98,7 +99,11 @@
   let bodyEl = $state<HTMLElement>(null!);
   let highlights = $state<Highlight[]>([]);
   let orphans = $state<string[]>([]);
-  let popover = $state<{ x: number; y: number; range: Range } | null>(null);
+  // The passage waiting for a color: the desktop popover anchors to x/y, the
+  // phone tray just needs the range.
+  let pending = $state<{ x: number; y: number; range: Range } | null>(null);
+  // Marks whose band should draw itself in (a just-saved highlight).
+  let drawingId = $state<string | null>(null);
 
   // Manual tag state — only manual-sourced tags are shown/edited here; AI tags remain read-only
   let manualTags = $state<{ id: string; name: string; linkId: string }[]>([]);
@@ -229,26 +234,36 @@
     };
   }
 
-  function onMouseUp() {
+  // Touch selections never fire mouseup, so the reader also watches
+  // selectionchange — debounced, since dragging a handle fires it per pixel.
+  const SELECTION_DEBOUNCE = 120;
+  let selectionTimer: ReturnType<typeof setTimeout> | undefined;
+
+  function readSelection() {
     const sel = window.getSelection();
-    if (!sel || sel.isCollapsed || !bodyEl.contains(sel.anchorNode)) {
-      popover = null;
+    if (!sel || sel.isCollapsed || !bodyEl?.contains(sel.anchorNode)) {
+      pending = null;
       return;
     }
     const range = sel.getRangeAt(0);
     const rect = range.getBoundingClientRect();
-    popover = {
+    pending = {
       x: rect.left + window.scrollX,
       y: rect.bottom + window.scrollY + 4,
       range,
     };
   }
 
+  function onSelectionChange() {
+    clearTimeout(selectionTimer);
+    selectionTimer = setTimeout(readSelection, SELECTION_DEBOUNCE);
+  }
+
   async function createHighlight(color: HighlightColor, note: string) {
-    if (!popover) return;
+    if (!pending) return;
     try {
-      const sel = await anchoring.describe(rangeOver(bodyEl), popover.range);
-      await pb.collection("highlights").create({
+      const sel = await anchoring.describe(rangeOver(bodyEl), pending.range);
+      const created = await pb.collection("highlights").create({
         user: pb.authStore.model?.id,
         article: $page.params.id,
         text: sel.text,
@@ -259,15 +274,35 @@
         color,
         note,
       });
-      popover = null;
+      pending = null;
       window.getSelection()?.removeAllRanges();
       await loadHighlights($page.params.id!);
+      // The band (and, on desktop, its map tick) draws itself in once.
+      drawMark(created.id as string);
     } catch {
-      popover = null; // bad selection — silently abort (see spec §10)
+      pending = null; // bad selection — silently abort (see spec §10)
     }
   }
 
+  function drawMark(id: string) {
+    drawingId = id;
+    for (const m of bodyEl.querySelectorAll<HTMLElement>(
+      `mark[data-hl-id="${id}"]`,
+    ))
+      m.dataset.hlNew = "";
+    setTimeout(() => {
+      for (const m of bodyEl.querySelectorAll<HTMLElement>(
+        `mark[data-hl-id="${id}"]`,
+      ))
+        delete m.dataset.hlNew;
+      drawingId = null;
+    }, DRAW_MS);
+  }
+
   const FLASH_MS = 1200;
+  // Long enough for the band to finish drawing (--dur-marker) plus the map
+  // tick's 400ms lag behind it.
+  const DRAW_MS = 1200;
 
   function jumpTo(id: string) {
     const mark = bodyEl.querySelector<HTMLElement>(`mark[data-hl-id="${id}"]`);
@@ -426,6 +461,7 @@
     prevScrollY = window.scrollY;
     window.addEventListener("scroll", onScroll, { passive: true });
     window.addEventListener("resize", measureMap, { passive: true });
+    document.addEventListener("selectionchange", onSelectionChange);
     document.addEventListener("visibilitychange", onVisibilityChange);
     await loadHighlights(id);
     await loadTags(id);
@@ -439,6 +475,8 @@
     if (typeof window === "undefined") return;
     window.removeEventListener("scroll", onScroll);
     window.removeEventListener("resize", measureMap);
+    document.removeEventListener("selectionchange", onSelectionChange);
+    clearTimeout(selectionTimer);
     document.removeEventListener("visibilitychange", onVisibilityChange);
     flushSave();
   });
@@ -526,7 +564,13 @@
   {:else}
     {#if isDesktop}
       <ChapterTicks {toc} activeId={activeHeadingId} onjump={jumpToHeading} />
-      <HighlightMap {highlights} {positions} {viewport} onjump={jumpTo} />
+      <HighlightMap
+        {highlights}
+        {positions}
+        {viewport}
+        newId={drawingId}
+        onjump={jumpTo}
+      />
       <HighlightsPanel
         open={panelOpen}
         onClose={() => (panelOpen = false)}
@@ -544,7 +588,7 @@
       data-theme={activeTheme}
       class="reader prose-reader"
       data-shifted={isDesktop && panelOpen}
-      onmouseup={onMouseUp}
+      onmouseup={readSelection}
     >
       <h1 bind:this={titleEl}>{content.title}</h1>
       <ArticleMeta
@@ -566,12 +610,12 @@
   {/if}
 </div>
 
-{#if popover}
+{#if pending && isDesktop}
   <HighlightPopover
-    x={popover.x}
-    y={popover.y}
+    x={pending.x}
+    y={pending.y}
     onpick={createHighlight}
-    oncancel={() => (popover = null)}
+    oncancel={() => (pending = null)}
   />
 {/if}
 
@@ -586,12 +630,22 @@
 />
 
 {#if content && !isDesktop}
-  <ReaderControlBar
-    {hasChapters}
-    hidden={!controlsVisible}
-    active={activeSheet}
-    onOpen={(s) => (activeSheet = s)}
-  />
+  {#if pending}
+    <HighlightTray
+      onpick={createHighlight}
+      oncancel={() => {
+        pending = null;
+        window.getSelection()?.removeAllRanges();
+      }}
+    />
+  {:else}
+    <ReaderControlBar
+      {hasChapters}
+      hidden={!controlsVisible}
+      active={activeSheet}
+      onOpen={(s) => (activeSheet = s)}
+    />
+  {/if}
 
   {#if hasChapters}
     <BottomSheet

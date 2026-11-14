@@ -7,12 +7,15 @@
     highlights,
     positions,
     viewport,
+    newId = null,
     onjump,
   }: {
     highlights: Highlight[];
     positions: MapPosition[];
     /** The part of the article on screen, both as shares of its height. */
     viewport: { at: number; size: number };
+    /** A just-saved highlight, whose tick draws itself in. */
+    newId?: string | null;
     onjump: (id: string) => void;
   } = $props();
 
@@ -93,6 +96,7 @@
         style={`top:${d.pos.at * 100}%`}
         data-color={d.hl.color}
         data-has-note={d.hl.note ? "true" : "false"}
+        data-new={d.hl.id === newId ? "true" : undefined}
         aria-label={`Highlight: ${d.hl.text}`}
         onfocus={() => show(d.hl.id)}
         onblur={() => (activeId = null)}
@@ -218,6 +222,20 @@
     margin-top: -2.5px;
     border-radius: 50%;
     background: var(--color-text-muted);
+  }
+  /* The band draws first; its tick follows a beat later. */
+  .mtick[data-new="true"] .mark {
+    animation: tick-draw var(--dur-marker) var(--ease-out) 400ms both;
+  }
+  @keyframes tick-draw {
+    from {
+      transform: scaleX(0);
+    }
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .mtick[data-new="true"] .mark {
+      animation: none;
+    }
   }
   .mtick:hover .mark,
   .mtick:focus-visible .mark {

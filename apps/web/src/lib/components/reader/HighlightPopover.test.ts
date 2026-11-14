@@ -21,6 +21,32 @@ describe("HighlightPopover", () => {
       expect(screen.getByRole("button", { name })).toBeInTheDocument();
   });
 
+  it("rings Yellow as the primary color", () => {
+    render(HighlightPopover, {
+      x: 10,
+      y: 10,
+      onpick: vi.fn(),
+      oncancel: vi.fn(),
+    });
+    expect(screen.getByRole("button", { name: "Yellow" })).toHaveAttribute(
+      "data-primary",
+      "true",
+    );
+    expect(screen.getByRole("button", { name: "Rose" })).not.toHaveAttribute(
+      "data-primary",
+    );
+  });
+
+  it("carries a note typed before the color is picked", async () => {
+    const onpick = vi.fn();
+    render(HighlightPopover, { x: 10, y: 10, onpick, oncancel: vi.fn() });
+    await fireEvent.input(screen.getByLabelText("Add a note (optional)"), {
+      target: { value: "check the derivation" },
+    });
+    await fireEvent.click(screen.getByRole("button", { name: "Rose" }));
+    expect(onpick).toHaveBeenCalledWith("amber", "check the derivation");
+  });
+
   it("fires oncancel when Escape is pressed", async () => {
     const oncancel = vi.fn();
     render(HighlightPopover, { x: 10, y: 10, onpick: vi.fn(), oncancel });

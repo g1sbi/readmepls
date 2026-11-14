@@ -1032,3 +1032,70 @@ describe("reader page — focused desktop", () => {
     expect(screen.queryByRole("navigation", { name: "Chapters" })).toBeNull();
   });
 });
+
+describe("reader page — making a highlight on a phone", () => {
+  beforeEach(() => {
+    vi.clearAllMocks();
+    articleUpdate.mockResolvedValue({});
+    articleGetOne.mockResolvedValue(defaultArticle());
+    // Undo the focused-desktop block's stub: this one is a phone.
+    Object.defineProperty(window, "matchMedia", {
+      writable: true,
+      configurable: true,
+      value: (query: string) => ({
+        matches: false,
+        media: query,
+        onchange: null,
+        addEventListener: () => {},
+        removeEventListener: () => {},
+        addListener: () => {},
+        removeListener: () => {},
+        dispatchEvent: () => false,
+      }),
+    });
+  });
+
+  /** Stand in for a touch selection over the article text. */
+  const select = (collapsed: boolean) => {
+    const node = screen.getByText("hello world");
+    const range = {
+      getBoundingClientRect: () => ({ left: 10, top: 20, bottom: 40 }),
+    } as unknown as Range;
+    vi.spyOn(window, "getSelection").mockReturnValue({
+      isCollapsed: collapsed,
+      anchorNode: node,
+      rangeCount: 1,
+      getRangeAt: () => range,
+      removeAllRanges: () => {},
+    } as unknown as Selection);
+    document.dispatchEvent(new Event("selectionchange"));
+  };
+
+  it("swaps the control bar for the highlight tray while text is selected", async () => {
+    render(ReaderPage);
+    await waitFor(() =>
+      expect(screen.getByText("Test Article")).toBeInTheDocument(),
+    );
+    expect(
+      await screen.findByRole("navigation", { name: "reader controls" }),
+    ).toBeInTheDocument();
+
+    select(false);
+    const tray = await screen.findByRole("dialog", { name: "Add highlight" });
+    expect(within(tray).getByRole("button", { name: "Yellow" })).toBeTruthy();
+    expect(
+      screen.queryByRole("navigation", { name: "reader controls" }),
+    ).toBeNull();
+
+    // Tapping elsewhere collapses the selection and gives the bar back.
+    select(true);
+    await waitFor(() =>
+      expect(
+        screen.queryByRole("dialog", { name: "Add highlight" }),
+      ).toBeNull(),
+    );
+    expect(
+      screen.getByRole("navigation", { name: "reader controls" }),
+    ).toBeInTheDocument();
+  });
+});

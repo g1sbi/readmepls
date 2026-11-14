@@ -100,6 +100,14 @@ describe("reading.css", () => {
   });
 });
 
+describe("a new highlight", () => {
+  it("draws its band in while data-hl-new is set", () => {
+    const rule = rulesFor(reading, ".prose-reader mark[data-hl-new]");
+    expect(rule).toMatch(/animation/);
+    expect(reading).toMatch(/@keyframes hl-draw/);
+  });
+});
+
 describe("jumping to a highlight", () => {
   it("redraws the band once while data-hl-flash is set", () => {
     const sel = ".prose-reader mark[data-hl-flash]";
