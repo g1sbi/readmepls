@@ -678,7 +678,7 @@ Behavior, from `notes.md` → "Highlights" and "New highlight":
   - **End:** a hairline rule with "End of article" after the body.
 - Test: `ExtractionNotice.test.ts`, `ReaderSkeleton.test.ts`, and reader `page.test.ts`
 
-- [ ] **Step 1: Write the failing tests.**
+- [x] **Step 1: Write the failing tests.**
   - Notice:
     - failed shows the reason, "Retry" and "Open original";
     - Retry calls `onRetry`;
@@ -690,10 +690,10 @@ Behavior, from `notes.md` → "Highlights" and "New highlight":
     - no `ChapterTicks` or bar.
   - Reader page, ok content: "End of article" is present.
   - Skeleton: it has `aria-busy="true"` and no tick or bar chrome.
-- [ ] **Step 2: Run** `pnpm exec vitest run ExtractionNotice ReaderSkeleton routes/read`. Expected: FAIL.
-- [ ] **Step 3: Implement.**
-- [ ] **Step 4: Run** the same command, then `pnpm test`. Expected: PASS.
-- [ ] **Step 5: Commit** `feat(web): reader loading, failed, partial and end states`.
+- [x] **Step 2: Run** `pnpm exec vitest run ExtractionNotice ReaderSkeleton routes/read`. Expected: FAIL.
+- [x] **Step 3: Implement.**
+- [x] **Step 4: Run** the same command, then `pnpm test`. Expected: PASS.
+- [x] **Step 5: Commit** `feat(web): reader loading, failed, partial and end states`.
 
 ### Task 11: Gate 4 — reader typography and focus mode in the real app (controller-run)
 
