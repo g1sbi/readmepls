@@ -139,7 +139,7 @@ than re-deriving them.
   - `withReaderDefaults(partial?: unknown): ReaderPrefs`, which never throws.
   - `SheetKey = "chapters" | "highlights" | "more"`.
 
-- [ ] **Step 1: Write the failing tests.**
+- [x] **Step 1: Write the failing tests.**
   - `prefs.test.ts`:
     - `withReaderDefaults()` → `{theme:"system"}`;
     - `withReaderDefaults({theme:"dark", size: 20, font:"serif"})` →
@@ -160,16 +160,16 @@ than re-deriving them.
     item.
   - Reader `page.test.ts`: no element with
     `aria-label` matching `/text size|font|line height|width/i` is rendered.
-- [ ] **Step 2: Run them.**
+- [x] **Step 2: Run them.**
       `pnpm exec vitest run prefs migration-reader-prefs ReaderControlBar routes/read`.
       Expected: FAIL.
-- [ ] **Step 3: Implement.**
+- [x] **Step 3: Implement.**
   - The reader drops `prefs` state, `savePrefs`, `readerCssVars` and the
     "type" sheet.
   - `--reading-*` comes from tokens only (Task 2).
   - The layout's theme write (`reader_prefs: {...prev, theme}`) stays as is.
-- [ ] **Step 4: Run the same command, then `pnpm test`.** Expected: PASS.
-- [ ] **Step 5: Commit**
+- [x] **Step 4: Run the same command, then `pnpm test`.** Expected: PASS.
+- [x] **Step 5: Commit**
       `feat(web): reader prefs keep only theme; drop reader settings`. Don't
       add `!`: under the pre-1.0 versioning policy that would bump the minor
       version.
@@ -234,7 +234,7 @@ All values come from `notes.md` → "Type, per breakpoint", "Dark tuning" and
   `font-family: "STIX Two Math", math`;
 - dark images get `filter: brightness(.88) contrast(1.05)`.
 
-- [ ] **Step 1: Write the failing tests.**
+- [x] **Step 1: Write the failing tests.**
   - `reading.test.ts` asserts:
     - `tokens.css` defines `--reading-size: 1.0625rem` in `:root`,
       `1.125rem` under `min-width: 40rem`, and `1.1875rem` under
@@ -253,10 +253,10 @@ All values come from `notes.md` → "Type, per breakpoint", "Dark tuning" and
     These pin Review Focus 2 at rule level.
   - `render.test.ts`: `markRange` sets `data-hl-color` and no inline
     `style.background`.
-- [ ] **Step 2: Run** `pnpm exec vitest run reading render`. Expected: FAIL.
-- [ ] **Step 3: Implement.**
-- [ ] **Step 4: Run** the same command, then `pnpm test`. Expected: PASS.
-- [ ] **Step 5: Commit** `feat(web): Marker reading typography and highlight bands`.
+- [x] **Step 2: Run** `pnpm exec vitest run reading render`. Expected: FAIL.
+- [x] **Step 3: Implement.**
+- [x] **Step 4: Run** the same command, then `pnpm test`. Expected: PASS.
+- [x] **Step 5: Commit** `feat(web): Marker reading typography and highlight bands`.
 
 ### Task 3: Article meta and one action set (A2 + More sheet)
 
@@ -312,7 +312,7 @@ All values come from `notes.md` → "Type, per breakpoint", "Dark tuning" and
   `loadCollections`.
 - Produces: the components above. Tasks 7 and 9 mount them.
 
-- [ ] **Step 1: Write the failing tests.**
+- [x] **Step 1: Write the failing tests.**
   - The `read-meta` and `retry` cases listed above.
   - `ReaderActionsMenu`: opening it lists the collection rows with counts,
     then "Open original", "Archive" and "Delete" in that order. Clicking a
@@ -322,10 +322,10 @@ All values come from `notes.md` → "Type, per breakpoint", "Dark tuning" and
     calls `onRemoveTag`.
   - `ArticleMeta`: it renders "12 min read" and "Saved Nov 2", and omits
     the reading time when `null`.
-- [ ] **Step 2: Run** `pnpm exec vitest run read-meta retry ArticleMeta ReaderActionsMenu ReaderMoreSheet`. Expected: FAIL.
-- [ ] **Step 3: Implement.** Copy is sentence case. Delete still goes through the page's `ConfirmAction`.
-- [ ] **Step 4: Run** the same command, then `pnpm test`. Expected: PASS.
-- [ ] **Step 5: Commit** `feat(web): article meta and one reader action set`.
+- [x] **Step 2: Run** `pnpm exec vitest run read-meta retry ArticleMeta ReaderActionsMenu ReaderMoreSheet`. Expected: FAIL.
+- [x] **Step 3: Implement.** Copy is sentence case. Delete still goes through the page's `ConfirmAction`.
+- [x] **Step 4: Run** the same command, then `pnpm test`. Expected: PASS.
+- [x] **Step 5: Commit** `feat(web): article meta and one reader action set`.
 
 ### Task 4: Header for the focused desktop
 
