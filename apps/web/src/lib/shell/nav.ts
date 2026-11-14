@@ -16,6 +16,13 @@ const pathOf = (pathname: string) => pathname.split(/[?#]/)[0] ?? "";
 /** The shell's one breakpoint (Tailwind `md`): sidebar above, tabs below. */
 export const WIDE_QUERY = "(min-width: 48rem)";
 
+/**
+ * Where the reader switches to its focused layout (Tailwind `lg`): edge
+ * chapters, highlight map and panel above, the phone bar and sheets below.
+ * A portrait tablet reads as a phone here, which is what the renders show.
+ */
+export const DESKTOP_QUERY = "(min-width: 64rem)";
+
 /** `pathname` is `base` itself or a path beneath it (not `/readme` for `/read`). */
 export const under = (pathname: string, base: string) =>
   pathname === base || pathname.startsWith(`${base}/`);

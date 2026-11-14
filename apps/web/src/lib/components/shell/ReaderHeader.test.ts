@@ -2,7 +2,7 @@ import { describe, it, expect, vi, beforeEach } from "vitest";
 import { render, screen, fireEvent } from "@testing-library/svelte";
 
 const { media } = vi.hoisted(() => ({
-  media: { wide: false, queries: [] as string[] },
+  media: { desktop: false, queries: [] as string[] },
 }));
 vi.mock("svelte/reactivity", async (orig) => ({
   ...(await orig<typeof import("svelte/reactivity")>()),
@@ -11,10 +11,11 @@ vi.mock("svelte/reactivity", async (orig) => ({
       media.queries.push(query);
     }
     get current() {
-      return media.wide;
+      return media.desktop;
     }
   },
 }));
+import { createRawSnippet } from "svelte";
 import ReaderHeader from "./ReaderHeader.svelte";
 import { searchPalette } from "$lib/stores/search-palette.svelte.js";
 
@@ -31,7 +32,7 @@ const mount = (over: Record<string, unknown> = {}) => {
 
 describe("ReaderHeader", () => {
   beforeEach(() => {
-    media.wide = false;
+    media.desktop = false;
     searchPalette.close();
     document.documentElement.style.removeProperty("--topbar-h");
   });
@@ -59,12 +60,12 @@ describe("ReaderHeader", () => {
     expect(onMenu).toHaveBeenCalled();
   });
 
-  it("slides away on phones only when hidden", async () => {
+  it("slides away below the focused breakpoint only when hidden", async () => {
     const { container, rerender } = mount();
     const header = container.querySelector("header")!;
     expect(header.className).not.toMatch(/-translate-y-full/);
     await rerender({ hidden: true });
-    expect(header.className.split(/\s+/)).toContain("max-md:-translate-y-full");
+    expect(header.className.split(/\s+/)).toContain("max-lg:-translate-y-full");
     expect(header.className.split(/\s+/)).toContain(
       "motion-reduce:transition-none",
     );
@@ -76,7 +77,7 @@ describe("ReaderHeader", () => {
       el.hasAttribute("inert") ||
       (el as HTMLElement & { inert?: boolean }).inert === true;
 
-    it("takes itself out of the tab order when hidden on phones", async () => {
+    it("takes itself out of the tab order when hidden below lg", async () => {
       const { container, rerender } = mount();
       const header = container.querySelector("header")!;
       expect(isInert(header)).toBe(false);
@@ -86,11 +87,11 @@ describe("ReaderHeader", () => {
       expect(isInert(header)).toBe(false);
     });
 
-    it("stays usable from md up, where it never slides away", () => {
-      media.wide = true;
+    it("stays usable from lg up, where it never slides away", () => {
+      media.desktop = true;
       const { container } = mount({ hidden: true });
       expect(isInert(container.querySelector("header")!)).toBe(false);
-      expect(media.queries).toContain("(min-width: 48rem)");
+      expect(media.queries).toContain("(min-width: 64rem)");
     });
   });
 
@@ -111,5 +112,70 @@ describe("ReaderHeader", () => {
     expect(
       document.documentElement.style.getPropertyValue("--topbar-h"),
     ).not.toBe("");
+  });
+});
+
+describe("ReaderHeader — focused desktop", () => {
+  const actions = createRawSnippet(() => ({
+    render: () => `<button>Article actions</button>`,
+  }));
+
+  beforeEach(() => {
+    media.desktop = true;
+  });
+
+  it("counts the highlights and opens the panel", async () => {
+    const onHighlights = vi.fn();
+    mount({ highlightsCount: 3, onHighlights });
+    const btn = screen.getByRole("button", { name: "Highlights, 3" });
+    expect(btn).toHaveTextContent("3");
+    await fireEvent.click(btn);
+    expect(onHighlights).toHaveBeenCalled();
+  });
+
+  it("renders the actions snippet after the highlights button", () => {
+    mount({ highlightsCount: 0, onHighlights: vi.fn(), actions });
+    const controls = screen.getAllByRole("button");
+    const at = (el: Element) => controls.indexOf(el as HTMLElement);
+    expect(at(screen.getByRole("button", { name: "Search" }))).toBeLessThan(
+      at(screen.getByRole("button", { name: "Highlights, 0" })),
+    );
+    expect(
+      at(screen.getByRole("button", { name: "Highlights, 0" })),
+    ).toBeLessThan(at(screen.getByText("Article actions")));
+    expect(at(screen.getByText("Article actions"))).toBeLessThan(
+      at(screen.getByRole("button", { name: "Open navigation" })),
+    );
+  });
+
+  it("leaves the highlights button and actions to the phone chrome", () => {
+    media.desktop = false;
+    mount({ highlightsCount: 3, onHighlights: vi.fn(), actions });
+    expect(screen.queryByRole("button", { name: "Highlights, 3" })).toBeNull();
+    expect(screen.queryByText("Article actions")).toBeNull();
+  });
+
+  // It stays mounted so it can fade rather than pop; only its opacity and
+  // its presence to a screen reader change.
+  it("fades the article title in once the h1 has scrolled away", async () => {
+    const { rerender } = mount({ title: "Navier-Stokes equations" });
+    const title = screen.getByText("Navier-Stokes equations");
+    expect(title.className.split(/\s+/)).toContain("opacity-0");
+    expect(title).toHaveAttribute("aria-hidden", "true");
+    await rerender({
+      backHref: "/library",
+      hidden: false,
+      onMenu: vi.fn(),
+      title: "Navier-Stokes equations",
+      showTitle: true,
+    });
+    expect(title.className.split(/\s+/)).toContain("opacity-100");
+    expect(title).not.toHaveAttribute("aria-hidden");
+  });
+
+  it("keeps the title to itself on phones", () => {
+    media.desktop = false;
+    mount({ title: "Navier-Stokes equations", showTitle: true });
+    expect(screen.queryByText("Navier-Stokes equations")).toBeNull();
   });
 });

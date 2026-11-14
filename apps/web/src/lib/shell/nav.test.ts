@@ -2,6 +2,7 @@ import { describe, it, expect } from "vitest";
 import {
   NAV_ITEMS,
   WIDE_QUERY,
+  DESKTOP_QUERY,
   activeKey,
   shellFor,
   activeCollectionSlug,
@@ -75,5 +76,11 @@ describe("under", () => {
 describe("WIDE_QUERY", () => {
   it("is the md breakpoint", () => {
     expect(WIDE_QUERY).toBe("(min-width: 48rem)");
+  });
+});
+
+describe("DESKTOP_QUERY", () => {
+  it("is the lg breakpoint, where the focused reader starts", () => {
+    expect(DESKTOP_QUERY).toBe("(min-width: 64rem)");
   });
 });
