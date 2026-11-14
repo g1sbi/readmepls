@@ -19,6 +19,7 @@
   import { resolve } from "$app/paths";
   import { markRange, unmarkAll } from "$lib/highlight/render";
   import { deleteArticle } from "$lib/article/delete.js";
+  import { retryArticle } from "$lib/article/retry.js";
   import ChapterList from "$lib/components/ChapterList.svelte";
   import ChapterTicks from "$lib/components/reader/ChapterTicks.svelte";
   import { buildTocFromDom } from "$lib/reader/toc.js";
@@ -33,7 +34,8 @@
   import ConfirmAction from "$lib/components/ConfirmAction.svelte";
   import ReaderActionsMenu from "$lib/components/reader/ReaderActionsMenu.svelte";
   import ReaderMoreSheet from "$lib/components/reader/ReaderMoreSheet.svelte";
-  import { Skeleton } from "$lib/components/ui/skeleton";
+  import ReaderSkeleton from "$lib/components/reader/ReaderSkeleton.svelte";
+  import ExtractionNotice from "$lib/components/reader/ExtractionNotice.svelte";
   import HighlightPopover from "$lib/components/reader/HighlightPopover.svelte";
   import HighlightTray from "$lib/components/reader/HighlightTray.svelte";
   import HighlightList from "$lib/components/reader/HighlightList.svelte";
@@ -127,6 +129,16 @@
   const desktop = new MediaQuery(DESKTOP_QUERY);
   const isDesktop = $derived(desktop.current);
   const hasChapters = $derived(toc.length > 0);
+  let retrying = $state(false);
+
+  async function retry() {
+    if (!article || retrying) return;
+    retrying = true;
+    actionError = "";
+    const ok = await retryArticle(fetch, article.id);
+    retrying = false;
+    if (!ok) actionError = "couldn't retry that. try again.";
+  }
 
   // Focused-desktop chrome.
   let panelOpen = $state(false);
@@ -329,6 +341,19 @@
   // The live global theme context keeps the article in sync with the chrome;
   // light is the fallback when the reader renders in isolation.
   const activeTheme = $derived<Mode>(themeCtx ? themeCtx.mode : "light");
+  // A failed extraction has no text to read: the reader shows the reason and
+  // the ways on, and none of the reading chrome.
+  const failed = $derived(
+    !!content && (content.extract_status === "failed" || !content.content_html),
+  );
+  const partial = $derived(!!content && content.extract_status === "partial");
+  const failureReason = $derived(
+    (content?.failure_reason as string | null | undefined) ?? null,
+  );
+  // Nothing was read, so the URL stands in for the title.
+  const urlTitle = $derived(
+    article?.url ? article.url.replace(/^https?:\/\//, "") : "",
+  );
   const source = $derived(sourceView(pb, content));
   const originalUrl = $derived(
     article?.url ? httpUrlOrNull(article.url) : null,
@@ -564,13 +589,9 @@
   {/if}
 
   {#if !content}
-    <div class="flex flex-col gap-2" aria-hidden="true">
-      {#each Array(8) as _, i (i)}
-        <Skeleton class="h-4" />
-      {/each}
-    </div>
+    <ReaderSkeleton />
   {:else}
-    {#if isDesktop}
+    {#if isDesktop && !failed}
       <ChapterTicks {toc} activeId={activeHeadingId} onjump={jumpToHeading} />
       <HighlightMap
         {highlights}
@@ -599,27 +620,48 @@
       onmouseup={readSelection}
       onclick={revealChrome}
     >
-      <h1 bind:this={titleEl}>{content.title}</h1>
-      <ArticleMeta
-        {source}
-        {originalUrl}
-        readTime={(content.read_time as number | undefined) ?? null}
-        created={(article?.created as string | undefined) ?? ""}
-        tags={manualTags.map((t) => ({ id: t.id, name: t.name }))}
-        onAddTag={addTag}
-        onRemoveTag={removeTag}
-      />
+      <h1 bind:this={titleEl} data-fallback={failed && !content.title}>
+        {content.title || urlTitle}
+      </h1>
+      {#if failed}
+        <ExtractionNotice
+          status="failed"
+          reason={failureReason}
+          {originalUrl}
+          onRetry={retry}
+        />
+      {:else}
+        <ArticleMeta
+          {source}
+          {originalUrl}
+          readTime={(content.read_time as number | undefined) ?? null}
+          created={(article?.created as string | undefined) ?? ""}
+          tags={manualTags.map((t) => ({ id: t.id, name: t.name }))}
+          onAddTag={addTag}
+          onRemoveTag={removeTag}
+        />
+        {#if partial}
+          <ExtractionNotice
+            status="partial"
+            reason={failureReason}
+            {originalUrl}
+          />
+        {/if}
+      {/if}
       <!-- content_html is sanitized in the worker (Task 2) before storage -->
       <!-- bind:this anchors the highlight anchoring scope to the article body -->
       <div bind:this={bodyEl}>
         <!-- eslint-disable-next-line svelte/no-at-html-tags -- worker-sanitized above; rendering article HTML is the reader's whole purpose -->
         {@html content.content_html}
       </div>
+      {#if !failed}
+        <p class="endmark">End of article</p>
+      {/if}
     </article>
   {/if}
 </div>
 
-{#if pending && isDesktop}
+{#if pending && isDesktop && !failed}
   <HighlightPopover
     x={pending.x}
     y={pending.y}
@@ -638,7 +680,7 @@
   onCancel={() => (confirmingDelete = false)}
 />
 
-{#if content && !isDesktop}
+{#if content && !isDesktop && !failed}
   {#if pending}
     <HighlightTray
       onpick={createHighlight}
@@ -738,6 +780,30 @@
       padding: var(--space-4) var(--reading-gutter);
       border-radius: 0;
     }
+  }
+  /* A hairline rule with the words set into it, as the renders show. */
+  .endmark {
+    display: flex;
+    align-items: center;
+    gap: var(--space-3);
+    margin: var(--space-7) 0 0;
+    font-family: var(--font-ui);
+    font-size: var(--text-sm);
+    color: var(--color-text-subtle);
+  }
+  .endmark::before,
+  .endmark::after {
+    content: "";
+    height: 1px;
+    flex: 1;
+    background: var(--color-hairline);
+  }
+  /* Nothing was read: the URL carries the head, quieter and wrappable. */
+  h1[data-fallback="true"] {
+    font-size: var(--reading-h2);
+    letter-spacing: -0.02em;
+    overflow-wrap: anywhere;
+    color: var(--color-text-muted);
   }
   .phone-chapters {
     font-family: var(--font-ui);

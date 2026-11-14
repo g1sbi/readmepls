@@ -1175,3 +1175,96 @@ describe("reader page — phone chrome", () => {
     await waitFor(() => expect(bar()).toHaveAttribute("data-hidden", "false"));
   });
 });
+
+describe("reader page — extraction states", () => {
+  const failed = (reason: string | null) => ({
+    ...defaultArticle(),
+    url: "https://en.wikipedia.org/wiki/Navier-Stokes",
+    expand: {
+      content: {
+        id: "c1",
+        title: "",
+        content_html: "",
+        extract_status: "failed",
+        failure_reason: reason,
+      },
+    },
+  });
+
+  beforeEach(() => {
+    vi.clearAllMocks();
+    articleUpdate.mockResolvedValue({});
+    articleGetOne.mockResolvedValue(defaultArticle());
+    Object.defineProperty(window, "matchMedia", {
+      writable: true,
+      configurable: true,
+      value: (query: string) => ({
+        matches: false,
+        media: query,
+        onchange: null,
+        addEventListener: () => {},
+        removeEventListener: () => {},
+        addListener: () => {},
+        removeListener: () => {},
+        dispatchEvent: () => false,
+      }),
+    });
+  });
+
+  it("explains a failed extraction instead of showing a blank article", async () => {
+    articleGetOne.mockResolvedValue(failed("Blocked by paywall"));
+    render(ReaderPage);
+    expect(await screen.findByText("Blocked by paywall")).toBeInTheDocument();
+    // The title falls back to the URL, since there is none.
+    expect(screen.getByRole("heading", { level: 1 })).toHaveTextContent(
+      "en.wikipedia.org/wiki/Navier-Stokes",
+    );
+    // No chapters, highlights or bar to offer on a page with no text.
+    expect(screen.queryByRole("navigation", { name: "Chapters" })).toBeNull();
+    expect(
+      screen.queryByRole("navigation", { name: "reader controls" }),
+    ).toBeNull();
+  });
+
+  it("asks the server to try the extraction again", async () => {
+    articleGetOne.mockResolvedValue(failed(null));
+    const fetchMock = vi.fn(async () => new Response(null, { status: 200 }));
+    vi.stubGlobal("fetch", fetchMock);
+    render(ReaderPage);
+    await fireEvent.click(await screen.findByRole("button", { name: /Retry/ }));
+    await waitFor(() => expect(fetchMock).toHaveBeenCalled());
+    const [url, init] = fetchMock.mock.calls[0] as unknown as [
+      string,
+      RequestInit,
+    ];
+    expect(url).toBe("/api/retry");
+    expect(JSON.parse(init.body as string)).toEqual({ articleId: "art1" });
+    vi.unstubAllGlobals();
+  });
+
+  it("notes a partial extraction above the text it did get", async () => {
+    articleGetOne.mockResolvedValue({
+      ...defaultArticle(),
+      expand: {
+        content: {
+          id: "c1",
+          title: "Test Article",
+          content_html: "<p>hello world</p>",
+          extract_status: "partial",
+          failure_reason: "Recovered from web archive",
+        },
+      },
+    });
+    render(ReaderPage);
+    expect(
+      await screen.findByText("Recovered from web archive"),
+    ).toBeInTheDocument();
+    expect(screen.getByText("hello world")).toBeInTheDocument();
+    expect(screen.queryByRole("button", { name: /Retry/ })).toBeNull();
+  });
+
+  it("marks the end of a readable article", async () => {
+    render(ReaderPage);
+    expect(await screen.findByText("End of article")).toBeInTheDocument();
+  });
+});
