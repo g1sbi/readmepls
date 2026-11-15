@@ -101,7 +101,7 @@
   .error { margin: var(--space-1) 0 0; font-size: var(--text-sm); color: var(--color-danger); }
   /* Desktop: create moves to the always-present LibraryCollections section at the
      top of the library; the drawer panel keeps rename/delete only. */
-  /* Complement of LibraryCollections' `max-width: 640px` mobile query — no sub-pixel
+  /* Complement of LibraryCollections' `max-width: 40rem` mobile query — no sub-pixel
      gap where both create controls would show. */
-  @media not all and (max-width: 640px) { .create-area { display: none; } }
+  @media not all and (max-width: 40rem) { .create-area { display: none; } }
 </style>

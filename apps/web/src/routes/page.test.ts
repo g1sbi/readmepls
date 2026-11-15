@@ -24,9 +24,12 @@ describe("home page hero", () => {
 
   it("renders the capture pill", () => {
     render(Page);
-    expect(
-      screen.getByRole("textbox", { name: /paste a link/i }),
-    ).toBeInTheDocument();
+    const input = screen.getByRole("textbox", { name: /paste a link/i });
+    expect(input).toBeInTheDocument();
+    expect(input.closest("[data-slot='input-group']")).toHaveClass(
+      "w-full",
+      "max-w-none",
+    );
   });
 
   it("renders quick-action chips linking to library and collections", () => {

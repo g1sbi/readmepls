@@ -107,25 +107,25 @@ describe("library page", () => {
     expect(screen.getByText("Hello")).toBeInTheDocument();
   });
 
-  it("manages collections from within the filter drawer", async () => {
+  it("manages collections in the filter dialog", async () => {
     render(Library, { data } as never);
     await fireEvent.click(screen.getByRole("button", { name: /filters/i }));
-    // The collections filter fieldset and the CollectionsPanel management section
-    // both render inside the drawer — this is the CollectionsPanel management row.
+    // Collection management shares the filter dialog with the collection facets.
     // Scoped to the dialog since the library page's folder strip (above the
-    // toolbar) also renders a "reading list" link outside the drawer.
-    const drawer = within(screen.getByRole("dialog"));
-    expect(drawer.getByRole("link", { name: /reading list/i })).toHaveAttribute(
-      "href",
-      "/collections/reading-list",
-    );
+    // toolbar) also renders a "reading list" link outside the dialog.
+    const filterDialog = within(screen.getByRole("dialog"));
+    expect(
+      filterDialog.getByRole("link", { name: /reading list/i }),
+    ).toHaveAttribute("href", "/collections/reading-list");
 
     await fireEvent.click(
-      drawer.getByRole("button", { name: /new collection/i }),
+      filterDialog.getByRole("button", { name: /new collection/i }),
     );
-    const input = drawer.getByLabelText(/new collection name/i);
+    const input = filterDialog.getByLabelText(/new collection name/i);
     await fireEvent.input(input, { target: { value: "later reads" } });
-    await fireEvent.click(drawer.getByRole("button", { name: /^create$/i }));
+    await fireEvent.click(
+      filterDialog.getByRole("button", { name: /^create$/i }),
+    );
 
     await waitFor(() =>
       expect(collectionCreate).toHaveBeenCalledWith(
@@ -171,7 +171,11 @@ describe("library page", () => {
     // No collection tile links...
     expect(screen.queryByRole("link", { name: /reading list/i })).toBeNull();
     // ...but the always-present section header and create affordance remain.
-    expect(screen.getByRole("heading", { name: /collections/i })).toBeInTheDocument();
-    expect(screen.getByRole("button", { name: /new collection/i })).toBeInTheDocument();
+    expect(
+      screen.getByRole("heading", { name: /collections/i }),
+    ).toBeInTheDocument();
+    expect(
+      screen.getByRole("button", { name: /new collection/i }),
+    ).toBeInTheDocument();
   });
 });
