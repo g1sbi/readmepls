@@ -7,11 +7,14 @@
     open,
     onClose,
     title,
+    count,
     children,
   }: {
     open: boolean;
     onClose: () => void;
     title: string;
+    /** Shown beside the title, tabular — the highlights sheet counts its rows. */
+    count?: number;
     children?: Snippet;
   } = $props();
 
@@ -26,9 +29,18 @@
 <Drawer.Root {open} {onOpenChange}>
   <Drawer.Content>
     <header class="flex items-center justify-between px-4 pb-2">
-      <Drawer.Title class="text-foreground text-base font-medium"
-        >{title}</Drawer.Title
+      <Drawer.Title
+        class="text-foreground flex items-baseline gap-2 text-base font-medium"
       >
+        {title}
+        {#if count !== undefined}
+          <span
+            data-testid="sheet-count"
+            class="text-muted-foreground text-sm font-normal tabular-nums"
+            >{count}</span
+          >
+        {/if}
+      </Drawer.Title>
       <Button
         variant="ghost"
         size="icon-sm"

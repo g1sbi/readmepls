@@ -592,12 +592,18 @@
     <ReaderSkeleton />
   {:else}
     {#if isDesktop && !failed}
-      <ChapterTicks {toc} activeId={activeHeadingId} onjump={jumpToHeading} />
+      <ChapterTicks
+        {toc}
+        activeId={activeHeadingId}
+        hidden={panelOpen}
+        onjump={jumpToHeading}
+      />
       <HighlightMap
         {highlights}
         {positions}
         {viewport}
         newId={drawingId}
+        hidden={panelOpen}
         onjump={jumpTo}
       />
       <HighlightsPanel
@@ -718,6 +724,7 @@
     open={activeSheet === "highlights"}
     onClose={() => (activeSheet = null)}
     title="Highlights"
+    count={highlights.length}
   >
     <HighlightList
       {highlights}

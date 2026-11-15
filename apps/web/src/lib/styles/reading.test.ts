@@ -100,6 +100,18 @@ describe("reading.css", () => {
   });
 });
 
+describe("chrome inside the article", () => {
+  // The reader injects its own controls into .prose-reader (the extraction
+  // notice's Retry and Open original). The prose link stroke would repaint
+  // them — ink text on an ink pill — so buttons opt out by their slot.
+  it("leaves shadcn buttons out of the prose link styling", () => {
+    const rules = strip(reading).match(/\.prose-reader a[^{]*\{/g) ?? [];
+    expect(rules.length).toBeGreaterThan(0);
+    for (const rule of rules)
+      expect(rule).toContain(':not([data-slot="button"])');
+  });
+});
+
 describe("a new highlight", () => {
   it("draws its band in while data-hl-new is set", () => {
     const rule = rulesFor(reading, ".prose-reader mark[data-hl-new]");

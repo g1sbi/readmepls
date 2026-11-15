@@ -94,7 +94,10 @@
 }
 
 /* links: a thin marker stroke under the word; grows into the swipe on hover */
-.prose-reader a {
+/* `:not([data-slot="button"])`: the reader injects its own controls into the
+   article (the extraction notice's Retry and Open original). Those are chrome,
+   not prose — the marker stroke and `color: inherit` would repaint them. */
+.prose-reader a:not([data-slot="button"]) {
   color: inherit;
   text-decoration: none;
   background-image: linear-gradient(var(--color-marker), var(--color-marker));
@@ -106,11 +109,11 @@
   box-decoration-break: clone;
   transition: background-size var(--dur-base) var(--ease-out);
 }
-.prose-reader a:hover,
-.prose-reader a:focus-visible {
+.prose-reader a:not([data-slot="button"]):hover,
+.prose-reader a:not([data-slot="button"]):focus-visible {
   background-size: 100% 42%;
 }
-.prose-reader a:focus-visible {
+.prose-reader a:not([data-slot="button"]):focus-visible {
   outline: var(--focus-ring-width) solid var(--color-ring);
   outline-offset: 2px;
   border-radius: 3px;

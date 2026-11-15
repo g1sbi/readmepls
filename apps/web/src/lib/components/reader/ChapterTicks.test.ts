@@ -41,6 +41,11 @@ describe("ChapterTicks", () => {
     expect(container.textContent).toBe("");
   });
 
+  it("gets out of the way while the highlights panel is open", () => {
+    mount({ hidden: true });
+    expect(column().closest(".ticks")).toHaveAttribute("data-hidden", "true");
+  });
+
   it("gives every chapter, nested ones included, a row of its own", () => {
     mount();
     expect(rows().map((b) => b.textContent?.trim())).toEqual([

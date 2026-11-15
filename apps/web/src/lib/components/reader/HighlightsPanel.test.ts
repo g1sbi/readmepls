@@ -49,6 +49,15 @@ describe("HighlightsPanel", () => {
     expect(screen.queryByText("passage h1")).toBeNull();
   });
 
+  // The renders keep the article fully readable beside the panel: it steps
+  // left rather than being dimmed behind a scrim.
+  it("leaves the article undimmed", async () => {
+    mount();
+    await screen.findByText("passage h1");
+    const overlay = document.querySelector('[data-slot="sheet-overlay"]');
+    expect(overlay?.className).toContain("bg-transparent");
+  });
+
   it("closes on Escape", async () => {
     const { onClose } = mount();
     await screen.findByText("passage h1");

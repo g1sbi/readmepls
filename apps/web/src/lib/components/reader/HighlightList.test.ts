@@ -47,6 +47,13 @@ describe("HighlightList", () => {
     expect(quote.closest("li")).toHaveAttribute("data-color", "terracotta");
   });
 
+  it("bands each excerpt line by line, not as a block", () => {
+    const { container } = mount();
+    expect(container.querySelector("q span")).toHaveTextContent(
+      "Turbulence remains unsolved",
+    );
+  });
+
   it("shows a note under its own icon", () => {
     mount();
     expect(screen.getByText("against the paper")).toBeInTheDocument();

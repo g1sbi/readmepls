@@ -38,7 +38,7 @@
             e.preventDefault();
             onjump(h.id);
           }
-        }}>{h.text}</q
+        }}><span>{h.text}</span></q
       >
       {#if h.note}
         <p class="note">
@@ -112,9 +112,14 @@
     color: var(--color-text);
     padding-right: 32px;
     cursor: pointer;
+  }
+  /* The band rides the text's own lines, so it has to sit on an inline box. */
+  q span {
     background-image: linear-gradient(transparent 30%, var(--hlc) 30%);
     background-repeat: no-repeat;
+    -webkit-box-decoration-break: clone;
     box-decoration-break: clone;
+    padding-inline: 1px;
   }
   q:focus-visible {
     outline: var(--focus-ring-width) solid var(--color-ring);
@@ -123,6 +128,8 @@
   }
   li[data-orphan="true"] q {
     color: var(--color-text-muted);
+  }
+  li[data-orphan="true"] q span {
     background-image: none;
   }
   .note {

@@ -5,10 +5,13 @@
   let {
     toc,
     activeId,
+    hidden = false,
     onjump,
   }: {
     toc: TocEntry[];
     activeId: string | null;
+    /** The highlights panel has the stage: fade out and stop taking taps. */
+    hidden?: boolean;
     onjump: (id: string) => void;
   } = $props();
 
@@ -121,7 +124,7 @@
 </script>
 
 {#if rows.length}
-  <div class="ticks" data-near={near || open}>
+  <div class="ticks" data-near={near || open} data-hidden={hidden}>
     <!-- The column is the hover and focus surface for its own rows. -->
     <nav
       bind:this={column}
@@ -181,6 +184,10 @@
   }
   .ticks[data-near="true"] {
     opacity: 1;
+  }
+  .ticks[data-hidden="true"] {
+    opacity: 0;
+    pointer-events: none;
   }
   /* No hover to reveal them with, so they stay legible. */
   @media (pointer: coarse) {

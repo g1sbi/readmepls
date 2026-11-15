@@ -72,6 +72,13 @@ describe("HighlightMap", () => {
     expect(card).toHaveTextContent("Click to jump");
   });
 
+  it("bands the excerpt line by line, not as a block", async () => {
+    const { container } = mount();
+    await fireEvent.focus(ticks()[1]!);
+    const banded = container.querySelector("q span");
+    expect(banded).toHaveTextContent("Turbulence remains unsolved");
+  });
+
   it("jumps to the highlight on Enter", async () => {
     const { onjump } = mount();
     await fireEvent.keyDown(ticks()[1]!, { key: "Enter" });
@@ -89,6 +96,14 @@ describe("HighlightMap", () => {
     mount({ newId: "h2" });
     expect(ticks()[0]!).not.toHaveAttribute("data-new");
     expect(ticks()[1]!).toHaveAttribute("data-new", "true");
+  });
+
+  it("gets out of the way while the highlights panel is open", () => {
+    const { container } = mount({ hidden: true });
+    expect(container.querySelector(".map")).toHaveAttribute(
+      "data-hidden",
+      "true",
+    );
   });
 
   it("has nothing to draw without highlights", () => {

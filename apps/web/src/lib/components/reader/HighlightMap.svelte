@@ -8,6 +8,7 @@
     positions,
     viewport,
     newId = null,
+    hidden = false,
     onjump,
   }: {
     highlights: Highlight[];
@@ -16,6 +17,8 @@
     viewport: { at: number; size: number };
     /** A just-saved highlight, whose tick draws itself in. */
     newId?: string | null;
+    /** The highlights panel has the stage: fade out and stop taking taps. */
+    hidden?: boolean;
     onjump: (id: string) => void;
   } = $props();
 
@@ -83,7 +86,7 @@
 </script>
 
 {#if drawn.length}
-  <div class="map" bind:this={map} data-near={near}>
+  <div class="map" bind:this={map} data-near={near} data-hidden={hidden}>
     <span class="track" aria-hidden="true"></span>
     <span
       class="viewport"
@@ -121,7 +124,7 @@
         data-color={active.hl.color}
         style={`top:${active.pos.at * 100}%`}
       >
-        <q>{active.hl.text}</q>
+        <q><span>{active.hl.text}</span></q>
         {#if active.hl.note}
           <p class="note">
             <StickyNote class="icon-sm" aria-hidden="true" />
@@ -154,6 +157,10 @@
   .map[data-near="true"],
   .map:focus-within {
     opacity: 1;
+  }
+  .map[data-hidden="true"] {
+    opacity: 0;
+    pointer-events: none;
   }
   /* No hover to reveal it with. */
   @media (pointer: coarse) {
@@ -272,8 +279,14 @@
     font-family: var(--font-reading);
     font-size: var(--text-sm);
     line-height: 1.5;
+  }
+  /* The band rides the text's own lines, so it has to sit on an inline box. */
+  q span {
     background-image: linear-gradient(transparent 30%, var(--sw) 30%);
     background-repeat: no-repeat;
+    -webkit-box-decoration-break: clone;
+    box-decoration-break: clone;
+    padding-inline: 1px;
   }
   .note {
     display: flex;

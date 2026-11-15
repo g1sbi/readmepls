@@ -17,6 +17,7 @@
     class: className,
     side = "right",
     showCloseButton = true,
+    overlayClass,
     portalProps,
     children,
     ...restProps
@@ -24,12 +25,14 @@
     portalProps?: WithoutChildrenOrChild<ComponentProps<typeof SheetPortal>>;
     side?: Side;
     showCloseButton?: boolean;
+    /** Restyle the scrim — the reader's highlights panel leaves it clear. */
+    overlayClass?: string;
     children: Snippet;
   } = $props();
 </script>
 
 <SheetPortal {...portalProps}>
-  <SheetOverlay />
+  <SheetOverlay class={overlayClass} />
   <SheetPrimitive.Content
     bind:ref
     data-slot="sheet-content"

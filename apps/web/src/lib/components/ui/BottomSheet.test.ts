@@ -18,6 +18,23 @@ describe("BottomSheet", () => {
     expect(await screen.findByText("chapters")).toBeTruthy();
   });
 
+  // The phone sheets carry a count beside the title, as the renders show.
+  it("sets a count beside the title", async () => {
+    render(BottomSheet, {
+      open: true,
+      onClose: () => {},
+      title: "Highlights",
+      count: 4,
+    });
+    expect(await screen.findByTestId("sheet-count")).toHaveTextContent("4");
+  });
+
+  it("has no count when none is given", async () => {
+    render(BottomSheet, { open: true, onClose: () => {}, title: "Chapters" });
+    await screen.findByText("Chapters");
+    expect(screen.queryByTestId("sheet-count")).toBeNull();
+  });
+
   it("fires onClose from the close button", async () => {
     const onClose = vi.fn();
     render(BottomSheet, { open: true, onClose, title: "text" });

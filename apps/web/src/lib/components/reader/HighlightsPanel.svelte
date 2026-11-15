@@ -26,7 +26,13 @@
 
 <Sheet.Root {open} {onOpenChange}>
   <!-- Wider than the shell's default sheet: the excerpts need the room. -->
-  <Sheet.Content side="right" class="gap-0 sm:max-w-none md:w-[22.5rem]">
+  <!-- No scrim: the article steps aside rather than being dimmed, so it stays
+       readable while the panel is open. -->
+  <Sheet.Content
+    side="right"
+    overlayClass="bg-transparent"
+    class="gap-0 sm:max-w-none md:w-[22.5rem]"
+  >
     <Sheet.Header class="pb-2">
       <Sheet.Title class="flex items-baseline gap-2 text-lg font-medium">
         Highlights
