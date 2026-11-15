@@ -697,7 +697,7 @@ Behavior, from `notes.md` → "Highlights" and "New highlight":
 
 ### Task 11: Gate 4 — reader typography and focus mode in the real app (controller-run)
 
-- [ ] **Step 1: Seed real articles.** On the throwaway PocketBase, seed:
+- [x] **Step 1: Seed real articles.** On the throwaway PocketBase, seed:
   - the Wikipedia "Navier–Stokes equations" page, extracted through the
     real worker extractor, by running the worker against the throwaway
     PocketBase or calling the extractor package on fetched HTML;
@@ -707,7 +707,7 @@ Behavior, from `notes.md` → "Highlights" and "New highlight":
 
   Add four highlights to Navier–Stokes, one with a note and one orphaned
   by editing its text.
-- [ ] **Step 2: Capture.**
+- [x] **Step 2: Capture.**
   - Navier–Stokes at 390 and 1280, in light and dark: the top, the
     mid-article math, the tables, the footnotes, and the end.
   - Desktop chapters expanded; a highlight card; the panel open; the "⋯"
