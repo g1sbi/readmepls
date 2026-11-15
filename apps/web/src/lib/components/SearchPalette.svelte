@@ -4,6 +4,7 @@
      entirely driven by the `searchPalette` store so any part of the app can
      open it with `searchPalette.open(seedQuery?)`. -->
 <script lang="ts">
+  import { tick } from "svelte";
   import * as Dialog from "$lib/components/ui/dialog/index.js";
   import * as Command from "$lib/components/ui/command/index.js";
   import { goto } from "$app/navigation";
@@ -14,6 +15,7 @@
   import { browserPb } from "$lib/pb.js";
   import { sourceView } from "$lib/source/source-view.js";
   import type { ArticleRecord } from "$lib/article/record.js";
+  import type { CommandRootApi } from "$lib/components/ui/command/command.svelte";
 
   const EMPTY: LiveSearchResult = { articles: [], tags: [], collections: [] };
   const DEBOUNCE_KEYWORD = 120;
@@ -23,6 +25,7 @@
   let results = $state<LiveSearchResult>(EMPTY);
   let recent = $state<string[]>([]);
   let recentArticles = $state<ArticleRecord[]>([]);
+  let commandApi = $state<CommandRootApi | null>(null);
 
   // One AbortController per phase, not a single shared one: the hybrid
   // phase's request must never abort a still-in-flight keyword request (or
@@ -102,7 +105,11 @@
     }
     try {
       const r = await fetchLive(q, mode, abortController.signal);
-      if (q === query) results = r;
+      if (q === query) {
+        results = r;
+        await tick();
+        if (q === query) commandApi?.updateSelectedToIndex(0);
+      }
     } catch {
       /* aborted or failed — keep the last good results */
     }
@@ -143,7 +150,7 @@
       <Dialog.Title>search</Dialog.Title>
       <Dialog.Description>search your library</Dialog.Description>
     </Dialog.Header>
-    <Command.Root shouldFilter={false} class="sp-command">
+    <Command.Root bind:api={commandApi} shouldFilter={false} class="sp-command">
       <Command.Input placeholder="search your library…" bind:value={query} autofocus />
       <Command.List class="sp-list">
         {#if !query.trim()}
@@ -193,11 +200,13 @@
               {/each}
             </Command.Group>
           {/if}
-          <Command.Item class="sp-seeall" onSelect={seeAll}>
-            ↵ see all {totalArticles ? `${totalArticles}+ ` : ""}results →
-          </Command.Item>
         {/if}
       </Command.List>
+      {#if query.trim()}
+        <button type="button" class="sp-seeall" onclick={seeAll}>
+          ↵ see all {totalArticles ? `${totalArticles}+ ` : ""}results →
+        </button>
+      {/if}
     </Command.Root>
   </Dialog.Content>
 </Dialog.Root>
@@ -279,7 +288,25 @@
     white-space: nowrap;
   }
   :global(.sp-seeall) {
+    display: flex;
+    align-items: center;
+    width: 100%;
+    min-height: 44px;
+    padding: var(--space-2);
+    border: 0;
+    border-radius: var(--radius-sm);
+    background: transparent;
     color: var(--color-accent) !important;
+    font: inherit;
+    text-align: left;
+    cursor: pointer;
+  }
+  :global(.sp-seeall:hover) {
+    background: var(--color-surface-sunken);
+  }
+  :global(.sp-seeall:focus-visible) {
+    outline: var(--focus-ring-width) solid var(--color-ring);
+    outline-offset: var(--focus-ring-offset);
   }
 
   @media (max-width: 640px) {
