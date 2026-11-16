@@ -21,11 +21,10 @@
   import { reveal } from "$lib/actions/reveal.js";
 
   let { data }: { data: PageData } = $props();
-  let drawerOpen = $state(false);
+  let filtersOpen = $state(false);
   let articleError = $state("");
 
-  // Collection CRUD error — separate from article errors; surfaced inside FilterDrawer's
-  // CollectionsPanel section, cleared on each create attempt.
+  // Collection CRUD errors are shown in the filter drawer's collection controls.
   let collectionError = $state("");
 
   const pb = browserPb();
@@ -116,12 +115,12 @@
   params={data.params}
   total={data.page.totalItems}
   onSort={(s: Sort) => patch({ sort: s })}
-  onOpenFilters={() => (drawerOpen = true)}
+  onOpenFilters={() => (filtersOpen = true)}
 />
 <ActiveFilters params={data.params} {labels} onRemove={patch} onClear={clearAll} onEditQuery={() => searchPalette.open(data.params.q)} />
 <FilterDrawer
-  open={drawerOpen}
-  onClose={() => (drawerOpen = false)}
+  open={filtersOpen}
+  onClose={() => (filtersOpen = false)}
   params={data.params}
   options={data.facets.options}
   tags={data.facets.tags}
