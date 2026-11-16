@@ -37,7 +37,7 @@
       {/each}
     </nav>
   {:else}
-    <p class="empty-hint">no collections yet — group articles into folders to find them fast.</p>
+    <p class="empty-hint">no collections yet — group articles into collections to find them fast.</p>
   {/if}
 
   <div class="create">
@@ -67,9 +67,9 @@
   .new-btn:focus-visible { outline: var(--focus-ring-width) solid var(--color-ring); outline-offset: var(--focus-ring-offset); }
   .error { margin: var(--space-1) 0 0; font-size: var(--text-sm); color: var(--color-danger); }
 
-  /* Mobile (≤640px): current strip behavior. Hide header + create + empty hint;
+  /* Mobile (≤40rem): current strip behavior. Hide header + create + empty hint;
      tiles become a horizontal scroll strip; collapse to no footprint when empty. */
-  @media (max-width: 640px) {
+  @media (max-width: 40rem) {
     .collections { margin: 0; }
     .heading, .create, .empty-hint { display: none; }
     .tiles { flex-wrap: nowrap; overflow-x: auto; margin: 0 0 var(--space-3); padding-bottom: var(--space-2); scrollbar-width: thin; }
